@@ -521,7 +521,7 @@ def im_is_float_above_guaranteed_integer_precision(f: float) -> bool:
     """(private API)"""
     pass
 
-# inline float  ImExponentialMovingAverage(float avg, float sample, int n){ avg -= avg / n; avg += sample / n; return avg; }    /* original C++ signature */
+# inline float  ImExponentialMovingAverage(float avg, float sample, int n){ avg -= avg / (float)n; avg += sample / (float)n; return avg; }    /* original C++ signature */
 def im_exponential_moving_average(avg: float, sample: float, n: int) -> float:
     """(private API)"""
     pass
@@ -1233,10 +1233,6 @@ class ButtonFlagsPrivate_(enum.IntFlag):
     # ImGuiButtonFlags_Repeat               = 1 << 10,  // hold to repeat -> use ImGuiItemFlags_ButtonRepeat instead.
     # ImGuiButtonFlags_FlattenChildren        = 1 << 11,      /* original C++ signature */
     flatten_children = enum.auto()  # (= 1 << 11)  # allow interactions even if a child window is overlapping
-    # ImGuiButtonFlags_AllowOverlap           = 1 << 12,      /* original C++ signature */
-    allow_overlap = (
-        enum.auto()
-    )  # (= 1 << 12)  # require previous frame HoveredId to either match id or be null before being usable.
     # ImGuiButtonFlags_DontClosePopups      = 1 << 13,  // disable automatically closing parent popup on press
     # ImGuiButtonFlags_Disabled             = 1 << 14,  // disable interactions -> use BeginDisabled() or ImGuiItemFlags_Disabled
     # ImGuiButtonFlags_AlignTextBaseLine      = 1 << 15,      /* original C++ signature */
@@ -1643,6 +1639,10 @@ class InputTextState:
         pass
     # float       GetPreferredOffsetX() const;    /* original C++ signature */
     def get_preferred_offset_x(self) -> float:
+        """(private API)"""
+        pass
+    # const char* GetText()                   { return TextA.Data ? TextA.Data : ""; }    /* original C++ signature */
+    def get_text(self) -> str:
         """(private API)"""
         pass
     # Cursor & Selection
@@ -3202,10 +3202,10 @@ class ViewportP:
     last_focused_had_nav_window: bool  # Instead of maintaining a LastFocusedWindow (which may harder to correctly maintain), we merely store weither NavWindow != None last time the viewport was focused.
     # short               PlatformMonitor;    /* original C++ signature */
     platform_monitor: int
-    # int                 BgFgDrawListsLastFrame[2];    /* original C++ signature */
-    bg_fg_draw_lists_last_frame: (
+    # float               BgFgDrawListsLastTimeActive[2];    /* original C++ signature */
+    bg_fg_draw_lists_last_time_active: (
         np.ndarray
-    )  # ndarray[type=int, size=2]  # Last frame number the background (0) and foreground (1) draw lists were used
+    )  # ndarray[type=float, size=2]  # Last frame number the background (0) and foreground (1) draw lists were used
     # ImDrawData          DrawDataP;    /* original C++ signature */
     draw_data_p: ImDrawData
     # ImDrawDataBuilder   DrawDataBuilder;    /* original C++ signature */
@@ -3230,7 +3230,7 @@ class ViewportP:
     # ImVec2              BuildWorkInsetMax;    /* original C++ signature */
     build_work_inset_max: ImVec2  # "
 
-    # ImGuiViewportP()                    { Window = NULL; Idx = -1; LastFrameActive = BgFgDrawListsLastFrame[0] = BgFgDrawListsLastFrame[1] = LastFocusedStampCount = -1; LastNameHash = 0; Alpha = LastAlpha = 1.0f; LastFocusedHadNavWindow = false; PlatformMonitor = -1; BgFgDrawLists[0] = BgFgDrawLists[1] = NULL; LastPlatformPos = LastPlatformSize = LastRendererSize = ImVec2(FLT_MAX, FLT_MAX); }    /* original C++ signature */
+    # ImGuiViewportP()                    { Window = NULL; Idx = -1; LastFrameActive = LastFocusedStampCount = -1; BgFgDrawListsLastTimeActive[0] = BgFgDrawListsLastTimeActive[1] = -1.0f; LastNameHash = 0; Alpha = LastAlpha = 1.0f; LastFocusedHadNavWindow = false; PlatformMonitor = -1; BgFgDrawLists[0] = BgFgDrawLists[1] = NULL; LastPlatformPos = LastPlatformSize = LastRendererSize = ImVec2(FLT_MAX, FLT_MAX); }    /* original C++ signature */
     def __init__(self) -> None:
         pass
     # void    ClearRequestFlags()         { PlatformRequestClose = PlatformRequestMove = PlatformRequestResize = false; }    /* original C++ signature */
@@ -3903,6 +3903,8 @@ class Context:
     nav_focus_scope_id: ID  # Focused focus scope (e.g. selection code often wants to "clear other items" when landing on an item of the same scope)
     # ImGuiNavLayer           NavLayer;    /* original C++ signature */
     nav_layer: NavLayer  # Focused layer (main scrolling layer, or menu/title bar layer)
+    # ImGuiItemFlags          NavIdItemFlags;    /* original C++ signature */
+    nav_id_item_flags: ItemFlags
     # ImGuiID                 NavActivateId;    /* original C++ signature */
     nav_activate_id: ID  # ~~ (g.ActiveId == 0) && (IsKeyPressed(ImGuiKey_Space) || IsKeyDown(ImGuiKey_Enter) || IsKeyPressed(ImGuiKey_NavGamepadActivate)) ? NavId : 0, also set when calling ActivateItemByID()
     # ImGuiID                 NavActivateDownId;    /* original C++ signature */
@@ -3917,6 +3919,10 @@ class Context:
     nav_highlight_activated_id: ID
     # float                   NavHighlightActivatedTimer;    /* original C++ signature */
     nav_highlight_activated_timer: float
+    # ImGuiID                 NavOpenContextMenuItemId;    /* original C++ signature */
+    nav_open_context_menu_item_id: ID
+    # ImGuiID                 NavOpenContextMenuWindowId;    /* original C++ signature */
+    nav_open_context_menu_window_id: ID
     # ImGuiID                 NavNextActivateId;    /* original C++ signature */
     nav_next_activate_id: ID  # Set by ActivateItemByID(), queued until next frame.
     # ImGuiActivateFlags      NavNextActivateFlags;    /* original C++ signature */
@@ -4162,6 +4168,10 @@ class Context:
     input_text_password_font_backup_baked: ImFontBaked
     # ImFontFlags             InputTextPasswordFontBackupFlags;    /* original C++ signature */
     input_text_password_font_backup_flags: ImFontFlags
+    # ImGuiID                 InputTextReactivateId;    /* original C++ signature */
+    input_text_reactivate_id: (
+        ID  # ID of InputText to reactivate on next frame (for io.ConfigInputTextEnterKeepActive behavior)
+    )
     # ImGuiID                 TempInputId;    /* original C++ signature */
     temp_input_id: ID  # Temporary text input when using Ctrl+Click on a slider, etc.
     # ImGuiDataTypeStorage    DataTypeZeroValue;    /* original C++ signature */
@@ -6164,6 +6174,14 @@ def find_best_window_pos_for_popup_ex(
 def get_mouse_button_from_popup_flags(flags: PopupFlags) -> MouseButton:
     pass
 
+# IMGUI_API bool          IsPopupOpenRequestForItem(ImGuiPopupFlags flags, ImGuiID id);    /* original C++ signature */
+def is_popup_open_request_for_item(flags: PopupFlags, id_: ID) -> bool:
+    pass
+
+# IMGUI_API bool          IsPopupOpenRequestForWindow(ImGuiPopupFlags flags);    /* original C++ signature */
+def is_popup_open_request_for_window(flags: PopupFlags) -> bool:
+    pass
+
 # Tooltips
 # IMGUI_API bool          BeginTooltipEx(ImGuiTooltipFlags tooltip_flags, ImGuiWindowFlags extra_window_flags);    /* original C++ signature */
 def begin_tooltip_ex(tooltip_flags: TooltipFlags, extra_window_flags: WindowFlags) -> bool:
@@ -7445,6 +7463,10 @@ def get_window_resize_corner_id(window: Window, n: int) -> ID:
 def get_window_resize_border_id(window: Window, dir: Dir) -> ID:
     pass
 
+# IMGUI_API void          ExtendHitBoxWhenNearViewportEdge(ImGuiWindow* window, ImRect* bb, float threshold, ImGuiAxis axis);    /* original C++ signature */
+def extend_hit_box_when_near_viewport_edge(window: Window, bb: ImRect, threshold: float, axis: Axis) -> None:
+    pass
+
 # Widgets low-level behaviors
 # IMGUI_API bool          ButtonBehavior(const ImRect& bb, ImGuiID id, bool* out_hovered, bool* out_held, ImGuiButtonFlags flags = 0);    /* original C++ signature */
 def button_behavior(
@@ -7669,7 +7691,7 @@ def end_error_tooltip() -> None:
 
 # IMGUI_API void          DemoMarker(const char* file, int line, const char* section);    /* original C++ signature */
 def demo_marker(file: str, line: int, section: str) -> None:
-    """Demo Doc Marker for e.g. imgui_manual"""
+    """Demo Doc Marker for e.g. imgui_explorer"""
     pass
 
 # Debug Tools
@@ -7754,8 +7776,8 @@ def debug_node_draw_cmd_show_mesh_and_bounding_box(
 def debug_node_font(font: ImFont) -> None:
     pass
 
-# IMGUI_API void          DebugNodeFontGlyphesForSrcMask(ImFont* font, ImFontBaked* baked, int src_mask);    /* original C++ signature */
-def debug_node_font_glyphes_for_src_mask(font: ImFont, baked: ImFontBaked, src_mask: int) -> None:
+# IMGUI_API void          DebugNodeFontGlyphsForSrcMask(ImFont* font, ImFontBaked* baked, int src_mask);    /* original C++ signature */
+def debug_node_font_glyphs_for_src_mask(font: ImFont, baked: ImFontBaked, src_mask: int) -> None:
     pass
 
 # IMGUI_API void          DebugNodeFontGlyph(ImFont* font, const ImFontGlyph* glyph);    /* original C++ signature */
