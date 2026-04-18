@@ -14,15 +14,7 @@ import enum
 from . import internal as internal
 
 from imgui_bundle import imgui
-from imgui_bundle.imgui import (
-    ImVec2,
-    ImVec2Like,
-    ImVec4,
-    ImVec4Like,
-    ImU32,
-    ImDrawList,
-    ImTextureRef,
-)
+from imgui_bundle.imgui import ImVec2, ImVec2Like, ImVec4, ImVec4Like, ImU32, ImDrawList, ImTextureRef, WindowFlags
 
 ImageFlags = int  # enum ImageFlags_
 
@@ -83,8 +75,6 @@ Location = int  # enum Location_
 # typedef int ImPlane3D;        // -> ImPlane3D_                  // Enum: Plane indices
 ImPlane3D = int  # enum ImPlane3D_
 # typedef int ImPlot3DColormap; // -> ImPlot3DColormap_          // Enum: Colormaps
-#
-ImAxis3D = int  # enum ImAxis3D_
 
 Scale = int  # enum Scale_
 
@@ -100,7 +90,7 @@ ItemFlags_None = ItemFlags_.none
 # SPDX-License-Identifier: MIT
 # SPDX-FileCopyrightText: 2024-2026 Breno Cunha Queiroz
 
-# ImPlot3D v0.4 WIP
+# ImPlot3D v0.4
 
 # Acknowledgments:
 #  ImPlot3D is heavily inspired by ImPlot
@@ -166,34 +156,50 @@ ItemFlags_None = ItemFlags_.none
 class Prop_(enum.IntFlag):
     """Plotting properties. These provide syntactic sugar for creating ImPlot3DSpec from (ImPlot3DProp,value) pairs"""
 
-    # ImPlot3DProp_LineColor,           /* original C++ signature */
+    # ImPlot3DProp_LineColor,            /* original C++ signature */
     line_color = enum.auto()  # (= 0)  # Line color; IMPLOT3D_AUTO_COL will use next Colormap color
-    # ImPlot3DProp_LineWeight,          /* original C++ signature */
-    line_weight = enum.auto()  # (= 1)  # Line weight in pixels
-    # ImPlot3DProp_FillColor,           /* original C++ signature */
+    # ImPlot3DProp_LineColors,           /* original C++ signature */
+    line_colors = enum.auto()  # (= 1)  # Array of line colors (ImU32*); if None, use LineColor for all
+    # ImPlot3DProp_LineWeight,           /* original C++ signature */
+    line_weight = enum.auto()  # (= 2)  # Line weight in pixels
+    # ImPlot3DProp_FillColor,            /* original C++ signature */
     fill_color = (
         enum.auto()
-    )  # (= 2)  # Fill color (applies to shaded regions); IMPLOT3D_AUTO_COL will use next Colormap color
-    # ImPlot3DProp_FillAlpha,           /* original C++ signature */
-    fill_alpha = enum.auto()  # (= 3)  # Alpha multiplier (applies to FillColor and MarkerFillColor)
-    # ImPlot3DProp_Marker,              /* original C++ signature */
-    marker = enum.auto()  # (= 4)  # Marker type
-    # ImPlot3DProp_MarkerSize,          /* original C++ signature */
-    marker_size = enum.auto()  # (= 5)  # Size of markers (radius) *in pixels*
-    # ImPlot3DProp_MarkerLineColor,     /* original C++ signature */
-    marker_line_color = enum.auto()  # (= 6)  # Marker outline color; IMPLOT3D_AUTO_COL will use next LineColor
-    # ImPlot3DProp_MarkerFillColor,     /* original C++ signature */
-    marker_fill_color = enum.auto()  # (= 7)  # Marker fill color; IMPLOT3D_AUTO_COL will use LineColor
-    # ImPlot3DProp_Offset,              /* original C++ signature */
-    offset = enum.auto()  # (= 8)  # Data index offset
-    # ImPlot3DProp_Stride,              /* original C++ signature */
+    )  # (= 3)  # Fill color (applies to shaded regions); IMPLOT3D_AUTO_COL will use next Colormap color
+    # ImPlot3DProp_FillColors,           /* original C++ signature */
+    fill_colors = enum.auto()  # (= 4)  # Array of fill colors (ImU32*); if None, use FillColor for all
+    # ImPlot3DProp_FillAlpha,            /* original C++ signature */
+    fill_alpha = (
+        enum.auto()
+    )  # (= 5)  # Alpha multiplier (applies to FillColor, FillColors, MarkerFillColor, and MarkerFillColors)
+    # ImPlot3DProp_Marker,               /* original C++ signature */
+    marker = enum.auto()  # (= 6)  # Marker type
+    # ImPlot3DProp_MarkerSize,           /* original C++ signature */
+    marker_size = enum.auto()  # (= 7)  # Size of markers (radius) *in pixels*
+    # ImPlot3DProp_MarkerSizes,          /* original C++ signature */
+    marker_sizes = enum.auto()  # (= 8)  # Array of marker sizes (float*); if None, use MarkerSize for all
+    # ImPlot3DProp_MarkerLineColor,      /* original C++ signature */
+    marker_line_color = enum.auto()  # (= 9)  # Marker outline color; IMPLOT3D_AUTO_COL will use next LineColor
+    # ImPlot3DProp_MarkerLineColors,     /* original C++ signature */
+    marker_line_colors = (
+        enum.auto()
+    )  # (= 10)  # Array of marker outline colors (ImU32*); if None, use MarkerLineColor for all
+    # ImPlot3DProp_MarkerFillColor,      /* original C++ signature */
+    marker_fill_color = enum.auto()  # (= 11)  # Marker fill color; IMPLOT3D_AUTO_COL will use LineColor
+    # ImPlot3DProp_MarkerFillColors,     /* original C++ signature */
+    marker_fill_colors = (
+        enum.auto()
+    )  # (= 12)  # Array of marker fill colors (ImU32*); if None, use MarkerFillColor for all
+    # ImPlot3DProp_Offset,               /* original C++ signature */
+    offset = enum.auto()  # (= 13)  # Data index offset
+    # ImPlot3DProp_Stride,               /* original C++ signature */
     stride = (
         enum.auto()
-    )  # (= 9)  # Data stride in bytes; IMPLOT3D_AUTO will result in sizeof(T) where T is the type passed to PlotX
-    # ImPlot3DProp_Flags                /* original C++ signature */
+    )  # (= 14)  # Data stride in bytes; IMPLOT3D_AUTO will result in sizeof(T) where T is the type passed to PlotX
+    # ImPlot3DProp_Flags                 /* original C++ signature */
     flags = (
         enum.auto()
-    )  # (= 10)  # Optional item flags; can be composed from common ImPlot3DItemFlags and/or specialized ImPlot3DXFlags
+    )  # (= 15)  # Optional item flags; can be composed from common ImPlot3DItemFlags and/or specialized ImPlot3DXFlags
 
 class Flags_(enum.IntFlag):
     """Flags for ImPlot3D::BeginPlot()"""
@@ -254,15 +260,21 @@ class Col_(enum.IntFlag):
     # ImPlot3DCol_LegendText,       /* original C++ signature */
     legend_text = enum.auto()  # (= 7)  # Legend text color
     # Axis colors
-    # ImPlot3DCol_AxisText,     /* original C++ signature */
+    # ImPlot3DCol_AxisText,          /* original C++ signature */
     axis_text = enum.auto()  # (= 8)  # Axis label and tick lables color
-    # ImPlot3DCol_AxisGrid,     /* original C++ signature */
+    # ImPlot3DCol_AxisGrid,          /* original C++ signature */
     axis_grid = enum.auto()  # (= 9)  # Axis grid color
-    # ImPlot3DCol_AxisTick,     /* original C++ signature */
+    # ImPlot3DCol_AxisTick,          /* original C++ signature */
     axis_tick = enum.auto()  # (= 10)  # Axis tick color (defaults to AxisGrid)
+    # ImPlot3DCol_AxisBg,            /* original C++ signature */
+    axis_bg = enum.auto()  # (= 11)  # Background color of axis hover region (defaults to transparent)
+    # ImPlot3DCol_AxisBgHovered,     /* original C++ signature */
+    axis_bg_hovered = enum.auto()  # (= 12)  # Axis hover color (defaults to ImGuiCol_ButtonHovered)
+    # ImPlot3DCol_AxisBgActive,      /* original C++ signature */
+    axis_bg_active = enum.auto()  # (= 13)  # Axis active color (defaults to ImGuiCol_ButtonActive)
     # ImPlot3DCol_COUNT,    /* original C++ signature */
     # }
-    count = enum.auto()  # (= 11)
+    count = enum.auto()  # (= 14)
 
 class StyleVar_(enum.IntFlag):
     """Plot styling variables"""
@@ -624,7 +636,9 @@ class Spec:
         IMPLOT3D_AUTO_COL  # Fill color (applies to shaded regions); IMPLOT3D_AUTO_COL will use next Colormap color
     )
     # float FillAlpha = IMPLOT3D_AUTO;    /* original C++ signature */
-    fill_alpha: float = IMPLOT3D_AUTO  # Alpha multiplier (applies to FillColor and MarkerFillColor)
+    fill_alpha: float = (
+        IMPLOT3D_AUTO  # Alpha multiplier (applies to FillColor, FillColors, MarkerFillColor, and MarkerFillColors)
+    )
     # ImPlot3DMarker Marker = ImPlot3DMarker_Auto;    /* original C++ signature */
     marker: Marker = Marker_Auto  # Marker type
     # float MarkerSize = IMPLOT3D_AUTO;    /* original C++ signature */
@@ -672,6 +686,21 @@ class Spec:
                 * MarkerFillColor: IMPLOT3D_AUTO_COL
         """
         pass
+    line_colors: Optional[np.ndarray] = (
+        None  # array of colors (np.uint32) for each line. Must have the same length as the data arrays. If None, use LineColor for all lines.
+    )
+    fill_colors: Optional[np.ndarray] = (
+        None  # array of colors (np.uint32) for each fill. Must have the same length as the data arrays. If None, use FillColor for all fills.
+    )
+    marker_line_colors: Optional[np.ndarray] = (
+        None  # array of colors (np.uint32) for each marker edge. Must have the same length as the data arrays. If None, use MarkerLineColor for all markers.
+    )
+    marker_fill_colors: Optional[np.ndarray] = (
+        None  # array of colors (np.uint32) for each marker face. Must have the same length as the data arrays. If None, use MarkerFillColor for all markers.
+    )
+    marker_sizes: Optional[np.ndarray] = (
+        None  # array of sizes (np.float32) for each marker. Must have the same length as the data arrays. If None, use MarkerSize for all markers.
+    )
 
 # -----------------------------------------------------------------------------
 # [SECTION] Callbacks
@@ -1200,16 +1229,16 @@ def pop_style_color(count: int = 1) -> None:
     """Undo temporary style color modification(s). Undo multiple pushes at once by increasing count"""
     pass
 
-# IMPLOT3D_API void PushStyleVar(ImPlot3DStyleVar idx, float val);    /* original C++ signature */
-@overload
-def push_style_var(idx: StyleVar, val: float) -> None:
-    """Temporarily modify a style variable of float type. Don't forget to call PopStyleVar!"""
-    pass
-
 # IMPLOT3D_API void PushStyleVar(ImPlot3DStyleVar idx, int val);    /* original C++ signature */
 @overload
 def push_style_var(idx: StyleVar, val: int) -> None:
     """Temporarily modify a style variable of int type. Don't forget to call PopStyleVar!"""
+    pass
+
+# IMPLOT3D_API void PushStyleVar(ImPlot3DStyleVar idx, float val);    /* original C++ signature */
+@overload
+def push_style_var(idx: StyleVar, val: float) -> None:
+    """Temporarily modify a style variable of float type. Don't forget to call PopStyleVar!"""
     pass
 
 # IMPLOT3D_API void PushStyleVar(ImPlot3DStyleVar idx, const ImVec2& val);    /* original C++ signature */
@@ -1419,15 +1448,6 @@ class Point:
     #         IM_ASSERT(idx == 0 || idx == 1 || idx == 2);
     #         return ((double*)(void*)(char*)this)[idx];
     #     }
-    @overload
-    def __getitem__(self, idx: int) -> float:
-        """(private API)"""
-        pass
-    # double operator[](size_t idx) const {    /* original C++ signature */
-    #         IM_ASSERT(idx == 0 || idx == 1 || idx == 2);
-    #         return ((const double*)(const void*)(const char*)this)[idx];
-    #     }
-    @overload
     def __getitem__(self, idx: int) -> float:
         """(private API)"""
         pass
@@ -1436,27 +1456,25 @@ class Point:
     @overload
     def __mul__(self, rhs: float) -> Point:
         pass
-    # IMPLOT3D_API ImPlot3DPoint operator/(double rhs) const;    /* original C++ signature */
-    @overload
-    def __truediv__(self, rhs: float) -> Point:
-        pass
-    # IMPLOT3D_API ImPlot3DPoint operator+(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
-    def __add__(self, rhs: Point) -> Point:
-        pass
-    # IMPLOT3D_API ImPlot3DPoint operator-(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
-    @overload
-    def __sub__(self, rhs: Point) -> Point:
-        pass
     # IMPLOT3D_API ImPlot3DPoint operator*(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
     @overload
     def __mul__(self, rhs: Point) -> Point:
+        pass
+    # IMPLOT3D_API ImPlot3DPoint operator/(double rhs) const;    /* original C++ signature */
+    @overload
+    def __truediv__(self, rhs: float) -> Point:
         pass
     # IMPLOT3D_API ImPlot3DPoint operator/(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
     @overload
     def __truediv__(self, rhs: Point) -> Point:
         pass
+    # IMPLOT3D_API ImPlot3DPoint operator+(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
+    def __add__(self, rhs: Point) -> Point:
+        pass
+    # IMPLOT3D_API ImPlot3DPoint operator-(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
+    def __sub__(self, rhs: Point) -> Point:
+        pass
     # IMPLOT3D_API ImPlot3DPoint operator-() const;    /* original C++ signature */
-    @overload
     def __neg__(self) -> Point:
         """Unary operator"""
         pass
@@ -1465,9 +1483,17 @@ class Point:
     @overload
     def __imul__(self, rhs: float) -> Point:
         pass
+    # IMPLOT3D_API ImPlot3DPoint& operator*=(const ImPlot3DPoint& rhs);    /* original C++ signature */
+    @overload
+    def __imul__(self, rhs: Point) -> Point:
+        pass
     # IMPLOT3D_API ImPlot3DPoint& operator/=(double rhs);    /* original C++ signature */
     @overload
     def __itruediv__(self, rhs: float) -> Point:
+        pass
+    # IMPLOT3D_API ImPlot3DPoint& operator/=(const ImPlot3DPoint& rhs);    /* original C++ signature */
+    @overload
+    def __itruediv__(self, rhs: Point) -> Point:
         pass
     # IMPLOT3D_API ImPlot3DPoint& operator+=(const ImPlot3DPoint& rhs);    /* original C++ signature */
     def __iadd__(self, rhs: Point) -> Point:
@@ -1475,20 +1501,12 @@ class Point:
     # IMPLOT3D_API ImPlot3DPoint& operator-=(const ImPlot3DPoint& rhs);    /* original C++ signature */
     def __isub__(self, rhs: Point) -> Point:
         pass
-    # IMPLOT3D_API ImPlot3DPoint& operator*=(const ImPlot3DPoint& rhs);    /* original C++ signature */
-    @overload
-    def __imul__(self, rhs: Point) -> Point:
-        pass
-    # IMPLOT3D_API ImPlot3DPoint& operator/=(const ImPlot3DPoint& rhs);    /* original C++ signature */
-    @overload
-    def __itruediv__(self, rhs: Point) -> Point:
-        pass
     # Comparison operators
     # IMPLOT3D_API bool operator==(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
-    def __eq__(self, rhs: Point) -> bool:
+    def __eq__(self, rhs: object) -> bool:
         pass
     # IMPLOT3D_API bool operator!=(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
-    def __ne__(self, rhs: Point) -> bool:
+    def __ne__(self, rhs: object) -> bool:
         pass
     # IMPLOT3D_API double Dot(const ImPlot3DPoint& rhs) const;    /* original C++ signature */
     def dot(self, rhs: Point) -> float:
@@ -1698,21 +1716,21 @@ class Quat:
     def __mul__(self, rhs: Quat) -> Quat:
         """Quaternion multiplication"""
         pass
-    # IMPLOT3D_API ImPlot3DQuat& Normalize();    /* original C++ signature */
-    def normalize(self) -> Quat:
-        """Normalize the quaternion in place"""
-        pass
     # IMPLOT3D_API ImPlot3DPoint operator*(const ImPlot3DPoint& point) const;    /* original C++ signature */
     @overload
     def __mul__(self, point: Point) -> Point:
         """Rotate a 3D point using the quaternion"""
         pass
+    # IMPLOT3D_API ImPlot3DQuat& Normalize();    /* original C++ signature */
+    def normalize(self) -> Quat:
+        """Normalize the quaternion in place"""
+        pass
     # Comparison operators
     # IMPLOT3D_API bool operator==(const ImPlot3DQuat& rhs) const;    /* original C++ signature */
-    def __eq__(self, rhs: Quat) -> bool:
+    def __eq__(self, rhs: object) -> bool:
         pass
     # IMPLOT3D_API bool operator!=(const ImPlot3DQuat& rhs) const;    /* original C++ signature */
-    def __ne__(self, rhs: Quat) -> bool:
+    def __ne__(self, rhs: object) -> bool:
         pass
     # IMPLOT3D_API static ImPlot3DQuat Slerp(const ImPlot3DQuat& q1, const ImPlot3DQuat& q2, double t);    /* original C++ signature */
     @staticmethod
@@ -1821,7 +1839,7 @@ def setup_axis_ticks(
     n_ticks: int,
     labels: List[str] | None = None,
     keep_default: bool = False,
-):
+) -> None:
     pass
 
 # Sets an axis' ticks and optionally the labels for the next plot. To keep the default ticks, set #keep_default=true.
@@ -1832,7 +1850,7 @@ def setup_axis_ticks(
     values: List[float],
     labels: List[str] | None = None,
     keep_default: bool = False,
-):
+) -> None:
     pass
 
 # OBSOLETED in v0.4 (from February 2026)

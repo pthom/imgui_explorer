@@ -8,13 +8,137 @@
 # and is generally very close to the C++ version. Comments, docs are identical.
 ###############################################################################
 # ruff: noqa: F403, F405, B008
+# mypy: disable-error-code="overload-cannot-match, overload-overlap, call-arg"
 from typing import Any, Tuple, Optional, Callable, overload
 import enum
 import numpy as np
 
-from imgui_bundle.imgui import *
+# from imgui_bundle.imgui import *
+from imgui_bundle.imgui import (
+    ButtonFlags,
+    ChildFlags,
+    Col,
+    ColorEditFlags,
+    ComboFlags,
+    Cond,
+    ConfigFlags,
+    DataType,
+    Dir,
+    DockNodeFlags,
+    DragDropFlags,
+    HoveredFlags,
+    ID,
+    IM_COL32,
+    IO,
+    ImDrawCmd,
+    ImDrawData,
+    ImDrawFlags,
+    ImDrawList,
+    ImDrawListFlags,
+    ImDrawListSplitter,
+    ImFont,
+    ImFontAtlas,
+    ImFontAtlasRect,
+    ImFontBaked,
+    ImFontConfig,
+    ImFontFlags,
+    ImFontGlyph,
+    ImS16,
+    ImS32,
+    ImS64,
+    ImS8,
+    ImTextureData,
+    ImTextureFormat,
+    ImTextureID,
+    ImTextureRect,
+    ImTextureRef,
+    ImTextureStatus,
+    ImU16,
+    ImU32,
+    ImU64,
+    ImU8,
+    ImVec2,
+    ImVec2Like,
+    ImVec4,
+    ImVec4Like,
+    ImVector_ColorMod,
+    ImVector_FocusScopeData,
+    ImVector_GroupData,
+    ImVector_ID,
+    ImVector_ImDrawChannel,
+    ImVector_ImDrawList_ptr,
+    ImVector_ImTextureData_ptr,
+    ImVector_ImTextureRect,
+    ImVector_ImU32,
+    ImVector_ImVec2,
+    ImVector_InputEvent,
+    ImVector_ItemFlags,
+    ImVector_KeyRoutingData,
+    ImVector_ListClipperData,
+    ImVector_ListClipperRange,
+    ImVector_MultiSelectTempData,
+    ImVector_OldColumnData,
+    ImVector_OldColumns,
+    ImVector_PopupData,
+    ImVector_PtrOrIndex,
+    ImVector_SettingsHandler,
+    ImVector_ShrinkWidthItem,
+    ImVector_StackLevelInfo,
+    ImVector_StyleMod,
+    ImVector_TabItem,
+    ImVector_TableColumnSortSpecs,
+    ImVector_TableHeaderData,
+    ImVector_TableInstanceData,
+    ImVector_TableTempData,
+    ImVector_TreeNodeStackData,
+    ImVector_ViewportP_ptr,
+    ImVector_WindowStackData,
+    ImVector_Window_ptr,
+    ImVector_char,
+    ImVector_float,
+    ImVector_int,
+    ImVector_uchar,
+    ImWchar,
+    InputTextCallback,
+    InputTextFlags,
+    Key,
+    KeyChord,
+    KeyData,
+    ListClipper,
+    MouseButton,
+    MouseCursor,
+    MouseSource,
+    MultiSelectIO,
+    Payload,
+    PlatformIO,
+    PlatformImeData,
+    PlatformMonitor,
+    PopupFlags,
+    PopupFlags_,
+    SizeCallback,
+    SliderFlags,
+    SortDirection,
+    Storage,
+    StoragePair,
+    Style,
+    StyleVar,
+    TabBarFlags,
+    TabItemFlags,
+    TableColumnFlags,
+    TableColumnSortSpecs,
+    TableFlags,
+    TableSortSpecs,
+    TextBuffer,
+    TreeNodeFlags,
+    Viewport,
+    WindowClass,
+    WindowFlags,
+)
 
+ImVector_Window = ImVector_Window_ptr
 ImDrawTextFlags = int
+uchar = int
+char = str
 
 ##################################################
 #    Manually inserted code (typedefs, etc.)
@@ -387,21 +511,17 @@ def im_text_classifier_set_char_class(
 # - Wrapper for standard libs functions. (Note that imgui_demo.cpp does _not_ use them to keep the code easy to copy)
 # - ImMin/ImMax/ImClamp/ImLerp/ImSwap are used by widgets which support variety of types: signed/unsigned int/long long float/double
 # (Exceptionally using templates here but we could also redefine them for those types)
-# - Misc maths helpers
 # inline ImVec2 ImMin(const ImVec2& lhs, const ImVec2& rhs)               { return ImVec2(lhs.x < rhs.x ? lhs.x : rhs.x, lhs.y < rhs.y ? lhs.y : rhs.y); }    /* original C++ signature */
-@overload
 def im_min(lhs: ImVec2Like, rhs: ImVec2Like) -> ImVec2:
     """(private API)"""
     pass
 
 # inline ImVec2 ImMax(const ImVec2& lhs, const ImVec2& rhs)               { return ImVec2(lhs.x >= rhs.x ? lhs.x : rhs.x, lhs.y >= rhs.y ? lhs.y : rhs.y); }    /* original C++ signature */
-@overload
 def im_max(lhs: ImVec2Like, rhs: ImVec2Like) -> ImVec2:
     """(private API)"""
     pass
 
 # inline ImVec2 ImClamp(const ImVec2& v, const ImVec2&mn, const ImVec2&mx){ return ImVec2((v.x < mn.x) ? mn.x : (v.x > mx.x) ? mx.x : v.x, (v.y < mn.y) ? mn.y : (v.y > mx.y) ? mx.y : v.y); }    /* original C++ signature */
-@overload
 def im_clamp(v: ImVec2Like, mn: ImVec2Like, mx: ImVec2Like) -> ImVec2:
     """(private API)"""
     pass
@@ -424,6 +544,7 @@ def im_lerp(a: ImVec4Like, b: ImVec4Like, t: float) -> ImVec4:
     """(private API)"""
     pass
 
+# - Misc maths helpers
 # inline float  ImSaturate(float f)                                       { return (f < 0.0f) ? 0.0f : (f > 1.0f) ? 1.0f : f; }    /* original C++ signature */
 def im_saturate(f: float) -> float:
     """(private API)"""

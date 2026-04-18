@@ -14,7 +14,7 @@
 # noqa: E701
 # noqa: E702
 # noqa: E501
-# ruff: noqa: E701, E702
+# ruff: noqa: E701, E702, F811, B007
 
 # Help:
 # - Read FAQ at http://dearimgui.com/faq
@@ -109,7 +109,7 @@ from imgui_bundle import ImVec2, ImVec4
 import time
 import math
 import numpy as np
-from typing import Optional
+from typing import Any, Optional
 
 
 IMGUI_DISABLE_DEBUG_TOOLS = False  # or True, depending on your configuration
@@ -124,43 +124,43 @@ IMGUI_DISABLE_DEBUG_TOOLS = False  # or True, depending on your configuration
 def show_example_app_main_menu_bar():
     pass
 
-def show_example_app_console(p_open: bool) -> bool:
+def show_example_app_console(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_custom_rendering(p_open: bool) -> bool:
+def show_example_app_custom_rendering(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_dock_space(p_open: bool) -> bool:
+def show_example_app_dock_space(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_documents(p_open: bool) -> bool:
+def show_example_app_documents(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_log(p_open: bool) -> bool:
+def show_example_app_log(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_layout(p_open: bool) -> bool:
+def show_example_app_layout(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_property_editor(p_open: bool) -> bool:
+def show_example_app_property_editor(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_simple_overlay(p_open: bool) -> bool:
+def show_example_app_simple_overlay(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_auto_resize(p_open: bool) -> bool:
+def show_example_app_auto_resize(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_constrained_resize(p_open: bool) -> bool:
+def show_example_app_constrained_resize(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_fullscreen(p_open: bool) -> bool:
+def show_example_app_fullscreen(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_long_text(p_open: bool) -> bool:
+def show_example_app_long_text(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
-def show_example_app_window_titles(p_open: bool) -> bool:
+def show_example_app_window_titles(p_open: Optional[bool]) -> Optional[bool]:
     return True
 
 def show_demo_window_columns():
@@ -1352,7 +1352,7 @@ def show_demo_window_widgets():
         tint_col = imgui.get_style_color_vec4(imgui.Col_.text) if static.use_text_color_for_tint else (1.0, 1.0, 1.0, 1.0)
         border_col = imgui.get_style_color_vec4(imgui.Col_.border)
 
-        imgui.image_with_bg(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col)  # type: ignore
+        imgui.image_with_bg(my_tex_id, ImVec2(my_tex_w, my_tex_h), uv_min, uv_max, tint_col, border_col)
         if imgui.begin_item_tooltip():
             # Define the region for the zoomed tooltip
             region_sz = 32.0
@@ -1362,7 +1362,7 @@ def show_demo_window_widgets():
             imgui.text(f"Max: ({region_x + region_sz:.2f}, {region_y + region_sz:.2f})")
             uv0 = ImVec2((region_x) / my_tex_w, (region_y) / my_tex_h)
             uv1 = ImVec2((region_x + region_sz) / my_tex_w, (region_y + region_sz) / my_tex_h)
-            imgui.image_with_bg(my_tex_id, ImVec2(region_sz * 4.0, region_sz * 4.0), uv0, uv1, tint_col, border_col)  # type: ignore
+            imgui.image_with_bg(my_tex_id, ImVec2(region_sz * 4.0, region_sz * 4.0), uv0, uv1, tint_col, border_col)
             imgui.end_tooltip()
 
         # Textured buttons
@@ -1984,7 +1984,7 @@ def show_demo_window_widgets():
                 elif data.event_flag == imgui.InputTextFlags_.callback_edit:
                     # Toggle casing of first character
                     if data.buf_text_len > 0:
-                        c = data.buf[0]
+                        c = data.buf[0]  # type: ignore[index]
                         if c.isalpha():
                             # Toggle case by swapping
                             new_c = c.swapcase()
@@ -2150,7 +2150,7 @@ def show_demo_window_widgets():
                 static.lead_trail_tab_bar_flags &= ~(imgui.TabBarFlags_.fitting_policy_mask_ ^ imgui.TabBarFlags_.fitting_policy_shrink)
             changed, static.lead_trail_tab_bar_flags = imgui.checkbox_flags("ImGuiTabBarFlags_FittingPolicyScroll", static.lead_trail_tab_bar_flags, imgui.TabBarFlags_.fitting_policy_scroll)
             if changed:
-                static.lead_trail_tab_bar_flags &= ~(imgui.TabBarFlags_.fitting_policy_mask_ ^ imgui.TabBarFlags_.fitting_policy_scroll)  # type: ignore
+                static.lead_trail_tab_bar_flags &= ~(imgui.TabBarFlags_.fitting_policy_mask_ ^ imgui.TabBarFlags_.fitting_policy_scroll)
 
             if imgui.begin_tab_bar("MyTabBar", static.lead_trail_tab_bar_flags):
                 # Demo a Leading TabItemButton(): click the "?" button to open a menu
@@ -2230,7 +2230,7 @@ def show_demo_window_widgets():
 
         IMGUI_DEMO_MARKER("Widgets/Color/ColorEdit (HSV, with Alpha)")
         imgui.text("Color widget HSV with Alpha:")
-        _, static.color = imgui.color_edit4("MyColor##2", static.color, flags=imgui.ColorEditFlags_.display_hsv | misc_flags)  # type: ignore
+        _, static.color = imgui.color_edit4("MyColor##2", static.color, flags=imgui.ColorEditFlags_.display_hsv | misc_flags)
 
         IMGUI_DEMO_MARKER("Widgets/Color/ColorEdit (float display)")
         imgui.text("Color widget with Float Display:")
@@ -2252,7 +2252,7 @@ def show_demo_window_widgets():
         if not hasattr(static, "saved_palette"):
             static.saved_palette = []
             for n in range(32):
-                r, g, b = imgui.color_convert_hsv_to_rgb(n / 31.0, 0.8, 0.8, 0.0, 0.0, 0.0)
+                r, g, b = imgui.color_convert_hsv_to_rgb(n / 31.0, 0.8, 0.8)
                 static.saved_palette.append(ImVec4(r, g, b, 1.0))
 
         if not hasattr(static, "backup_color"): static.backup_color = ImVec4()
@@ -2304,7 +2304,7 @@ def show_demo_window_widgets():
         imgui.text("Color button only:")
         if not hasattr(static, "no_border"): static.no_border = False
         _, static.no_border = imgui.checkbox("ImGuiColorEditFlags_NoBorder", static.no_border)
-        imgui.color_button("MyColor##3c", static.color, misc_flags | (imgui.ColorEditFlags_.no_border if static.no_border else 0), (80, 80))  # type: ignore
+        imgui.color_button("MyColor##3c", static.color, misc_flags | (imgui.ColorEditFlags_.no_border if static.no_border else 0), (80, 80))
 
         IMGUI_DEMO_MARKER("Widgets/Color/ColorPicker")
         imgui.separator_text("Color picker")
@@ -2377,8 +2377,8 @@ def show_demo_window_widgets():
             "added benefit that you can manipulate hue values with the picker even when saturation or value are zero."
         )
         imgui.text("Color widget with InputHSV:")
-        _, static.color_hsv = imgui.color_edit4("HSV shown as RGB##1", static.color_hsv, imgui.ColorEditFlags_.display_rgb | imgui.ColorEditFlags_.input_hsv | imgui.ColorEditFlags_.float)   # type: ignore
-        _, static.color_hsv = imgui.color_edit4("HSV shown as HSV##1", static.color_hsv, imgui.ColorEditFlags_.display_hsv | imgui.ColorEditFlags_.input_hsv | imgui.ColorEditFlags_.float)   # type: ignore
+        _, static.color_hsv = imgui.color_edit4("HSV shown as RGB##1", static.color_hsv, imgui.ColorEditFlags_.display_rgb | imgui.ColorEditFlags_.input_hsv | imgui.ColorEditFlags_.float)
+        _, static.color_hsv = imgui.color_edit4("HSV shown as HSV##1", static.color_hsv, imgui.ColorEditFlags_.display_hsv | imgui.ColorEditFlags_.input_hsv | imgui.ColorEditFlags_.float)
         # imgui.drag_float4("Raw HSV values", static.color_hsv, 0.01, 0.0, 1.0)
 
         imgui.tree_pop()
@@ -2881,7 +2881,7 @@ def show_demo_window_widgets():
         if static.qw_test_window:
             visible, static.qw_test_window = imgui.begin("Title bar Hovered/Active tests", static.qw_test_window)
             if imgui.begin_popup_context_item():
-                if imgui.menu_item("Close")[0]:
+                if imgui.menu_item_simple("Close"):
                     static.qw_test_window = False
                 imgui.end_popup()
             imgui.text(
@@ -3406,11 +3406,11 @@ def show_demo_window_layout():
                 elif not (n % 5): label = "Buzz"
                 else: label = str(n)
                 hue = n * 0.05
-                r, g, b = imgui.color_convert_hsv_to_rgb(hue, 0.6, 0.6, 0, 0, 0)
+                r, g, b = imgui.color_convert_hsv_to_rgb(hue, 0.6, 0.6)
                 imgui.push_style_color(imgui.Col_.button, ImVec4(r, g, b, 1))
-                r2, g2, b2 = imgui.color_convert_hsv_to_rgb(hue, 0.7, 0.7, 0, 0, 0)
+                r2, g2, b2 = imgui.color_convert_hsv_to_rgb(hue, 0.7, 0.7)
                 imgui.push_style_color(imgui.Col_.button_hovered, ImVec4(r2, g2, b2, 1))
-                r3, g3, b3 = imgui.color_convert_hsv_to_rgb(hue, 0.8, 0.8, 0, 0, 0)
+                r3, g3, b3 = imgui.color_convert_hsv_to_rgb(hue, 0.8, 0.8)
                 imgui.push_style_color(imgui.Col_.button_active, ImVec4(r3, g3, b3, 1))
                 imgui.button(label, ImVec2(40.0 + math.sin(float(line + n)) * 20.0, 0.0))
                 imgui.pop_style_color(3)
@@ -3488,7 +3488,7 @@ def show_demo_window_layout():
                         imgui.tree_pop()
                     imgui.tree_pop()
                 if not hasattr(static, "hcsd_open"): static.hcsd_open = True
-                _, static.hcsd_open = imgui.collapsing_header("CollapsingHeader", static.hcsd_open)
+                _, static.hcsd_open = imgui.collapsing_header("CollapsingHeader", p_visible=static.hcsd_open)
             if static.hcsd_show_text_wrapped:
                 imgui.text_wrapped("This text should automatically wrap on the edge of the work rectangle.")
             if static.hcsd_show_columns:
@@ -3769,7 +3769,7 @@ def show_demo_window_popups():
             if imgui.selectable(names[n], selected_2 == n):
                 selected_2 = n
             if imgui.begin_popup_context_item():  # <-- use last item id as popup id
-                selected_2 = n   # type: ignore
+                selected_2 = n
                 imgui.text(f"This a popup for \"{names[n]}\"!")
                 if imgui.button("Close"):
                     imgui.close_current_popup()
@@ -4237,7 +4237,7 @@ class MyItem:
         self.quantity = quantity
 
     @staticmethod
-    def sort_with_sort_specs(sort_specs: imgui.TableSortSpecs, items: list) -> None:
+    def sort_with_sort_specs(sort_specs: imgui.TableSortSpecs, items: list[Any]) -> None:
         """Sort items list in-place according to sort_specs."""
         import functools
         def compare(a: "MyItem", b: "MyItem") -> int:
@@ -4649,7 +4649,7 @@ def show_demo_window_tables():
         _, static.cell_padding = imgui.slider_float2("CellPadding", static.cell_padding, 0.0, 10.0, "%.0f")
         pop_style_compact()
 
-        imgui.push_style_var(imgui.StyleVar_.cell_padding, static.cell_padding)  # type: ignore
+        imgui.push_style_var(imgui.StyleVar_.cell_padding, static.cell_padding)
         if imgui.begin_table("table_padding_2", 3, static.padding_flags2):
             if not hasattr(static, "text_bufs"):
                 static.text_bufs = ["" for _ in range(3 * 5)]  # Mini text storage for 3x5 cells
@@ -5677,8 +5677,8 @@ def show_demo_window_tables():
             static.adv_items = []
             for n in range(static.adv_items_count):
                 template_n = n % len(TEMPLATE_ITEMS_NAMES)
-                item = MyItem(n, TEMPLATE_ITEMS_NAMES[template_n], 10 if template_n == 3 else (20 if template_n == 4 else 0))
-                static.adv_items.append(item)
+                new_item = MyItem(n, TEMPLATE_ITEMS_NAMES[template_n], 10 if template_n == 3 else (20 if template_n == 4 else 0))
+                static.adv_items.append(new_item)
 
         parent_draw_list = imgui.get_window_draw_list()
         parent_draw_list_draw_cmd_count = parent_draw_list.cmd_buffer.size()
@@ -5914,7 +5914,7 @@ show_example_app_main_menu_bar = _show_example_app_main_menu_bar_impl
 # [SECTION] Example App: Auto Resize / ShowExampleAppAutoResize()
 # -----------------------------------------------------------------------------
 
-def _show_example_app_auto_resize_impl(p_open: bool) -> bool:
+def _show_example_app_auto_resize_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_auto_resize_impl
     visible, p_open = imgui.begin("Example: Auto-resizing window", p_open, imgui.WindowFlags_.always_auto_resize.value)
     if not visible:
@@ -5942,7 +5942,7 @@ show_example_app_auto_resize = _show_example_app_auto_resize_impl
 # [SECTION] Example App: Constrained Resize / ShowExampleAppConstrainedResize()
 # -----------------------------------------------------------------------------
 
-def _show_example_app_constrained_resize_impl(p_open: bool) -> bool:
+def _show_example_app_constrained_resize_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_constrained_resize_impl
     IMGUI_DEMO_MARKER("ShowExampleAppConstrainedResize")
 
@@ -6050,7 +6050,7 @@ show_example_app_constrained_resize = _show_example_app_constrained_resize_impl
 # [SECTION] Example App: Simple overlay / ShowExampleAppSimpleOverlay()
 # -----------------------------------------------------------------------------
 
-def _show_example_app_simple_overlay_impl(p_open: bool) -> bool:
+def _show_example_app_simple_overlay_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_simple_overlay_impl
     if not hasattr(static, "location"):
         static.location = 0
@@ -6122,7 +6122,7 @@ show_example_app_simple_overlay = _show_example_app_simple_overlay_impl
 # [SECTION] Example App: Fullscreen window / ShowExampleAppFullscreen()
 # -----------------------------------------------------------------------------
 
-def _show_example_app_fullscreen_impl(p_open: bool) -> bool:
+def _show_example_app_fullscreen_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_fullscreen_impl
     if not hasattr(static, "use_work_area"):
         static.use_work_area = True
@@ -6163,7 +6163,7 @@ show_example_app_fullscreen = _show_example_app_fullscreen_impl
 # [SECTION] Example App: Manipulating Window Titles / ShowExampleAppWindowTitles()
 # -----------------------------------------------------------------------------
 
-def _show_example_app_window_titles_impl(p_open: bool) -> bool:
+def _show_example_app_window_titles_impl(p_open: Optional[bool]) -> Optional[bool]:
     viewport = imgui.get_main_viewport()
     base_pos = viewport.pos
 
@@ -6196,7 +6196,7 @@ show_example_app_window_titles = _show_example_app_window_titles_impl
 # [SECTION] Example App: Long Text / ShowExampleAppLongText()
 # -----------------------------------------------------------------------------
 
-def _show_example_app_long_text_impl(p_open: bool) -> bool:
+def _show_example_app_long_text_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_long_text_impl
 
     imgui.set_next_window_size(ImVec2(520, 600), imgui.Cond_.first_use_ever.value)
@@ -6208,7 +6208,7 @@ def _show_example_app_long_text_impl(p_open: bool) -> bool:
 
     if not hasattr(static, "test_type"):
         static.test_type = 0
-        static.log_lines: list[str] = []
+        static.log_lines = []  # list[str]
 
     imgui.text("Printing unusually long amount of text.")
     _, static.test_type = imgui.combo(
@@ -6255,7 +6255,7 @@ show_example_app_long_text = _show_example_app_long_text_impl
 # [SECTION] Example App: Simple Layout / ShowExampleAppLayout()
 # -----------------------------------------------------------------------------
 
-def _show_example_app_layout_impl(p_open: bool) -> bool:
+def _show_example_app_layout_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_layout_impl
 
     imgui.set_next_window_size(ImVec2(500, 440), imgui.Cond_.first_use_ever.value)
@@ -6331,7 +6331,7 @@ class ExampleAppLog:
     def add_log(self, msg: str):
         self.lines.append(msg)
 
-    def draw(self, title: str, p_open: bool) -> bool:
+    def draw(self, title: str, p_open: Optional[bool]) -> Optional[bool]:
         visible, p_open = imgui.begin(title, p_open)
         if not visible:
             imgui.end()
@@ -6380,7 +6380,7 @@ class ExampleAppLog:
         return p_open
 
 
-def _show_example_app_log_impl(p_open: bool) -> bool:
+def _show_example_app_log_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_log_impl
     if not hasattr(static, "log"):
         static.log = ExampleAppLog()
@@ -6464,7 +6464,7 @@ class ExampleAppConsole:
     def text_edit_callback(self, data: imgui.InputTextCallbackData) -> int:
         if data.event_flag == imgui.InputTextFlags_.callback_completion.value:
             # Tab completion
-            word = data.buf[:data.cursor_pos].split()[-1] if data.buf[:data.cursor_pos].split() else ""
+            word = data.buf[:data.cursor_pos].split()[-1] if data.buf[:data.cursor_pos].split() else ""  # type: ignore[index]
             candidates = [c for c in self.commands if c.upper().startswith(word.upper())]
 
             if len(candidates) == 0:
@@ -6512,7 +6512,7 @@ class ExampleAppConsole:
 
         return 0
 
-    def draw(self, title: str, p_open: bool) -> bool:
+    def draw(self, title: str, p_open: Optional[bool]) -> Optional[bool]:
         imgui.set_next_window_size(ImVec2(520, 600), imgui.Cond_.first_use_ever.value)
         visible, p_open = imgui.begin(title, p_open)
         if not visible:
@@ -6623,11 +6623,12 @@ class ExampleAppConsole:
         return p_open
 
 
-def _show_example_app_console_impl(p_open: bool) -> bool:
+def _show_example_app_console_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_console_impl
     if not hasattr(static, "console"):
         static.console = ExampleAppConsole()
-    return static.console.draw("Example: Console", p_open)
+    console: ExampleAppConsole = static.console
+    return console.draw("Example: Console", p_open)
 
 show_example_app_console = _show_example_app_console_impl
 
@@ -6643,7 +6644,7 @@ def _path_concave_shape(draw_list, x: float, y: float, sz: float):
         draw_list.path_line_to(ImVec2(x + 0.5 + int(sz * px), y + 0.5 + int(sz * py)))
 
 
-def _show_example_app_custom_rendering_impl(p_open: bool) -> bool:
+def _show_example_app_custom_rendering_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_custom_rendering_impl
 
     visible, p_open = imgui.begin("Example: Custom rendering", p_open)
@@ -6787,7 +6788,7 @@ def _show_example_app_custom_rendering_impl(p_open: bool) -> bool:
         if imgui.begin_tab_item("Canvas")[0]:
             IMGUI_DEMO_MARKER("ShowExampleAppCustomRendering - Canvas")
             if not hasattr(static, "canvas_points"):
-                static.canvas_points: list[ImVec2] = []
+                static.canvas_points = []  # list[ImVec2]
                 static.canvas_scrolling = ImVec2(0.0, 0.0)
                 static.canvas_opt_enable_grid = True
                 static.canvas_opt_enable_context_menu = True
@@ -6927,7 +6928,7 @@ show_example_app_custom_rendering = _show_example_app_custom_rendering_impl
 # [SECTION] Example App: Docking, DockSpace / ShowExampleAppDockSpace()
 # -----------------------------------------------------------------------------
 
-def _show_example_app_dock_space_impl(p_open: bool) -> bool:
+def _show_example_app_dock_space_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_dock_space_impl
     if not hasattr(static, "keep_window_padding"):
         static.keep_window_padding = False
@@ -7008,13 +7009,13 @@ show_example_app_dock_space = _show_example_app_dock_space_impl
 class MyDocument:
     """Simplified structure to mimic a Document model."""
 
-    def __init__(self, uid: int, name: str, open_: bool = True, color: ImVec4 = ImVec4(1.0, 1.0, 1.0, 1.0)):
+    def __init__(self, uid: int, name: str, open_: bool = True, color: Optional[ImVec4] = None):
         self.uid = uid
         self.name = name
         self.open = open_
         self.open_prev = open_
         self.dirty = False
-        self.color = color
+        self.color = color if color is not None else ImVec4(1.0, 1.0, 1.0, 1.0)
 
     def do_open(self):
         self.open = True
@@ -7074,7 +7075,7 @@ class ExampleAppDocuments:
         imgui.set_next_item_shortcut(imgui.Key.mod_ctrl | imgui.Key.w, imgui.InputFlags_.tooltip.value)
         if imgui.button("Close"):
             self.close_queue.append(doc)
-        _, doc.color = imgui.color_edit3("color", doc.color)
+        _, doc.color = imgui.color_edit4("color", doc.color)
         imgui.pop_id()
 
     def display_doc_context_menu(self, doc: MyDocument):
@@ -7095,7 +7096,7 @@ class ExampleAppDocuments:
             doc.open_prev = doc.open
 
 
-def _show_example_app_documents_impl(p_open: bool) -> bool:
+def _show_example_app_documents_impl(p_open: Optional[bool]) -> Optional[bool]:
     static = _show_example_app_documents_impl
     if not hasattr(static, "app"):
         static.app = ExampleAppDocuments()
