@@ -3029,7 +3029,22 @@ def show_demo_window_maybe_docked(create_window: bool):
 
 
 def main():
-    immapp.run(show_demo_window, with_implot=True, with_markdown=True)
+    from imgui_bundle import immapp, imgui_md
+    def gui():
+        imgui_md.render_unindented("""
+        Below is `implot.show_demo_window()`
+
+        Open [Dear ImGui Explorer](https://pthom.github.io/imgui_explorer/) (online) for a more complete version,
+        with access to the source code for each demo.
+        """)
+        imgui.separator()
+        imgui.set_next_window_pos(imgui.get_cursor_pos())
+        imgui.set_next_window_size(imgui.get_content_region_avail())
+        imgui.begin("ImGui Demo##aaa", None, imgui.WindowFlags_.menu_bar | imgui.WindowFlags_.no_title_bar)
+        show_demo_window_maybe_docked(False)
+        imgui.end()
+
+    immapp.run(gui, window_size=(900, 900), with_markdown=True, with_implot=True)
 
 
 if __name__ == "__main__":
