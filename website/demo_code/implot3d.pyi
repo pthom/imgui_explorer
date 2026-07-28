@@ -7,6 +7,14 @@
 # It is automatically generated (using https://pthom.github.io/litgen/),
 # and is generally very close to the C++ version. Comments, docs are identical.
 ###############################################################################
+#
+# Note on plotting numpy arrays:
+#   ImPlot3D's plot functions are templated on a single numeric type, so every numpy array
+#   passed to one plot call must share the same dtype (e.g. do not mix an integer array
+#   with a float array). Convert to a common dtype first, e.g. xs = xs.astype(ys.dtype).
+#   Passing mismatched dtypes raises an explicit error.
+#   See https://github.com/pthom/imgui_bundle/issues/467
+#
 # ruff: noqa: B008, F821, F811
 from typing import Any, Optional, List, overload
 import numpy as np
@@ -148,6 +156,10 @@ ItemFlags_None = ItemFlags_.none
 
 # Fallback for ImGui versions before v1.92: define ImTextureRef as ImTextureID
 # You can `#define IMPLOT3D_NO_IMTEXTUREREF` to avoid this fallback
+# #if !defined(IMGUI_HAS_TEXTURES) && !defined(IMPLOT3D_NO_IMTEXTUREREF)
+#
+# #endif
+#
 
 # -----------------------------------------------------------------------------
 # [SECTION] Flags & Enumerations
@@ -676,7 +688,6 @@ class Spec:
     ) -> None:
         """Auto-generated default constructor with named params
 
-
         Python bindings defaults:
             If any of the params below is None, then its default value below will be used:
                 * LineColor: IMPLOT3D_AUTO_COL
@@ -799,7 +810,6 @@ def setup_axis_limits(axis: ImAxis3D, v_min: float, v_max: float, cond: Optional
     """Sets an axis range limits. If ImPlot3DCond_Always is used, the axis limits will be locked.
      Note: To invert an axis, use ImPlot3DAxisFlags_Invert with SetupAxis instead of swapping min/max
 
-
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
     """
@@ -835,7 +845,6 @@ def setup_axes_limits(
 ) -> None:
     """Sets the X/Y/Z axes range limits. If ImPlot3DCond_Always is used, the axes limits will be locked (shorthand for three calls to SetupAxisLimits)
 
-
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
     """
@@ -846,7 +855,6 @@ def setup_axes_limits(
 def setup_box_rotation(elevation: float, azimuth: float, animate: bool = False, cond: Optional[Cond] = None) -> None:
     """Sets the plot box rotation given the elevation and azimuth angles in degrees. If ImPlot3DCond_Always is used, the rotation will be locked
 
-
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
     """
@@ -856,7 +864,6 @@ def setup_box_rotation(elevation: float, azimuth: float, animate: bool = False, 
 @overload
 def setup_box_rotation(rotation: Quat, animate: bool = False, cond: Optional[Cond] = None) -> None:
     """Sets the plot box rotation given a quaternion. If ImPlot3DCond_Always is used, the rotation will be locked
-
 
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
@@ -896,7 +903,7 @@ def setup_legend(location: Location, flags: LegendFlags = 0) -> None:
 # The plotting API is provided below. Call these functions between
 # BeginPlot/EndPlot and after any Setup API calls.
 #
-# The templated functions are explicitly instantiated in implot3_items.cpp.
+# The templated functions are explicitly instantiated in implot3d_items.cpp.
 # They are not intended to be used generically with custom types. You will get
 # a linker error if you try! All functions support the following scalar types:
 #
@@ -904,13 +911,13 @@ def setup_legend(location: Location, flags: LegendFlags = 0) -> None:
 #
 # If you need to plot custom or non-homogenous data you have a few options:
 #
-# 1. If your data is a simple struct/class (e.g. Vector3), you can use striding.
+# 1. If your data is a simple struct/class (e.g. Vector3f), you can use striding.
 #    This is the most performant option if applicable.
 #
-#    struct Vector3 { float X, Y, Z; };
+#    struct Vector3f { float X, Y, Z; };
 #    ...
-#    Vector3 data[42];
-#    ImPlot3D::PlotLine("line", &data[0].X, &data[0].Y, &data[0].Z, 42, {ImPlot3DProp_Stride, sizeof(Vector2)});
+#    Vector3f data[42];
+#    ImPlot3D::PlotLine("line", &data[0].X, &data[0].Y, &data[0].Z, 42, {ImPlot3DProp_Stride, sizeof(Vector2f)});
 #
 # 2. If your data is in separate arrays or requires computation, you can copy/transform
 #    it into temporary float or double arrays before plotting.
@@ -922,6 +929,7 @@ def setup_legend(location: Location, flags: LegendFlags = 0) -> None:
 def plot_scatter(label_id: str, xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, spec: Optional[Spec] = None) -> None:
     """Plots a scatter plot in 3D. Points are rendered as markers at the specified coordinates
 
+    Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -932,6 +940,7 @@ def plot_scatter(label_id: str, xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, 
 def plot_line(label_id: str, xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, spec: Optional[Spec] = None) -> None:
     """Plots a line in 3D. Consecutive points are connected with line segments
 
+    Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -942,6 +951,7 @@ def plot_line(label_id: str, xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, spe
 def plot_triangle(label_id: str, xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, spec: Optional[Spec] = None) -> None:
     """Plots triangles in 3D. Every 3 consecutive points define a triangle
 
+    Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -952,6 +962,7 @@ def plot_triangle(label_id: str, xs: np.ndarray, ys: np.ndarray, zs: np.ndarray,
 def plot_quad(label_id: str, xs: np.ndarray, ys: np.ndarray, zs: np.ndarray, spec: Optional[Spec] = None) -> None:
     """Plots quads in 3D. Every 4 consecutive points define a quadrilateral
 
+    Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -989,6 +1000,7 @@ def plot_surface(
      A total of x_count * y_count vertices are expected for each array.
      Leave #scale_min and #scale_max both at 0 for automatic color scaling, or set them to a predefined range.
 
+    Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -1010,7 +1022,6 @@ class Mesh:
     # Mesh(std::vector<ImPlot3DPoint> Points = std::vector<ImPlot3DPoint>(), std::vector<UInt> Idx = std::vector<UInt>());    /* original C++ signature */
     def __init__(self, points: Optional[List[Point]] = None, idx: Optional[List[UInt]] = None) -> None:
         """Auto-generated default constructor with named params
-
 
         Python bindings defaults:
             If any of the params below is None, then its default value below will be used:
@@ -1052,7 +1063,6 @@ def plot_image(
      #uv0 and #uv1 define the texture mapping.
      #tint_col can be used to tint the image.
 
-
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
             * uv0: ImVec2(0, 0)
@@ -1087,7 +1097,6 @@ def plot_image(
      Note: The quad is internally split into two triangles, so non-rectangular quads may produce rendering artifacts
      since distortion is interpolated per triangle rather than over the full quad.
 
-
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
             * uv0: ImVec2(0, 0)
@@ -1105,7 +1114,6 @@ def plot_text(
 ) -> None:
     """Plots a centered text label at point x,y,z with optional rotation angle (in radians) and pixel offset
 
-
     Python bindings defaults:
         If pix_offset is None, then its default value will be: ImVec2(0, 0)
     """
@@ -1114,7 +1122,6 @@ def plot_text(
 # IMPLOT3D_API void PlotDummy(const char* label_id, const ImPlot3DSpec& spec = ImPlot3DSpec());    /* original C++ signature */
 def plot_dummy(label_id: str, spec: Optional[Spec] = None) -> None:
     """Plots a dummy item (can be used to modify legend entry appearance when called after plotting an item, or add a dummy legend entry)
-
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -1341,7 +1348,6 @@ def next_colormap_color() -> ImVec4:
 def get_colormap_size(cmap: Optional[Colormap] = None) -> int:
     """Returns the size of a colormap
 
-
     Python bindings defaults:
         If cmap is None, then its default value will be: IMPLOT3D_AUTO
     """
@@ -1350,7 +1356,6 @@ def get_colormap_size(cmap: Optional[Colormap] = None) -> int:
 # IMPLOT3D_API ImVec4 GetColormapColor(int idx, ImPlot3DColormap cmap = IMPLOT3D_AUTO);    /* original C++ signature */
 def get_colormap_color(idx: int, cmap: Optional[Colormap] = None) -> ImVec4:
     """Returns a color from a colormap given an index >= 0 (modulo will be performed)
-
 
     Python bindings defaults:
         If cmap is None, then its default value will be: IMPLOT3D_AUTO
@@ -1361,7 +1366,6 @@ def get_colormap_color(idx: int, cmap: Optional[Colormap] = None) -> ImVec4:
 def sample_colormap(t: float, cmap: Optional[Colormap] = None) -> ImVec4:
     """Sample a color from the current colormap given t between 0 and 1
 
-
     Python bindings defaults:
         If cmap is None, then its default value will be: IMPLOT3D_AUTO
     """
@@ -1370,7 +1374,7 @@ def sample_colormap(t: float, cmap: Optional[Colormap] = None) -> ImVec4:
 # -----------------------------------------------------------------------------
 # [SECTION] Demo
 # -----------------------------------------------------------------------------
-# Add implot3_demo.cpp to your sources to use methods in this section
+# Add implot3d_demo.cpp to your sources to use methods in this section
 
 # IMPLOT3D_API void ShowDemoWindow(bool* p_open = nullptr);    /* original C++ signature */
 def show_demo_window(p_open: Optional[bool] = None) -> Optional[bool]:
@@ -1552,7 +1556,6 @@ class Ray:
     def __init__(self, origin: Optional[Point] = None, direction: Optional[Point] = None) -> None:
         """Auto-generated default constructor with named params
 
-
         Python bindings defaults:
             If any of the params below is None, then its default value below will be used:
                 * Origin: Point()
@@ -1574,7 +1577,6 @@ class Plane:
     # ImPlot3DPlane(ImPlot3DPoint Point = ImPlot3DPoint(), ImPlot3DPoint Normal = ImPlot3DPoint());    /* original C++ signature */
     def __init__(self, point: Optional[Point] = None, normal: Optional[Point] = None) -> None:
         """Auto-generated default constructor with named params
-
 
         Python bindings defaults:
             If any of the params below is None, then its default value below will be used:

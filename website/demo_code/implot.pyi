@@ -7,6 +7,14 @@
 # It is automatically generated (using https://pthom.github.io/litgen/),
 # and is generally very close to the C++ version. Comments, docs are identical.
 ###############################################################################
+#
+# Note on plotting numpy arrays:
+#   ImPlot's plot functions are templated on a single numeric type, so every numpy array
+#   passed to one plot call must share the same dtype (e.g. do not mix an integer array
+#   with a float array). Convert to a common dtype first, e.g. xs = xs.astype(ys.dtype).
+#   Passing mismatched dtypes raises an explicit error.
+#   See https://github.com/pthom/imgui_bundle/issues/467
+#
 # ruff: noqa: B008, F821, F811
 from typing import Any, Optional, Tuple, List, overload
 import numpy as np
@@ -822,9 +830,13 @@ class Marker_(enum.IntFlag):
     plus = enum.auto()  # (= 8)  # a plus marker (not fill-able)
     # ImPlotMarker_Asterisk,      /* original C++ signature */
     asterisk = enum.auto()  # (= 9)  # a asterisk marker (not fill-able)
+    # ImPlotMarker_Vertical,       /* original C++ signature */
+    vertical = enum.auto()  # (= 10)  # a vertical line marker (not fill-able)
+    # ImPlotMarker_Horizontal,     /* original C++ signature */
+    horizontal = enum.auto()  # (= 11)  # a horizontal line marker (not fill-able)
     # ImPlotMarker_COUNT    /* original C++ signature */
     # }
-    count = enum.auto()  # (= 10)
+    count = enum.auto()  # (= 12)
 
 class Colormap_(enum.IntFlag):
     """Built-in colormaps"""
@@ -971,7 +983,6 @@ class Spec:
         flags: ItemFlags = ItemFlags_None,
     ) -> None:
         """Auto-generated default constructor with named params
-
 
         Python bindings defaults:
             If any of the params below is None, then its default value below will be used:
@@ -1264,7 +1275,6 @@ def begin_plot(title_id: str, size: Optional[ImVec2Like] = None, flags: Flags = 
      - #size is the **frame** size of the plot widget, not the plot area. The default
        size of plots (i.e. when ImVec2(0,0)) can be modified in your ImPlotStyle.
 
-
     Python bindings defaults:
         If size is None, then its default value will be: ImVec2(-1,0)
     """
@@ -1337,7 +1347,6 @@ class SubplotsRowColRatios:
     # SubplotsRowColRatios(std::vector<float> row_ratios = std::vector<float>(), std::vector<float> col_ratios = std::vector<float>());    /* original C++ signature */
     def __init__(self, row_ratios: Optional[List[float]] = None, col_ratios: Optional[List[float]] = None) -> None:
         """Auto-generated default constructor with named params
-
 
         Python bindings defaults:
             If any of the params below is None, then its default value below will be used:
@@ -1415,7 +1424,6 @@ def setup_axis(axis: ImAxis, label: Optional[str] = None, flags: AxisFlags = 0) 
 def setup_axis_limits(axis: ImAxis, v_min: float, v_max: float, cond: Optional[Cond] = None) -> None:
     """Sets an axis range limits. If ImPlotCond_Always is used, the axes limits will be locked. Inversion with v_min > v_max is not supported; use SetupAxisLimits instead.
 
-
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
     """
@@ -1458,7 +1466,6 @@ def setup_axes(x_label: str, y_label: str, x_flags: AxisFlags = 0, y_flags: Axis
 # IMPLOT_API void SetupAxesLimits(double x_min, double x_max, double y_min, double y_max, ImPlotCond cond = ImPlotCond_Once);    /* original C++ signature */
 def setup_axes_limits(x_min: float, x_max: float, y_min: float, y_max: float, cond: Optional[Cond] = None) -> None:
     """Sets the primary X and Y axes range limits. If ImPlotCond_Always is used, the axes limits will be locked (shorthand for two calls to SetupAxisLimits).
-
 
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
@@ -1509,7 +1516,6 @@ def setup_finish() -> None:
 def set_next_axis_limits(axis: ImAxis, v_min: float, v_max: float, cond: Optional[Cond] = None) -> None:
     """Sets an upcoming axis range limits. If ImPlotCond_Always is used, the axes limits will be locked.
 
-
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
     """
@@ -1533,7 +1539,6 @@ def set_next_axis_to_fit(axis: ImAxis) -> None:
 # IMPLOT_API void SetNextAxesLimits(double x_min, double x_max, double y_min, double y_max, ImPlotCond cond = ImPlotCond_Once);    /* original C++ signature */
 def set_next_axes_limits(x_min: float, x_max: float, y_min: float, y_max: float, cond: Optional[Cond] = None) -> None:
     """Sets the upcoming primary X and Y axes range limits. If ImPlotCond_Always is used, the axes limits will be locked (shorthand for two calls to SetupAxisLimits).
-
 
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
@@ -1562,13 +1567,13 @@ def set_next_axes_to_fit() -> None:
 #
 # If you need to plot custom or non-homogenous data you have a few options:
 #
-# 1. If your data is a simple struct/class (e.g. Vector2), you can use striding in your ImPlotSpec.
+# 1. If your data is a simple struct/class (e.g. Vector2f), you can use striding in your ImPlotSpec.
 #    This is the most performant option if applicable.
 #
-#    struct Vector2 { float X, Y; };
+#    struct Vector2f { float X, Y; };
 #    ...
-#    Vector2 data[42];
-#    ImPlot::PlotLine("line", &data[0].x, &data[0].y, 42, {ImPlotProp_Stride, sizeof(Vector2});
+#    Vector2f data[42];
+#    ImPlot::PlotLine("line", &data[0].x, &data[0].y, 42, {ImPlotProp_Stride, sizeof(Vector2f});
 #
 # 2. Write a custom getter C function or C++ lambda and pass it and optionally your data to
 #    an ImPlot function post-fixed with a G (e.g. PlotScatterG). This has a slight performance
@@ -1611,8 +1616,10 @@ def plot_line(
 # IMPLOT_TMP void PlotLine(const char* label_id, const T* xs, const T* ys, int count, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 @overload
 def plot_line(label_id: str, xs: np.ndarray, ys: np.ndarray, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1630,8 +1637,10 @@ def plot_scatter(
 # IMPLOT_TMP void PlotScatter(const char* label_id, const T* xs, const T* ys, int count, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 @overload
 def plot_scatter(label_id: str, xs: np.ndarray, ys: np.ndarray, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1646,16 +1655,20 @@ def plot_bubbles(
     xstart: float = 0,
     spec: Optional[Spec] = None,
 ) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
 # IMPLOT_TMP void PlotBubbles(const char* label_id, const T* xs, const T* ys, const T* szs, int count, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 @overload
 def plot_bubbles(label_id: str, xs: np.ndarray, ys: np.ndarray, szs: np.ndarray, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1663,6 +1676,7 @@ def plot_bubbles(label_id: str, xs: np.ndarray, ys: np.ndarray, szs: np.ndarray,
 def plot_polygon(label_id: str, xs: np.ndarray, ys: np.ndarray, spec: Optional[Spec] = None) -> None:
     """Plots a polygon. Points are specified in counter-clockwise order. If concave, make sure to set the Concave flag.
 
+    Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -1683,8 +1697,10 @@ def plot_stairs(
 # IMPLOT_TMP void PlotStairs(const char* label_id, const T* xs, const T* ys, int count, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 @overload
 def plot_stairs(label_id: str, xs: np.ndarray, ys: np.ndarray, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1707,16 +1723,20 @@ def plot_shaded(
 # IMPLOT_TMP void PlotShaded(const char* label_id, const T* xs, const T* ys, int count, double yref=0, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 @overload
 def plot_shaded(label_id: str, xs: np.ndarray, ys: np.ndarray, yref: float = 0, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
 # IMPLOT_TMP void PlotShaded(const char* label_id, const T* xs, const T* ys1, const T* ys2, int count, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 @overload
 def plot_shaded(label_id: str, xs: np.ndarray, ys1: np.ndarray, ys2: np.ndarray, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1734,8 +1754,10 @@ def plot_bars(
 # IMPLOT_TMP void PlotBars(const char* label_id, const T* xs, const T* ys, int count, double bar_size, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 @overload
 def plot_bars(label_id: str, xs: np.ndarray, ys: np.ndarray, bar_size: float, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1748,7 +1770,6 @@ def plot_bar_groups(
     """Plots a group of bars.
      - values should be a **1 dimension** numpy array of values.
      - label_ids should be a list of strings corresponding to bars labels
-
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -1764,8 +1785,10 @@ def plot_bar_groups(
 def plot_error_bars(
     label_id: str, xs: np.ndarray, ys: np.ndarray, err: np.ndarray, spec: Optional[Spec] = None
 ) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1774,8 +1797,10 @@ def plot_error_bars(
 def plot_error_bars(
     label_id: str, xs: np.ndarray, ys: np.ndarray, neg: np.ndarray, pos: np.ndarray, spec: Optional[Spec] = None
 ) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1793,15 +1818,16 @@ def plot_stems(
 # IMPLOT_TMP void PlotStems(const char* label_id, const T* xs, const T* ys, int count, double ref=0, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 @overload
 def plot_stems(label_id: str, xs: np.ndarray, ys: np.ndarray, ref: float = 0, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
 # IMPLOT_TMP void PlotInfLines(const char* label_id, const T* values, int count, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 def plot_inf_lines(label_id: str, values: np.ndarray, spec: Optional[Spec] = None) -> None:
     """Plots infinite vertical or horizontal lines (e.g. for references or asymptotes).
-
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -1837,7 +1863,6 @@ def plot_histogram(
     """Plots a horizontal histogram. #bins can be a positive integer or an ImPlotBin_ method. If #range is left unspecified, the min/max of #values will be used as the range.
      Otherwise, outlier values outside of the range are not binned. The largest bin count or density is returned.
 
-
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
             * range: Range()
@@ -1858,6 +1883,7 @@ def plot_histogram_2d(
     """Plots two dimensional, bivariate histogram as a heatmap. #x_bins and #y_bins can be a positive integer or an ImPlotBin. If #range is left unspecified, the min/max of
      #xs an #ys will be used as the ranges. Otherwise, outlier values outside of range are not binned. The largest bin count or density is returned.
 
+    Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
 
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
@@ -1869,8 +1895,10 @@ def plot_histogram_2d(
 # Plots digital data. Digital plots do not respond to y drag or zoom, and are always referenced to the bottom of the plot.
 # IMPLOT_TMP void PlotDigital(const char* label_id, const T* xs, const T* ys, int count, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 def plot_digital(label_id: str, xs: np.ndarray, ys: np.ndarray, spec: Optional[Spec] = None) -> None:
-    """Python bindings defaults:
-    If spec is None, then its default value will be: Spec()
+    """Note: all array arguments must share the same dtype (e.g. xs = xs.astype(ys.dtype)).
+
+    Python bindings defaults:
+        If spec is None, then its default value will be: Spec()
     """
     pass
 
@@ -1888,7 +1916,6 @@ def plot_image(
     spec: Optional[Spec] = None,
 ) -> None:
     """Plots an axis-aligned image. #bounds_min/bounds_max are in plot coordinates (y-up) and #uv0/uv1 are in texture coordinates (y-down).
-
 
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
@@ -1908,7 +1935,6 @@ def plot_text(
 ) -> None:
     """Plots a centered text label at point x,y with an optional pixel offset. Text color can be changed with ImPlot::PushStyleColor(ImPlotCol_InlayText, ...).
 
-
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
             * pix_offset: ImVec2(0,0)
@@ -1919,7 +1945,6 @@ def plot_text(
 # IMPLOT_API void PlotDummy(const char* label_id, const ImPlotSpec& spec=ImPlotSpec());    /* original C++ signature */
 def plot_dummy(label_id: str, spec: Optional[Spec] = None) -> None:
     """Plots a dummy item (i.e. adds a legend entry colored by ImPlotCol_Line)
-
 
     Python bindings defaults:
         If spec is None, then its default value will be: Spec()
@@ -2097,7 +2122,6 @@ def get_plot_size() -> ImVec2:
 def get_plot_mouse_pos(x_axis: Optional[ImAxis] = None, y_axis: Optional[ImAxis] = None) -> Point:
     """Returns the mouse position in x,y coordinates of the current plot. Passing IMPLOT_AUTO uses the current axes.
 
-
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
             * x_axis: IMPLOT_AUTO
@@ -2108,7 +2132,6 @@ def get_plot_mouse_pos(x_axis: Optional[ImAxis] = None, y_axis: Optional[ImAxis]
 # IMPLOT_API ImPlotRect GetPlotLimits(ImAxis x_axis = IMPLOT_AUTO, ImAxis y_axis = IMPLOT_AUTO);    /* original C++ signature */
 def get_plot_limits(x_axis: Optional[ImAxis] = None, y_axis: Optional[ImAxis] = None) -> Rect:
     """Returns the current plot axis range.
-
 
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
@@ -2141,7 +2164,6 @@ def is_plot_selected() -> bool:
 def get_plot_selection(x_axis: Optional[ImAxis] = None, y_axis: Optional[ImAxis] = None) -> Rect:
     """Returns the current plot box selection bounds. Passing IMPLOT_AUTO uses the current axes.
 
-
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
             * x_axis: IMPLOT_AUTO
@@ -2158,7 +2180,6 @@ def cancel_plot_selection() -> None:
 def hide_next_item(hidden: bool = True, cond: Optional[Cond] = None) -> None:
     """Hides or shows the next plot item (i.e. as if it were toggled from the legend).
      Use ImPlotCond_Always if you need to forcefully set this every frame.
-
 
     Python bindings defaults:
         If cond is None, then its default value will be: Cond_Once
@@ -2422,7 +2443,6 @@ def next_colormap_color() -> ImVec4:
 def get_colormap_size(cmap: Optional[Colormap] = None) -> int:
     """Returns the size of a colormap.
 
-
     Python bindings defaults:
         If cmap is None, then its default value will be: IMPLOT_AUTO
     """
@@ -2432,7 +2452,6 @@ def get_colormap_size(cmap: Optional[Colormap] = None) -> int:
 def get_colormap_color(idx: int, cmap: Optional[Colormap] = None) -> ImVec4:
     """Returns a color from a colormap given an index >= 0 (modulo will be performed).
 
-
     Python bindings defaults:
         If cmap is None, then its default value will be: IMPLOT_AUTO
     """
@@ -2441,7 +2460,6 @@ def get_colormap_color(idx: int, cmap: Optional[Colormap] = None) -> ImVec4:
 # IMPLOT_API ImVec4 SampleColormap(float t, ImPlotColormap cmap = IMPLOT_AUTO);    /* original C++ signature */
 def sample_colormap(t: float, cmap: Optional[Colormap] = None) -> ImVec4:
     """Sample a color from the current colormap given t between 0 and 1.
-
 
     Python bindings defaults:
         If cmap is None, then its default value will be: IMPLOT_AUTO
@@ -2460,7 +2478,6 @@ def colormap_scale(
 ) -> None:
     """Shows a vertical color scale with linear spaced ticks using the specified color map. Use double hashes to hide label (e.g. "##NoLabel"). If scale_min > scale_max, the scale to color mapping will be reversed.
 
-
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
             * size: ImVec2(0,0)
@@ -2474,7 +2491,6 @@ def colormap_slider(
 ) -> Tuple[bool, float]:
     """Shows a horizontal slider with a colormap gradient background. Optionally returns the color sampled at t in [0 1].
 
-
     Python bindings defaults:
         If cmap is None, then its default value will be: IMPLOT_AUTO
     """
@@ -2483,7 +2499,6 @@ def colormap_slider(
 # IMPLOT_API bool ColormapButton(const char* label, const ImVec2& size = ImVec2(0,0), ImPlotColormap cmap = IMPLOT_AUTO);    /* original C++ signature */
 def colormap_button(label: str, size: Optional[ImVec2Like] = None, cmap: Optional[Colormap] = None) -> bool:
     """Shows a button with a colormap gradient background.
-
 
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:
@@ -2605,7 +2620,6 @@ def show_demo_window_maybe_docked(
     window_size: Optional[ImVec2Like] = None,
 ) -> Optional[bool]:
     """Bundle: ShowDemoWindow_MaybeDocked is ShowDemoWindow, but can be used without creating an ImGui window.
-
 
     Python bindings defaults:
         If any of the params below is None, then its default value below will be used:

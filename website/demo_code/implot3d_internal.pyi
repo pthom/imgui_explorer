@@ -401,8 +401,12 @@ class Legend:
     location: Location
     # ImPlot3DLocation PreviousLocation;    /* original C++ signature */
     previous_location: Location
+    # ImVec2 Scroll;    /* original C++ signature */
+    scroll: ImVec2
     # ImRect Rect;    /* original C++ signature */
     rect: ImRect
+    # ImRect RectClamped;    /* original C++ signature */
+    rect_clamped: ImRect
     # bool Hovered;    /* original C++ signature */
     hovered: bool
     # bool Held;    /* original C++ signature */
@@ -412,6 +416,7 @@ class Legend:
     #         PreviousFlags = Flags = ImPlot3DLegendFlags_None;
     #         Hovered = Held = false;
     #         PreviousLocation = Location = ImPlot3DLocation_NorthWest;
+    #         Scroll = ImVec2(0, 0);
     #     }
     def __init__(self) -> None:
         pass
@@ -426,6 +431,8 @@ class Legend:
 
 class ItemGroup:
     """ Holds items"""
+    # ImGuiID ID;    /* original C++ signature */
+    id_: ID
     # ImPlot3DLegend Legend;    /* original C++ signature */
     legend: Legend
     # int ColormapIdx;    /* original C++ signature */
@@ -434,6 +441,7 @@ class ItemGroup:
     marker_idx: Marker
 
     # ImPlot3DItemGroup() {    /* original C++ signature */
+    #         ID = 0;
     #         ColormapIdx = 0;
     #         MarkerIdx = 0;
     #     }
@@ -1093,7 +1101,6 @@ class Context:
     # ImPlot3DContext(ImPlot3DNextItemData NextItemData = ImPlot3DNextItemData(), ImPlot3DStyle Style = ImPlot3DStyle(), ImPlot3DColormapData ColormapData = ImPlot3DColormapData());    /* original C++ signature */
     def __init__(self, next_item_data: Optional[NextItemData] = None, style: Optional[Style] = None, colormap_data: Optional[ColormapData] = None) -> None:
         """Auto-generated default constructor with named params
-
 
         Python bindings defaults:
             If any of the params below is None, then its default value below will be used:
