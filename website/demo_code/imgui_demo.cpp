@@ -1,4 +1,4 @@
-// dear imgui, v1.92.9
+// dear imgui, v1.93.0 WIP
 // (demo code)
 
 // Help:
@@ -87,6 +87,7 @@ Index of this file:
 // [SECTION] DemoWindowWidgetsImages()
 // [SECTION] DemoWindowWidgetsListBoxes()
 // [SECTION] DemoWindowWidgetsLiveEdit()
+// [SECTION] DemoWindowWidgetsMixedValues()
 // [SECTION] DemoWindowWidgetsMultiComponents()
 // [SECTION] DemoWindowWidgetsPlotting()
 // [SECTION] DemoWindowWidgetsProgressBars()
@@ -1842,7 +1843,7 @@ static void DemoWindowWidgetsDragAndDrop()
 
                 if (ImGui::IsItemActive() && !ImGui::IsItemHovered())
                 {
-                    int n_next = n + (ImGui::GetMouseDragDelta(0).y < 0.f ? -1 : 1);
+                    int n_next = n + (ImGui::GetMouseDragDelta(0).y < 0.0f ? -1 : 1);
                     if (n_next >= 0 && n_next < IM_COUNTOF(item_names))
                     {
                         item_names[n] = item_names[n_next];
@@ -2115,7 +2116,7 @@ static void DemoWindowWidgetsLiveEdit(ImGuiDemoWindowData* demo_data)
 {
     if (ImGui::TreeNode("Live Edit Flags"))
     {
-        IMGUI_DEMO_MARKER("Widgets/Live Edit Flgs");
+        IMGUI_DEMO_MARKER("Widgets/Live Edit Flags");
 
         ImGui::TextWrapped("Select whether to apply keyboard edits to backing variables _while_ typing.");
 
@@ -2140,6 +2141,65 @@ static void DemoWindowWidgetsLiveEdit(ImGuiDemoWindowData* demo_data)
         static float f = 0.0f;
         ImGui::SliderFloat("float", &f, 0.0f, 100.0f);
         ImGui::Text("Backing value: %f", f);
+
+        ImGui::TreePop();
+    }
+}
+
+//-----------------------------------------------------------------------------
+// [SECTION] DemoWindowWidgetsMixedValues()
+//-----------------------------------------------------------------------------
+
+static void DemoWindowWidgetsMixedValues()
+{
+    if (ImGui::TreeNode("Mixed Values"))
+    {
+        // This is designed for advanced property editors which are generally reusable and data-driven.
+        HelpMarker("Using ImGuiItemFlags_MixedValue.");
+
+        static bool use_liveedit = false;
+        static float items[3] = { 12.0f, 0.0f, 0.0f };
+        float* item_ref = &items[0];
+        ImGui::Checkbox("ImGuiItemFlags_LiveEditOnInput", &use_liveedit);
+
+        ImGui::SeparatorText("Scalar/Text Widgets");
+        const bool is_mixed = memcmp(&items[0], &items[1], sizeof(float)) != 0 || memcmp(&items[0], &items[2], sizeof(float)) != 0;
+
+        // Demonstrate Drags, Sliders, Inputs
+        ImGui::PushItemFlag(ImGuiItemFlags_LiveEditOnInput, use_liveedit);
+        ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, is_mixed);
+        bool edited = false;
+        edited |= ImGui::DragFloat("DragFloat", item_ref);
+        edited |= ImGui::SliderFloat("SliderFloat", item_ref, 0.0f, 100.0f);
+        edited |= ImGui::InputFloat("InputFloat", item_ref, 1.0f);
+        if (edited)
+            for (float& item : items)
+                if (&item != item_ref)
+                    item = *item_ref;
+        ImGui::PopItemFlag();
+
+        ImGui::Text("Underlying data:");
+        ImGui::InputFloat("item 0 (ref)", &items[0]);
+        ImGui::InputFloat("item 1", &items[1]);
+        ImGui::InputFloat("item 2", &items[2]);
+        ImGui::PopItemFlag();
+
+        // Demonstrate Checkbox(), RadioButton(), Combo(), ColorEdit4()
+        ImGui::SeparatorText("Others Widgets");
+        ImGui::Text("(note: edits are not applied in this demo)"); // <-- Would need more state tracking.
+        bool b_on = true, b_off = false;
+        ImGui::Checkbox("Checkbox On", &b_on);
+        ImGui::Checkbox("Checkbox Off", &b_off);
+        ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, true);
+        ImGui::Checkbox("Checkbox Mixed", &b_off);
+        ImGui::RadioButton("RadioButton Mixed", true);
+        ImGui::SameLine();
+        ImGui::RadioButton("RadioButton Mixed##2", true); // Showing 2 radio buttons makes the example more clear
+        int combo_idx = 0;
+        ImGui::Combo("Combo", &combo_idx, "One\0Two\0Three\0");
+        ImVec4 color(0.5f, 0.5f, 0.5f, 0.5f);
+        ImGui::ColorEdit4("ColorEdit4", &color.x);
+        ImGui::PopItemFlag();
 
         ImGui::TreePop();
     }
@@ -2296,7 +2356,7 @@ static void DemoWindowWidgetsProgressBars()
 
         char buf[32];
         sprintf(buf, "%d/%d", (int)(progress * 1753), 1753);
-        ImGui::ProgressBar(progress, ImVec2(0.f, 0.f), buf);
+        ImGui::ProgressBar(progress, ImVec2(0.0f, 0.0f), buf);
 
         // Pass an animated negative value, e.g. -1.0f * (float)ImGui::GetTime() is the recommended value.
         // Adjust the factor if you want to adjust the animation speed.
@@ -2325,12 +2385,14 @@ static void DemoWindowWidgetsQueryingStatuses()
         };
         static int item_type = 4;
         static bool item_disabled = false;
+        static bool item_mixedvalue = false;
         static bool liveedit_flags_override = false;
         static ImGuiItemFlags liveedit_flags = 0;
         ImGui::Combo("Item Type", &item_type, item_names, IM_COUNTOF(item_names), IM_COUNTOF(item_names));
         ImGui::SameLine();
         HelpMarker("Testing how various types of items are interacting with the IsItemXXX functions. Note that the bool return value of most ImGui function is generally equivalent to calling ImGui::IsItemHovered().");
         ImGui::Checkbox("Item Disabled", &item_disabled);
+        ImGui::Checkbox("Item MixedValue", &item_mixedvalue);
         ImGui::Checkbox("Override LiveEdit:", &liveedit_flags_override);
         ImGui::SameLine();
         if (!liveedit_flags_override)
@@ -2355,6 +2417,8 @@ static void DemoWindowWidgetsQueryingStatuses()
         static char str[16] = {};
         if (item_disabled)
             ImGui::BeginDisabled(true);
+        if (item_mixedvalue)
+            ImGui::PushItemFlag(ImGuiItemFlags_MixedValue, true);
         if (item_type == 0) { ImGui::Text("ITEM: Text"); }                                              // Testing text items with no identifier/interaction
         if (item_type == 1) { ret = ImGui::Button("ITEM: Button"); }                                    // Testing button
         if (item_type == 2) { ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true); ret = ImGui::Button("ITEM: Button"); ImGui::PopItemFlag(); } // Testing button (with repeater)
@@ -2438,6 +2502,8 @@ static void DemoWindowWidgetsQueryingStatuses()
             ImGui::PopItemFlag();
             ImGui::PopItemFlag();
         }
+        if (item_mixedvalue)
+            ImGui::PopItemFlag();
         if (item_disabled)
             ImGui::EndDisabled();
 
@@ -4615,6 +4681,7 @@ static void DemoWindowWidgets(ImGuiDemoWindowData* demo_data)
     DemoWindowWidgetsImages();
     DemoWindowWidgetsListBoxes();
     DemoWindowWidgetsLiveEdit(demo_data);
+    DemoWindowWidgetsMixedValues();
     DemoWindowWidgetsMultiComponents();
     DemoWindowWidgetsPlotting();
     DemoWindowWidgetsProgressBars();
@@ -5523,7 +5590,7 @@ static void DemoWindowLayout()
         ImGui::TreePop();
     }
 
-#if IMGUI_HAS_STACK_LAYOUT
+#ifdef IMGUI_HAS_STACK_LAYOUT
     if (ImGui::TreeNode("Stack Layout"))
     {
         IMGUI_DEMO_MARKER("Layout/Stack Layout");
@@ -9116,8 +9183,9 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
 
             Checkbox("Anti-aliased fill", &style.AntiAliasedFill);
             PushItemWidth(GetFontSize() * 8);
-            DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, 10.0f, "%.2f");
-            if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
+            DragFloat("Curve Tessellation Max Error", &style.CurveTessellationMaxError, 0.02f, 0.10f, 10.0f, "%.2f");
+            if (style.CurveTessellationMaxError < 0.10f)
+                style.CurveTessellationMaxError = 0.10f;
 
             // When editing the "Circle Segment Max Error" value, draw a preview of its effect on auto-tessellated circles.
             DragFloat("Circle Tessellation Max Error", &style.CircleTessellationMaxError , 0.005f, 0.10f, 5.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
@@ -9382,7 +9450,7 @@ struct ExampleAppConsole
     static int   Stricmp(const char* s1, const char* s2)         { int d; while ((d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; } return d; }
     static int   Strnicmp(const char* s1, const char* s2, int n) { int d = 0; while (n > 0 && (d = toupper(*s2) - toupper(*s1)) == 0 && *s1) { s1++; s2++; n--; } return d; }
     static char* Strdup(const char* s)                           { IM_ASSERT(s); size_t len = strlen(s) + 1; void* buf = ImGui::MemAlloc(len); IM_ASSERT(buf); return (char*)memcpy(buf, (const void*)s, len); }
-    static void  Strtrim(char* s)                                { char* str_end = s + strlen(s); while (str_end > s && str_end[-1] == ' ') str_end--; *str_end = 0; }
+    static void  Strtrimblanks(char* s)                          { char* str_end = s + strlen(s); while (str_end > s && str_end[-1] == ' ') str_end--; *str_end = 0; }
 
     void    ClearLog()
     {
@@ -9531,10 +9599,10 @@ struct ExampleAppConsole
         if (ImGui::InputText("Input", InputBuf, IM_COUNTOF(InputBuf), input_text_flags, &TextEditCallbackStub, (void*)this))
         {
             char* s = InputBuf;
-            Strtrim(s);
+            Strtrimblanks(s);
             if (s[0])
                 ExecCommand(s);
-            strcpy(s, "");
+            s[0] = 0;
             reclaim_focus = true;
         }
 
@@ -10556,6 +10624,7 @@ static void ShowExampleAppCustomRendering(bool* p_open)
         {
             IMGUI_DEMO_MARKER("Examples/Custom rendering/Primitives");
             ImGui::PushItemWidth(-ImGui::GetFontSize() * 15);
+            ImGui::PushItemFlag(ImGuiItemFlags_LiveEditOnInput, true);
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
             // Draw gradients
@@ -10582,7 +10651,7 @@ static void ShowExampleAppCustomRendering(bool* p_open)
 
             // Draw a bunch of primitives
             ImGui::Text("All primitives");
-            static float sz = 36.0f;
+            static float sz = 42.0f;
             static float thickness = 3.0f;
             static int ngon_sides = 6;
             static bool circle_segments_override = false;
@@ -10676,6 +10745,7 @@ static void ShowExampleAppCustomRendering(bool* p_open)
             x += sz + spacing;
 
             ImGui::Dummy(ImVec2((sz + spacing) * 13.2f, (sz + spacing) * 3.0f));
+            ImGui::PopItemFlag();
             ImGui::PopItemWidth();
             ImGui::EndTabItem();
         }

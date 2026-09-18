@@ -1,4 +1,4 @@
-// dear imgui, v1.92.9
+// dear imgui, v1.93.0 WIP
 // (headers)
 
 // Help:
@@ -29,13 +29,13 @@
 
 // Library Version
 // (Integer encoded as XYYZZ for use in #if preprocessor conditionals, e.g. '#if IMGUI_VERSION_NUM >= 12345')
-#define IMGUI_VERSION       "1.92.9"
-#define IMGUI_VERSION_NUM   19290
+#define IMGUI_VERSION       "1.93.0 WIP"
+#define IMGUI_VERSION_NUM   19297
 #define IMGUI_HAS_TABLE             // Added BeginTable() - from IMGUI_VERSION_NUM >= 18000
 #define IMGUI_HAS_TEXTURES          // Added ImGuiBackendFlags_RendererHasTextures - from IMGUI_VERSION_NUM >= 19198
 #define IMGUI_HAS_VIEWPORT          // In 'docking' WIP branch.
 #define IMGUI_HAS_DOCK              // In 'docking' WIP branch.
-#define IMGUI_HAS_STACK_LAYOUT      1 // Stack-Layout PR #846
+#define IMGUI_HAS_STACK_LAYOUT      // Stack-Layout PR #846
 
 
 //
@@ -43,48 +43,13 @@
 //
 // [ADAPT_IMGUI_BUNDLE]
 #ifdef IMGUI_BUNDLE_PYTHON_API
-#include <vector>   // Used *once* to make the FontAtlas api accessible on python
-#include <tuple>
-#include <optional>
-#include <functional>
-#include <string>
-#include <map>
-#include <cstdint>
-
-// ImGuiNpBuffer (specific to python Bindings)
-// An array of data shared between python and C++ as a numpy array (a one dimensional array of bytes)
-struct ImGuiNpBuffer
-{
-    uint8_t *   Data;
-    int         Size;
-};
-
+#include <functional>   // ImGuiInputTextCallback and ImGuiSizeCallback are std::function in the Python build
 #endif
 // IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API is always defined (even when building python bindings),
 // but is used as a marker to exclude certain functions from the python binding code.
 #define IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
 
 // [/ADAPT_IMGUI_BUNDLE]
-
-// [ADAPT_IMGUI_BUNDLE] utilities
-// - BundleHybridCallback: switches between function pointer and std::function
-// - BundleHybridStr: switches between const char* and std::string
-// - BundleHybridToChar: converts BundleHybridStr to const char*
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    // We need to use std::function for the python bindings
-    template <typename Func> using BundleHybridCallback = std::function<Func>;
-
-    using BundleHybridStr = std::string;
-    inline const char* BundleHybridToChar(const BundleHybridStr& str) { return str.c_str(); }
-#else
-    // else, we use function pointers
-    template <typename Func> using BundleHybridCallback = Func*;
-    using BundleHybridStr = const char*;
-    inline const char* BundleHybridToChar(const char * str) { return str; }
-#endif // IMGUI_BUNDLE_PYTHON_API
-#endif // IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-// [/ADAPT_IMGUI_BUNDLE] utilities
 
 /*
 Index of this file:
@@ -177,6 +142,16 @@ Index of this file:
 #else
 #define IM_MSVC_RUNTIME_CHECKS_OFF
 #define IM_MSVC_RUNTIME_CHECKS_RESTORE
+#endif
+
+// Alternative to using a .natstepfilter file or other scripts in misc/debuggers/ to skip debug-stepping selected trivial functions.
+// If you get a compiler error or warning related to use, please report it to us!
+#if (defined(__clang__) && (__clang_major__ >= 7)) || (defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)))
+#define IM_NODEBUGSTEP      [[gnu::artificial]]
+#elif defined(_MSC_VER) && (_MSC_VER >= 1915)
+#define IM_NODEBUGSTEP      __declspec(non_user_code)
+#else
+#define IM_NODEBUGSTEP
 #endif
 
 // Warnings
@@ -355,34 +330,24 @@ typedef void    (*ImGuiMemFreeFunc)(void* ptr, void* user_data);                
 IM_MSVC_RUNTIME_CHECKS_OFF
 struct ImVec2
 {
-    float                                   x, y;
-    constexpr ImVec2()                      : x(0.0f), y(0.0f) { }
-    constexpr ImVec2(float _x, float _y)    : x(_x), y(_y) { }
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-    float& operator[] (size_t idx)          { IM_ASSERT(idx == 0 || idx == 1); return ((float*)(void*)(char*)this)[idx]; } // We very rarely use this [] operator, so the assert overhead is fine.
-    float  operator[] (size_t idx) const    { IM_ASSERT(idx == 0 || idx == 1); return ((const float*)(const void*)(const char*)this)[idx]; }
-#endif
+    float x, y;
+    IM_NODEBUGSTEP constexpr inline ImVec2()                    : x(0.0f), y(0.0f) { }
+    IM_NODEBUGSTEP constexpr inline ImVec2(float _x, float _y)  : x(_x), y(_y) { }
+    float& operator[] (size_t idx)                              { IM_ASSERT(idx == 0 || idx == 1); return ((float*)(void*)(char*)this)[idx]; } // We very rarely use this [] operator, so the assert overhead is fine.
+    float  operator[] (size_t idx) const                        { IM_ASSERT(idx == 0 || idx == 1); return ((const float*)(const void*)(const char*)this)[idx]; }
 #ifdef IM_VEC2_CLASS_EXTRA
-    IM_VEC2_CLASS_EXTRA;     // Define additional constructors and implicit cast operators in imconfig.h to convert back and forth between your math types and ImVec2.
-#endif
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    std::map<std::string, float> to_dict() const { return {{"x", x}, {"y", y}}; }
-    static ImVec2 from_dict(const std::map<std::string, float>& d) { IM_ASSERT((d.find("x") != d.end()) && (d.find("y") != d.end()) && "ImVec2::from_dict dict should contain x and y keys"); return ImVec2(d.at("x"), d.at("y")); }
+    IM_VEC2_CLASS_EXTRA     // Define additional constructors and implicit cast operators in imconfig.h to convert back and forth between your math types and ImVec2.
 #endif
 };
 
 // ImVec4: 4D vector used to store clipping rectangles, colors etc. [Compile-time configurable type]
 struct ImVec4
 {
-    float                                                     x, y, z, w;
-    constexpr ImVec4()                                        : x(0.0f), y(0.0f), z(0.0f), w(0.0f) { }
-    constexpr ImVec4(float _x, float _y, float _z, float _w)  : x(_x), y(_y), z(_z), w(_w) { }
+    float x, y, z, w;
+    IM_NODEBUGSTEP constexpr inline ImVec4()                                        : x(0.0f), y(0.0f), z(0.0f), w(0.0f) { }
+    IM_NODEBUGSTEP constexpr inline ImVec4(float _x, float _y, float _z, float _w)  : x(_x), y(_y), z(_z), w(_w) { }
 #ifdef IM_VEC4_CLASS_EXTRA
-    IM_VEC4_CLASS_EXTRA;     // Define additional constructors and implicit cast operators in imconfig.h to convert back and forth between your math types and ImVec4.
-#endif
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    std::map<std::string, float> to_dict() const { return {{"x", x}, {"y", y}, {"z", z}, {"w", w}}; }
-    static ImVec4 from_dict(const std::map<std::string, float>& d) { IM_ASSERT((d.find("x") != d.end()) && (d.find("y") != d.end()) && (d.find("z") != d.end()) && (d.find("w") != d.end()) && "ImVec4::from_dict dict should contain x, y, z and w keys"); return ImVec4(d.at("x"), d.at("y"), d.at("z"), d.at("w")); }
+    IM_VEC4_CLASS_EXTRA     // Define additional constructors and implicit cast operators in imconfig.h to convert back and forth between your math types and ImVec4.
 #endif
 };
 IM_MSVC_RUNTIME_CHECKS_RESTORE
@@ -566,14 +531,7 @@ namespace ImGui
     IMGUI_API void          SetWindowPos(const char* name, const ImVec2& pos, ImGuiCond cond = 0);      // set named window position.
     IMGUI_API void          SetWindowSize(const char* name, const ImVec2& size, ImGuiCond cond = 0);    // set named window size. set axis to 0.0f to force an auto-fit on this axis.
     IMGUI_API void          SetWindowCollapsed(const char* name, bool collapsed, ImGuiCond cond = 0);   // set named window collapsed state
-
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
     IMGUI_API void          SetWindowFocus(const char* name);                                           // set named window to be focused / top-most. use NULL to remove focus.
-#endif
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API inline void          SetWindowFocus(std::optional<std::string> name)                                           // set named window to be focused / top-most. use NULL to remove focus.
-    { if (name.has_value()) SetWindowFocus(name.value()); else SetWindowFocus(NULL); }
-#endif
 
     // Windows Scrolling
     // - Any change of Scroll will be applied at the beginning of next frame in the first call to Begin().
@@ -605,13 +563,7 @@ namespace ImGui
     //  - CORRECT:   PushFont(NULL, style.FontSizeBase * 2.0f)  // use current unscaled size x2 == make text twice bigger
     //  - INCORRECT: PushFont(NULL, GetFontSize())              // INCORRECT! using size after global factors already applied == GLOBAL SCALING FACTORS WILL APPLY TWICE!
     //  - INCORRECT: PushFont(NULL, GetFontSize() * 2.0f)       // INCORRECT! using size after global factors already applied == GLOBAL SCALING FACTORS WILL APPLY TWICE!
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
     IMGUI_API void          PushFont(ImFont* font, float font_size_base_unscaled);          // Use NULL as a shortcut to keep current font. Use 0.0f to keep current size.
-#endif
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API void          PushFont(std::optional<ImFont*> font, float font_size_base_unscaled);          // Use None as a shortcut to keep current font. Use 0.0f to keep current size.
-#endif
-
     IMGUI_API void          PopFont();
     IMGUI_API ImFont*       GetFont();                                                      // get current font
     IMGUI_API float         GetFontSize();                                                  // get current scaled font size (= height in pixels). AFTER global scale factors applied. *IMPORTANT* DO NOT PASS THIS VALUE TO PushFont()! Use ImGui::GetStyle().FontSizeBase to get value before global scale factors.
@@ -789,16 +741,8 @@ namespace ImGui
     //   If you get a warning converting a float to ImGuiSliderFlags, read https://github.com/ocornut/imgui/issues/3361
     IMGUI_API bool          SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display.
     IMGUI_API bool          SliderFloat2(const char* label, float v[2], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API inline std::pair<bool, ImVec2>  SliderFloat2(const char* label, ImVec2 v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0)
-    { bool changed = SliderFloat2(label, (float*)&v, v_min, v_max, format, flags);  return { changed, v }; }
-#endif
     IMGUI_API bool          SliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
     IMGUI_API bool          SliderFloat4(const char* label, float v[4], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API inline std::pair<bool, ImVec4>  SliderFloat4(const char* label, ImVec4 v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0)
-    { bool changed = SliderFloat4(label, (float*)&v, v_min, v_max, format, flags);  return { changed, v }; }
-#endif
     IMGUI_API bool          SliderAngle(const char* label, float* v_rad, float v_degrees_min = -360.0f, float v_degrees_max = +360.0f, const char* format = "%.0f deg", ImGuiSliderFlags flags = 0);
     IMGUI_API bool          SliderInt(const char* label, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
     IMGUI_API bool          SliderInt2(const char* label, int v[2], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
@@ -818,16 +762,8 @@ namespace ImGui
     IMGUI_API bool          InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
     IMGUI_API bool          InputFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
     IMGUI_API bool          InputFloat2(const char* label, float v[2], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API inline std::pair<bool, ImVec2>  InputFloat2(const char* label, ImVec2 v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
-        { bool changed = InputFloat2(label, (float*)&v, format, flags);  return { changed, v }; }
-#endif
     IMGUI_API bool          InputFloat3(const char* label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
     IMGUI_API bool          InputFloat4(const char* label, float v[4], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API inline std::pair<bool, ImVec4>  InputFloat4(const char* label, ImVec4 v, const char* format = "%.3f", ImGuiInputTextFlags flags = 0)
-        { bool changed = InputFloat4(label, (float*)&v, format, flags);  return { changed, v }; }
-#endif
     IMGUI_API bool          InputInt(const char* label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
     IMGUI_API bool          InputInt2(const char* label, int v[2], ImGuiInputTextFlags flags = 0);
     IMGUI_API bool          InputInt3(const char* label, int v[3], ImGuiInputTextFlags flags = 0);
@@ -839,25 +775,10 @@ namespace ImGui
     // Widgets: Color Editor/Picker (tip: the ColorEdit* functions have a little color square that can be left-clicked to open a picker, and right-clicked to open an option menu.)
     // - Note that in C++ a 'float v[X]' function argument is the _same_ as 'float* v', the array syntax is just a way to document the number of elements that are expected to be accessible.
     // - You can pass the address of a first float element out of a contiguous structure, e.g. &myvector.x
-
     IMGUI_API bool          ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
     IMGUI_API bool          ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags = 0);
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API inline std::tuple<bool, ImVec4> ColorEdit4(const std::string& label, ImVec4 col, ImGuiColorEditFlags flags = 0)
-        {  bool changed = ColorEdit4(label.c_str(), (float*)&col, flags);  return { changed, col }; }
-    IMGUI_API inline std::tuple<bool, ImVec4> ColorEdit3(const std::string& label, ImVec4 col, ImGuiColorEditFlags flags = 0)
-        {  bool changed = ColorEdit3(label.c_str(), (float*)&col, flags);  return { changed, col }; }
-#endif
-
     IMGUI_API bool          ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
     IMGUI_API bool          ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
-
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API inline std::tuple<bool, ImVec4> ColorPicker3(const char* label, ImVec4 col, ImGuiColorEditFlags flags = 0)
-        { bool changed = ColorPicker3(label, (float*)&col, flags);  return { changed, col }; }
-    IMGUI_API std::tuple<bool, ImVec4> ColorPicker4(const std::string& label, ImVec4 col, ImGuiColorEditFlags flags = 0, std::optional<ImVec4> ref_col = std::nullopt);
-#endif
-
     IMGUI_API bool          ColorButton(const char* desc_id, const ImVec4& col, ImGuiColorEditFlags flags = 0, const ImVec2& size = ImVec2(0, 0)); // display a color square/button, hover for details, return true when pressed.
 
     // Widgets: Trees
@@ -882,15 +803,11 @@ namespace ImGui
     IMGUI_API void          SetNextItemStorageID(ImGuiID storage_id);                           // set id to use for open/close storage (default to same as item id).
     IMGUI_API bool          TreeNodeGetOpen(ImGuiID storage_id);                                // retrieve tree node open/close state.
 
-// [ADAPT_IMGUI_BUNDLE]
     // Widgets: Selectables
     // - A selectable highlights when hovered, and can display another color when selected.
     // - Neighbors selectable extend their highlight bounds in order to leave no gap between them. This is so a series of selected Selectable appear contiguous.
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
     IMGUI_API bool          Selectable(const char* label, bool selected = false, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0)); // "bool selected" carry the selection state (read-only). Selectable() is clicked is returns true so you can modify your selection state. size.x==0.0: use remaining width, size.x>0.0: specify width. size.y==0.0: use label height, size.y>0.0: specify height
-#endif
     IMGUI_API bool          Selectable(const char* label, bool* p_selected, ImGuiSelectableFlags flags = 0, const ImVec2& size = ImVec2(0, 0));      // "bool* p_selected" point to the selection state (read-write), as a convenient helper.
-// [/ADAPT_IMGUI_BUNDLE]
 
     // Multi-selection system for Selectable(), Checkbox(), TreeNode() functions [BETA]
     // - This enables standard multi-selection/range-selection idioms (Ctrl+Mouse/Keyboard, Shift+Mouse/Keyboard, etc.) in a way that also allow a clipper to be used.
@@ -940,20 +857,9 @@ namespace ImGui
     IMGUI_API bool          BeginMainMenuBar();                                                 // create and append to a full screen menu-bar.
     IMGUI_API void          EndMainMenuBar();                                                   // only call EndMainMenuBar() if BeginMainMenuBar() returns true!
     IMGUI_API bool          BeginMenu(const char* label, bool enabled = true);                  // create a sub-menu entry. only call EndMenu() if this returns true!
-
-    // [ADAPT_IMGUI_BUNDLE]
-
-    // only call EndMenu() if BeginMenu() returns true!
-    IMGUI_API void          EndMenu();
-
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
+    IMGUI_API void          EndMenu();                                                          // only call EndMenu() if BeginMenu() returns true!
     IMGUI_API bool          MenuItem(const char* label, const char* shortcut = NULL, bool selected = false, bool enabled = true);  // return true when activated.
-#endif
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    inline bool          MenuItemSimple(const char* label, const char* shortcut = NULL, bool selected = false, bool enabled = true) { return MenuItem(label, shortcut, selected, enabled); }
-#endif
     IMGUI_API bool          MenuItem(const char* label, const char* shortcut, bool* p_selected, bool enabled = true);              // return true when activated + toggle (*p_selected) if p_selected != NULL
-    // [/ADAPT_IMGUI_BUNDLE]
 
     // Tooltips
     // - Tooltips are windows following the mouse. They do not take focus away.
@@ -1093,9 +999,6 @@ namespace ImGui
     IMGUI_API bool          BeginTabBar(const char* str_id, ImGuiTabBarFlags flags = 0);        // create and append into a TabBar
     IMGUI_API void          EndTabBar();                                                        // only call EndTabBar() if BeginTabBar() returns true!
     IMGUI_API bool          BeginTabItem(const char* label, bool* p_open = NULL, ImGuiTabItemFlags flags = 0); // create a Tab. Returns true if the Tab is selected.
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API bool          BeginTabItemSimple(const char* label, ImGuiTabItemFlags flags = 0); // create a Tab (non-closable). Returns true if the Tab is selected.
-#endif
     IMGUI_API void          EndTabItem();                                                       // only call EndTabItem() if BeginTabItem() returns true!
     IMGUI_API bool          TabItemButton(const char* label, ImGuiTabItemFlags flags = 0);      // create a Tab behaving like a button. return true when clicked. cannot be selected in the tab bar.
     IMGUI_API void          SetTabItemClosed(const char* tab_or_docked_window_label);           // notify TabBar or Docking system of a closed tab/window ahead (useful to reduce visual flicker on reorderable tab bars). For tab-bar: call after BeginTabBar() and before Tab submissions. Otherwise call with a window name.
@@ -1268,7 +1171,7 @@ namespace ImGui
     // - Reminder ImGuiKey enum include access to mouse buttons and gamepad, so key ownership can apply to them.
     // - The return value of SetItemKeyOwner() says if ownership has been requested for the item, which is a shortcut to calling yet non-public TestKeyOwner() function.
     // - Many related features are still in imgui_internal.h. For instance, most IsKeyXXX()/IsMouseXXX() functions have an owner-id-aware version.
-    IMGUI_API bool          SetItemKeyOwner(ImGuiKey key);                                      // Set key owner to last item ID if it is hovered or active. Return true when ownership has been set. Roughly equivalent to 'if (TestKeyOwner(key, GetItemID()) && (IsItemHovered() || IsItemActive())) { SetKeyOwner(key, GetItemID());'. 
+    IMGUI_API bool          SetItemKeyOwner(ImGuiKey key);                                      // Set key owner to last item ID if it is hovered or active. Return true when ownership has been set. Roughly equivalent to 'if (TestKeyOwner(key, GetItemID()) && (IsItemHovered() || IsItemActive())) { SetKeyOwner(key, GetItemID());'.
 
     // Inputs Utilities: Mouse
     // - To refer to a mouse button, you may use named enums in your code e.g. ImGuiMouseButton_Left, ImGuiMouseButton_Right.
@@ -1440,6 +1343,17 @@ enum ImGuiItemFlags_
     ImGuiItemFlags_LiveEditOnInputText      = 1 << 7,   // true     // InputText: apply keyboard edits to backing value while typing. Otherwise, edits are applied when validating, tabbing out or losing focus.
     ImGuiItemFlags_LiveEditOnInputScalar    = 1 << 8,   // false    // DragXXX, SliderXXX, InputScalar: apply keyboard edits to backing value while typing. Otherwise, edits are applied when validating, tabbing out or losing focus.
     ImGuiItemFlags_LiveEditOnInput          = ImGuiItemFlags_LiveEditOnInputText | ImGuiItemFlags_LiveEditOnInputScalar,
+
+    //---------------------------------------------------------------------------------
+    // [BETA] MixedValue mode used to represent a mixed/indeterminate state, typically for multi-selection.
+    // - Replace value display with "-" or a custom label.
+    // - Enter key validation apply an edit and return true even if value hasn't changed (in order to apply to all).
+    // - Supported by selected widgets: Checkbox, RadioButton, Sliders, Drags, Inputs, Combo.
+    // - Note: InputText-side Undo cannot be reliably combined with MixedValue + LiveEdit On:
+    //   - Both the initial edit and subsequent undo/revert will typically make your app code write to all backing objects.
+    //   - If you use MixedMode and the simplest solution is to ensure LiveEdit is off but widgets where this applies.
+    //---------------------------------------------------------------------------------
+    ImGuiItemFlags_MixedValue               = 1 << 9,   // false    // [BETA] Represent a mixed/indeterminate value. Replace value label with "-" and apply edits on validation.
 };
 
 // Flags for ImGui::InputText()
@@ -2397,12 +2311,6 @@ struct ImGuiTableSortSpecs
     bool                        SpecsDirty;     // Set to true when specs have changed since last time! Use this to sort again, then clear the flag.
 
     ImGuiTableSortSpecs()       { memset((void*)this, 0, sizeof(*this)); }
-
-// [ADAPT_IMGUI_BUNDLE]
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API const ImGuiTableColumnSortSpecs& GetSpecs(size_t idx) const;
-#endif
-// [/ADAPT_IMGUI_BUNDLE]
 };
 
 // Sorting specification for one column of a table (sizeof == 12 bytes)
@@ -2414,13 +2322,6 @@ struct ImGuiTableColumnSortSpecs
     ImGuiSortDirection          SortDirection;      // ImGuiSortDirection_Ascending or ImGuiSortDirection_Descending
 
     ImGuiTableColumnSortSpecs() { memset((void*)this, 0, sizeof(*this)); }
-
-    // [ADAPT_IMGUI_BUNDLE]
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    inline IMGUI_API ImGuiSortDirection GetSortDirection() { return SortDirection; }
-    inline IMGUI_API void SetSortDirection(ImGuiSortDirection direction) { SortDirection = direction; }
-#endif
-    // [/ADAPT_IMGUI_BUNDLE]
 };
 
 //-----------------------------------------------------------------------------
@@ -2467,8 +2368,6 @@ IM_MSVC_RUNTIME_CHECKS_OFF
 template<typename T>
 struct ImVector
 {
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-// [ADAPT_IMGUI_BUNDLE]: raw members are not published
     int                 Size;
     int                 Capacity;
     T*                  Data;
@@ -2477,47 +2376,29 @@ struct ImVector
     typedef T                   value_type;
     typedef value_type*         iterator;
     typedef const value_type*   const_iterator;
-// [/ADAPT_IMGUI_BUNDLE]
-#endif
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    size_t DataAddress()  { return (size_t)(Data); }
-#endif
 
+    // Constructors, destructor
     inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }
     inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }
     inline ImVector<T>& operator=(const ImVector<T>& src)   { clear(); resize(src.Size); if (Data && src.Data) memcpy(Data, src.Data, (size_t)Size * sizeof(T)); return *this; }
     inline ~ImVector()                                      { if (Data) IM_FREE(Data); } // Important: does not destruct anything
 
-    // Important: does not destruct anything
-    inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-// [ADAPT_IMGUI_BUNDLE]: clear_delete is not published
-    // Important: never called automatically! always explicit.
-    inline void         clear_delete()                      { for (int n = 0; n < Size; n++) IM_DELETE(Data[n]); clear(); }
-// [/ADAPT_IMGUI_BUNDLE]
-#endif
-    // Important: never called automatically! always explicit.
-    inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }
+    inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }  // Important: does not destruct anything
+    inline void         clear_delete()                      { for (int n = 0; n < Size; n++) IM_DELETE(Data[n]); clear(); }     // Important: never called automatically! always explicit.
+    inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }           // Important: never called automatically! always explicit.
 
     inline bool         empty() const                       { return Size == 0; }
     inline int          size() const                        { return Size; }
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-// [ADAPT_IMGUI_BUNDLE]: unpublished methods
     inline int          size_in_bytes() const               { return Size * (int)sizeof(T); }
     inline int          max_size() const                    { return 0x7FFFFFFF / (int)sizeof(T); }
     inline int          capacity() const                    { return Capacity; }
-// [/ADAPT_IMGUI_BUNDLE]
-#endif
+    IM_NODEBUGSTEP inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }
+    IM_NODEBUGSTEP inline const T&  operator[](int i) const { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }
 
-    inline const T&     operator[](int i) const             { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }
-    inline T&           operator[](int i)                   { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }
-
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-// [ADAPT_IMGUI_BUNDLE]: unpublished methods
-    inline T*           begin()                             { return Data; }
-    inline const T*     begin() const                       { return Data; }
-    inline T*           end()                               { return Data + Size; }
-    inline const T*     end() const                         { return Data + Size; }
+    IM_NODEBUGSTEP inline T* begin() { return Data; }
+    IM_NODEBUGSTEP inline const T* begin() const { return Data; }
+    IM_NODEBUGSTEP inline T* end() { return Data + Size; }
+    IM_NODEBUGSTEP inline const T* end() const { return Data + Size; }
     inline T&           front()                             { IM_ASSERT(Size > 0); return Data[0]; }
     inline const T&     front() const                       { IM_ASSERT(Size > 0); return Data[0]; }
     inline T&           back()                              { IM_ASSERT(Size > 0); return Data[Size - 1]; }
@@ -2530,16 +2411,11 @@ struct ImVector
     inline void         shrink(int new_size)                { IM_ASSERT(new_size <= Size); Size = new_size; } // Resize a vector to a smaller size, guaranteed not to cause a reallocation
     inline void         reserve(int new_capacity)           { if (new_capacity <= Capacity) return; T* new_data = (T*)IM_ALLOC((size_t)new_capacity * sizeof(T)); if (Data) { memcpy(new_data, Data, (size_t)Size * sizeof(T)); IM_FREE(Data); } Data = new_data; Capacity = new_capacity; }
     inline void         reserve_discard(int new_capacity)   { if (new_capacity <= Capacity) return; if (Data) IM_FREE(Data); Data = (T*)IM_ALLOC((size_t)new_capacity * sizeof(T)); Capacity = new_capacity; }
-// [/ADAPT_IMGUI_BUNDLE]
-#endif
 
     // NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
     inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }
     inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }
     inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }
-
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-// [ADAPT_IMGUI_BUNDLE]: unpublished methods
     inline T*           erase(const T* it)                  { IM_ASSERT(it >= Data && it < Data + Size); const ptrdiff_t off = it - Data; memmove(Data + off, Data + off + 1, ((size_t)Size - (size_t)off - 1) * sizeof(T)); Size--; return Data + off; }
     inline T*           erase(const T* it, const T* it_last){ IM_ASSERT(it >= Data && it < Data + Size && it_last >= it && it_last <= Data + Size); const ptrdiff_t count = it_last - it; const ptrdiff_t off = it - Data; memmove(Data + off, Data + off + count, ((size_t)Size - (size_t)off - (size_t)count) * sizeof(T)); Size -= (int)count; return Data + off; }
     inline T*           erase_unsorted(const T* it)         { IM_ASSERT(it >= Data && it < Data + Size);  const ptrdiff_t off = it - Data; if (it < Data + Size - 1) memcpy(Data + off, Data + Size - 1, sizeof(T)); Size--; return Data + off; }
@@ -2551,8 +2427,6 @@ struct ImVector
     inline bool         find_erase(const T& v)              { const T* it = find(v); if (it < Data + Size) { erase(it); return true; } return false; }
     inline bool         find_erase_unsorted(const T& v)     { const T* it = find(v); if (it < Data + Size) { erase_unsorted(it); return true; } return false; }
     inline int          index_from_ptr(const T* it) const   { IM_ASSERT(it >= Data && it < Data + Size); const ptrdiff_t off = it - Data; return (int)off; }
-// [/ADAPT_IMGUI_BUNDLE]
-#endif
 };
 IM_MSVC_RUNTIME_CHECKS_RESTORE
 
@@ -2616,7 +2490,7 @@ struct ImGuiStyle
     ImGuiTreeNodeFlags TreeLinesFlags;      // Default way to draw lines connecting TreeNode hierarchy. ImGuiTreeNodeFlags_DrawLinesNone or ImGuiTreeNodeFlags_DrawLinesFull or ImGuiTreeNodeFlags_DrawLinesToNodes.
     float       TreeLinesSize;              // Thickness of outlines when using ImGuiTreeNodeFlags_DrawLines.
     float       TreeLinesRounding;          // Radius of lines connecting child nodes to the vertical line.
-    float       MenuItemRounding;           // Radius of MenuItem, BeginMenu rounding. 
+    float       MenuItemRounding;           // Radius of MenuItem, BeginMenu rounding.
     float       SelectableRounding;         // Radius of Selectable rounding. MODIFYING THIS IS DISCOURAGED. CONTIGUOUS SELECTIONS WILL NOT LOOK RIGHT. (#7589)
     float       DragDropTargetRounding;     // Radius of the drag and drop target frame. When <0.0f: use FrameRounding.
     float       DragDropTargetBorderSize;   // Thickness of the drag and drop target border.
@@ -2635,10 +2509,12 @@ struct ImGuiStyle
     bool        DockingNodeHasCloseButton;  // Docking node has their own CloseButton() to close all docked windows.
     float       DockingSeparatorSize;       // Thickness of resizing border between docked windows
     float       MouseCursorScale;           // Scale software rendered mouse cursor (when io.MouseDrawCursor is enabled). We apply per-monitor DPI scaling over this scale. May be removed later.
+
+    // Rendering & Tessellation
     bool        AntiAliasedLines;           // Enable anti-aliased lines/borders. Disable if you are really tight on CPU/GPU. Latched at the beginning of the frame (copied to ImDrawList).
     bool        AntiAliasedLinesUseTex;     // Enable anti-aliased lines/borders using textures where possible. Require backend to render with bilinear filtering (NOT point/nearest filtering). Latched at the beginning of the frame (copied to ImDrawList).
     bool        AntiAliasedFill;            // Enable anti-aliased edges around filled shapes (rounded rectangles, circles, etc.). Disable if you are really tight on CPU/GPU. Latched at the beginning of the frame (copied to ImDrawList).
-    float       CurveTessellationTol;       // Tessellation tolerance when using PathBezierCurveTo() without a specific number of segments. Decrease for highly tessellated curves (higher quality, more polygons), increase to reduce quality.
+    float       CurveTessellationMaxError;  // Maximum error (in pixels) when using PathBezierCurveTo() without a specific number of segments. Decrease for highly tessellated curves (higher quality, more polygons), increase to reduce quality.
     float       CircleTessellationMaxError; // Maximum error (in pixels) allowed when using AddCircle()/AddCircleFilled() or drawing rounded corner rectangles with no explicit segment count specified. Decrease for higher quality but more geometry.
 
     // Colors
@@ -2656,20 +2532,13 @@ struct ImGuiStyle
     float       _MainScale;                 // FIXME-WIP: Reference scale, as applied by ScaleAllSizes(). PLEASE DO NOT USE THIS FOR NOW.
     float       _NextFrameFontSizeBase;     // FIXME: Temporary hack until we finish remaining work.
 
-    // [ADAPT_IMGUI_BUNDLE]
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    // python adapter for ImGuiStyle::Colors[ImGuiCol_COUNT]
-    // You can query and modify those values (0 <= idxColor < Col_.count)
-    inline IMGUI_API  ImVec4& Color_(size_t idxColor) { IM_ASSERT( (idxColor >=0) && (idxColor < ImGuiCol_COUNT)); return Colors[idxColor]; }
-    inline IMGUI_API  void SetColor_(size_t idxColor, ImVec4 color) { IM_ASSERT( (idxColor >=0) && (idxColor < ImGuiCol_COUNT)); Colors[idxColor] = color; }
-#endif
-    // [/ADAPT_IMGUI_BUNDLE]
-
-    IMGUI_API ImGuiStyle();
+    // Functions
+    IMGUI_API   ImGuiStyle();
     IMGUI_API   void ScaleAllSizes(float scale_factor); // Scale all spacing/padding/thickness values. Do not scale fonts. See comments in definition. Consider not calling this if your initial scale factor if <1.0.
 
     // Obsolete names
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+    float       CurveTessellationTol;       // [OBSOLETE] Old CurveTessellationTol = New CurveTessellationMaxError*CurveTessellationMaxError. // Changed in 1.93.0
     // TabMinWidthForCloseButton = TabCloseButtonMinWidthUnselected // Renamed in 1.91.9.
 #endif
 };
@@ -2708,21 +2577,10 @@ struct ImGuiIO
     ImVec2      DisplayFramebufferScale;        // = (1, 1)         // Main display density. For retina display where window coordinates are different from framebuffer coordinates. This will affect font density + will end up in ImDrawData::FramebufferScale.
     float       DeltaTime;                      // = 1.0f/60.0f     // Time elapsed since last frame, in seconds. May change every frame.
     float       IniSavingRate;                  // = 5.0f           // Minimum time between saving positions/sizes to .ini file, in seconds.
-#if 0 // #ifdef IMGUI_BUNDLE_IMGUI_USE_STRING
-    // Abandoned effort to use std::string in imgui core.
-    // Did lead to very tricky bugs because with older libc++
-    // memset(0, ..) on ImGuiIO would produce a corrupt string!
-    // (ImGui does this a lot for many of its structures to initialize them)
-    std::string LogFilename;                    // = "imgui_log.txt"// Path to .log file (default parameter to ImGui::LogToFile when no file is specified).
-    std::string IniFilename;                       // = "imgui.ini"    // Path to .ini file (important: default "imgui.ini" is relative to current working dir!). Set NULL to disable automatic .ini loading/saving or if you want to manually call LoadIniSettingsXXX() / SaveIniSettingsXXX() functions.
-#else
-    #ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-    const char* LogFilename;                    // = "imgui_log.txt"// Path to .log file (default parameter to ImGui::LogToFile when no file is specified).
     const char* IniFilename;                    // = "imgui.ini"    // Path to .ini file (important: default "imgui.ini" is relative to current working dir!). Set NULL to disable automatic .ini loading/saving or if you want to manually call LoadIniSettingsXXX() / SaveIniSettingsXXX() functions.
-    #endif
-#endif
-
+    const char* LogFilename;                    // = "imgui_log.txt"// Path to .log file (default parameter to ImGui::LogToFile when no file is specified).
     void*       UserData;                       // = NULL           // Store your own data.
+
     // Font system
     ImFontAtlas*Fonts;                          // <auto>           // Font atlas: load, rasterize and pack one or more fonts into a single texture.
     ImFont*     FontDefault;                    // = NULL           // Font to use on NewFrame(). Use NULL to uses Fonts->Fonts[0].
@@ -2962,22 +2820,6 @@ struct ImGuiIO
 #endif
 
     IMGUI_API   ImGuiIO();
-
-    // [ADAPT_IMGUI_BUNDLE]
-
-    #ifdef IMGUI_BUNDLE_PYTHON_API
-
-    // - The disk functions are automatically called if IniFilename != None
-    // - Set IniFilename to None to load/save manually. Read io.WantSaveIniSettings description about handling .ini saving manually.
-    // - Important: default value "imgui.ini" is relative to current working dir! Most apps will want to lock this to an absolute path (e.g. same path as executables).
-    IMGUI_API void SetIniFilename(std::optional<const char*> filename);
-
-    IMGUI_API std::string GetIniFilename() const;
-
-    IMGUI_API void SetLogFilename(const char* filename);
-    IMGUI_API std::string GetLogFilename() const;
-    #endif
-    // [/ADAPT_IMGUI_BUNDLE]
 };
 
 //-----------------------------------------------------------------------------
@@ -3081,7 +2923,6 @@ struct ImGuiPayload
     bool IsDataType(const char* type) const { return DataFrameCount != -1 && strcmp(type, DataType) == 0; }
     bool IsPreview() const                  { return Preview; }
     bool IsDelivery() const                 { return Delivery; }
-
 };
 
 //-----------------------------------------------------------------------------
@@ -3281,41 +3122,41 @@ struct ImGuiListClipper
 #define IMGUI_DEFINE_MATH_OPERATORS_IMPLEMENTED
 IM_MSVC_RUNTIME_CHECKS_OFF
 // ImVec2 operators
-inline ImVec2  operator*(const ImVec2& lhs, const float rhs)    { return ImVec2(lhs.x * rhs, lhs.y * rhs); }
-inline ImVec2  operator*(const float lhs, const ImVec2& rhs)    { return ImVec2(lhs * rhs.x, lhs * rhs.y); }
-inline ImVec2  operator/(const ImVec2& lhs, const float rhs)    { return ImVec2(lhs.x / rhs, lhs.y / rhs); }
-inline ImVec2  operator+(const ImVec2& lhs, const ImVec2& rhs)  { return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y); }
-inline ImVec2  operator-(const ImVec2& lhs, const ImVec2& rhs)  { return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y); }
-inline ImVec2  operator*(const ImVec2& lhs, const ImVec2& rhs)  { return ImVec2(lhs.x * rhs.x, lhs.y * rhs.y); }
-inline ImVec2  operator/(const ImVec2& lhs, const ImVec2& rhs)  { return ImVec2(lhs.x / rhs.x, lhs.y / rhs.y); }
-inline ImVec2  operator+(const ImVec2& lhs)                     { return lhs; }
-inline ImVec2  operator-(const ImVec2& lhs)                     { return ImVec2(-lhs.x, -lhs.y); }
-inline ImVec2& operator*=(ImVec2& lhs, const float rhs)         { lhs.x *= rhs; lhs.y *= rhs; return lhs; }
-inline ImVec2& operator/=(ImVec2& lhs, const float rhs)         { lhs.x /= rhs; lhs.y /= rhs; return lhs; }
-inline ImVec2& operator+=(ImVec2& lhs, const ImVec2& rhs)       { lhs.x += rhs.x; lhs.y += rhs.y; return lhs; }
-inline ImVec2& operator-=(ImVec2& lhs, const ImVec2& rhs)       { lhs.x -= rhs.x; lhs.y -= rhs.y; return lhs; }
-inline ImVec2& operator*=(ImVec2& lhs, const ImVec2& rhs)       { lhs.x *= rhs.x; lhs.y *= rhs.y; return lhs; }
-inline ImVec2& operator/=(ImVec2& lhs, const ImVec2& rhs)       { lhs.x /= rhs.x; lhs.y /= rhs.y; return lhs; }
-inline bool    operator==(const ImVec2& lhs, const ImVec2& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
-inline bool    operator!=(const ImVec2& lhs, const ImVec2& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y; }
+IM_NODEBUGSTEP inline ImVec2  operator*(const ImVec2& lhs, const float rhs)    { return ImVec2(lhs.x * rhs, lhs.y * rhs); }
+IM_NODEBUGSTEP inline ImVec2  operator*(const float lhs, const ImVec2& rhs)    { return ImVec2(lhs * rhs.x, lhs * rhs.y); }
+IM_NODEBUGSTEP inline ImVec2  operator/(const ImVec2& lhs, const float rhs)    { return ImVec2(lhs.x / rhs, lhs.y / rhs); }
+IM_NODEBUGSTEP inline ImVec2  operator+(const ImVec2& lhs, const ImVec2& rhs)  { return ImVec2(lhs.x + rhs.x, lhs.y + rhs.y); }
+IM_NODEBUGSTEP inline ImVec2  operator-(const ImVec2& lhs, const ImVec2& rhs)  { return ImVec2(lhs.x - rhs.x, lhs.y - rhs.y); }
+IM_NODEBUGSTEP inline ImVec2  operator*(const ImVec2& lhs, const ImVec2& rhs)  { return ImVec2(lhs.x * rhs.x, lhs.y * rhs.y); }
+IM_NODEBUGSTEP inline ImVec2  operator/(const ImVec2& lhs, const ImVec2& rhs)  { return ImVec2(lhs.x / rhs.x, lhs.y / rhs.y); }
+IM_NODEBUGSTEP inline ImVec2  operator+(const ImVec2& lhs)                     { return lhs; }
+IM_NODEBUGSTEP inline ImVec2  operator-(const ImVec2& lhs)                     { return ImVec2(-lhs.x, -lhs.y); }
+IM_NODEBUGSTEP inline ImVec2& operator*=(ImVec2& lhs, const float rhs)         { lhs.x *= rhs; lhs.y *= rhs; return lhs; }
+IM_NODEBUGSTEP inline ImVec2& operator/=(ImVec2& lhs, const float rhs)         { lhs.x /= rhs; lhs.y /= rhs; return lhs; }
+IM_NODEBUGSTEP inline ImVec2& operator+=(ImVec2& lhs, const ImVec2& rhs)       { lhs.x += rhs.x; lhs.y += rhs.y; return lhs; }
+IM_NODEBUGSTEP inline ImVec2& operator-=(ImVec2& lhs, const ImVec2& rhs)       { lhs.x -= rhs.x; lhs.y -= rhs.y; return lhs; }
+IM_NODEBUGSTEP inline ImVec2& operator*=(ImVec2& lhs, const ImVec2& rhs)       { lhs.x *= rhs.x; lhs.y *= rhs.y; return lhs; }
+IM_NODEBUGSTEP inline ImVec2& operator/=(ImVec2& lhs, const ImVec2& rhs)       { lhs.x /= rhs.x; lhs.y /= rhs.y; return lhs; }
+IM_NODEBUGSTEP inline bool    operator==(const ImVec2& lhs, const ImVec2& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y; }
+IM_NODEBUGSTEP inline bool    operator!=(const ImVec2& lhs, const ImVec2& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y; }
 // ImVec4 operators
-inline ImVec4  operator*(const ImVec4& lhs, const float rhs)    { return ImVec4(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs); }
-inline ImVec4  operator*(const float lhs, const ImVec4& rhs)    { return ImVec4(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w); }
-inline ImVec4  operator/(const ImVec4& lhs, const float rhs)    { return ImVec4(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs, lhs.w / rhs); }
-inline ImVec4  operator+(const ImVec4& lhs, const ImVec4& rhs)  { return ImVec4(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w); }
-inline ImVec4  operator-(const ImVec4& lhs, const ImVec4& rhs)  { return ImVec4(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w); }
-inline ImVec4  operator*(const ImVec4& lhs, const ImVec4& rhs)  { return ImVec4(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w); }
-inline ImVec4  operator/(const ImVec4& lhs, const ImVec4& rhs)  { return ImVec4(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w); }
-inline ImVec4  operator+(const ImVec4& lhs)                     { return lhs; }
-inline ImVec4  operator-(const ImVec4& lhs)                     { return ImVec4(-lhs.x, -lhs.y, -lhs.z, -lhs.w); }
-inline ImVec4& operator*=(ImVec4& lhs, const float rhs)         { lhs.x *= rhs; lhs.y *= rhs; lhs.z *= rhs; lhs.w *= rhs; return lhs; }
-inline ImVec4& operator/=(ImVec4& lhs, const float rhs)         { lhs.x /= rhs; lhs.y /= rhs; lhs.z /= rhs; lhs.w /= rhs; return lhs; }
-inline ImVec4& operator+=(ImVec4& lhs, const ImVec4& rhs)       { lhs.x += rhs.x; lhs.y += rhs.y; lhs.z += rhs.z; lhs.w += rhs.w; return lhs; }
-inline ImVec4& operator-=(ImVec4& lhs, const ImVec4& rhs)       { lhs.x -= rhs.x; lhs.y -= rhs.y; lhs.z -= rhs.z; lhs.w -= rhs.w; return lhs; }
-inline ImVec4& operator*=(ImVec4& lhs, const ImVec4& rhs)       { lhs.x *= rhs.x; lhs.y *= rhs.y; lhs.z *= rhs.z; lhs.w *= rhs.w; return lhs; }
-inline ImVec4& operator/=(ImVec4& lhs, const ImVec4& rhs)       { lhs.x /= rhs.x; lhs.y /= rhs.y; lhs.z /= rhs.z; lhs.w /= rhs.w; return lhs; }
-inline bool    operator==(const ImVec4& lhs, const ImVec4& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w; }
-inline bool    operator!=(const ImVec4& lhs, const ImVec4& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z || lhs.w != rhs.w; }
+IM_NODEBUGSTEP inline ImVec4  operator*(const ImVec4& lhs, const float rhs)    { return ImVec4(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs, lhs.w * rhs); }
+IM_NODEBUGSTEP inline ImVec4  operator*(const float lhs, const ImVec4& rhs)    { return ImVec4(lhs * rhs.x, lhs * rhs.y, lhs * rhs.z, lhs * rhs.w); }
+IM_NODEBUGSTEP inline ImVec4  operator/(const ImVec4& lhs, const float rhs)    { return ImVec4(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs, lhs.w / rhs); }
+IM_NODEBUGSTEP inline ImVec4  operator+(const ImVec4& lhs, const ImVec4& rhs)  { return ImVec4(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w); }
+IM_NODEBUGSTEP inline ImVec4  operator-(const ImVec4& lhs, const ImVec4& rhs)  { return ImVec4(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w); }
+IM_NODEBUGSTEP inline ImVec4  operator*(const ImVec4& lhs, const ImVec4& rhs)  { return ImVec4(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w); }
+IM_NODEBUGSTEP inline ImVec4  operator/(const ImVec4& lhs, const ImVec4& rhs)  { return ImVec4(lhs.x / rhs.x, lhs.y / rhs.y, lhs.z / rhs.z, lhs.w / rhs.w); }
+IM_NODEBUGSTEP inline ImVec4  operator+(const ImVec4& lhs)                     { return lhs; }
+IM_NODEBUGSTEP inline ImVec4  operator-(const ImVec4& lhs)                     { return ImVec4(-lhs.x, -lhs.y, -lhs.z, -lhs.w); }
+IM_NODEBUGSTEP inline ImVec4& operator*=(ImVec4& lhs, const float rhs)         { lhs.x *= rhs; lhs.y *= rhs; lhs.z *= rhs; lhs.w *= rhs; return lhs; }
+IM_NODEBUGSTEP inline ImVec4& operator/=(ImVec4& lhs, const float rhs)         { lhs.x /= rhs; lhs.y /= rhs; lhs.z /= rhs; lhs.w /= rhs; return lhs; }
+IM_NODEBUGSTEP inline ImVec4& operator+=(ImVec4& lhs, const ImVec4& rhs)       { lhs.x += rhs.x; lhs.y += rhs.y; lhs.z += rhs.z; lhs.w += rhs.w; return lhs; }
+IM_NODEBUGSTEP inline ImVec4& operator-=(ImVec4& lhs, const ImVec4& rhs)       { lhs.x -= rhs.x; lhs.y -= rhs.y; lhs.z -= rhs.z; lhs.w -= rhs.w; return lhs; }
+IM_NODEBUGSTEP inline ImVec4& operator*=(ImVec4& lhs, const ImVec4& rhs)       { lhs.x *= rhs.x; lhs.y *= rhs.y; lhs.z *= rhs.z; lhs.w *= rhs.w; return lhs; }
+IM_NODEBUGSTEP inline ImVec4& operator/=(ImVec4& lhs, const ImVec4& rhs)       { lhs.x /= rhs.x; lhs.y /= rhs.y; lhs.z /= rhs.z; lhs.w /= rhs.w; return lhs; }
+IM_NODEBUGSTEP inline bool    operator==(const ImVec4& lhs, const ImVec4& rhs) { return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z && lhs.w == rhs.w; }
+IM_NODEBUGSTEP inline bool    operator!=(const ImVec4& lhs, const ImVec4& rhs) { return lhs.x != rhs.x || lhs.y != rhs.y || lhs.z != rhs.z || lhs.w != rhs.w; }
 IM_MSVC_RUNTIME_CHECKS_RESTORE
 #endif
 
@@ -3361,12 +3202,6 @@ struct ImColor
     // FIXME-OBSOLETE: May need to obsolete/cleanup those helpers.
     inline void    SetHSV(float h, float s, float v, float a = 1.0f){ ImGui::ColorConvertHSVtoRGB(h, s, v, Value.x, Value.y, Value.z); Value.w = a; }
     static ImColor HSV(float h, float s, float v, float a = 1.0f)   { float r, g, b; ImGui::ColorConvertHSVtoRGB(h, s, v, r, g, b); return ImColor(r, g, b, a); }
-
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    std::map<std::string, float> to_dict() const { return {{"x", Value.x}, {"y", Value.x}, {"z", Value.x}, {"w", Value.x}}; }
-    static ImVec4 from_dict(const std::map<std::string, float>& d) { IM_ASSERT((d.find("x") != d.end()) && (d.find("y") != d.end()) && (d.find("z") != d.end()) && (d.find("w") != d.end()) && "ImVec4.from_dict() requires a dictionary with keys 'x', 'y', 'z', 'w'"); ImVec4 v = ImVec4(d.at("x"), d.at("y"), d.at("z"), d.at("w")); return ImColor(v); }
-#endif
-
 };
 
 //-----------------------------------------------------------------------------
@@ -3648,7 +3483,7 @@ enum ImDrawFlags_
 
     // Stroke options
     ImDrawFlags_Closed                      = 1 << 9, // PathStroke(), AddPolyline(): specify that shape should be closed.
-    //ImDrawFlags_Closed                    = 1 << 0, // Prior to 1.92.8 (May 2026), ImDrawFlags_Closed was guaranteed to be == 1<<0 == 1 for legacy compatibility reason. Hardcoded use of 1 or true should be replaced.
+    //ImDrawFlags_Closed                    = 1,      // Prior to 1.92.8 (May 2026), ImDrawFlags_Closed was guaranteed to be == 1<<0 == 1 for legacy compatibility reason. Hardcoded use of 1 or true should be replaced.
 
     ImDrawFlags_InvalidMask_                = ~0x7FFFFFF0, // == 0x8000000F,
 };
@@ -3693,7 +3528,8 @@ struct ImDrawList
     ImVector<ImVec4>        _ClipRectStack;     // [Internal]
     ImVector<ImTextureRef>  _TextureStack;      // [Internal]
     ImVector<ImU8>          _CallbacksDataBuf;  // [Internal]
-    float                   _FringeScale;       // [Internal] anti-alias fringe is scaled by this value, this helps to keep things sharp while zooming at vertex buffer content
+    float                   _FringeScale;       // [Internal] anti-alias fringe is scaled by this value, this helps to keep things sharp while zooming at vertex buffer content.
+    float                   _InvFringeScale;    // [internal] 1.0 / _FringeScale // FIXME: Consider renaming to _PixelDensity.
     const char*             _OwnerName;         // Pointer to owner window's name for debugging
 
     // If you want to create ImDrawList instances, pass them ImGui::GetDrawListSharedData().
@@ -3737,21 +3573,12 @@ struct ImDrawList
     IMGUI_API void  AddBezierCubic(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col, float thickness, int num_segments = 0); // Cubic Bezier (4 control points)
     IMGUI_API void  AddBezierQuadratic(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImU32 col, float thickness, int num_segments = 0);               // Quadratic Bezier (3 control points)
 
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
+    // General polygon
     // - Only simple polygons are supported by filling functions (no self-intersections, no holes).
     // - Concave polygon fill is more expensive than convex one: it has O(N^2) complexity. Provided as a convenience for the user but not used by the main library.
     IMGUI_API void  AddPolyline(const ImVec2* points, int num_points, ImU32 col, float thickness, ImDrawFlags flags = 0);
     IMGUI_API void  AddConvexPolyFilled(const ImVec2* points, int num_points, ImU32 col);
     IMGUI_API void  AddConcavePolyFilled(const ImVec2* points, int num_points, ImU32 col);
-#endif
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    // - Only simple polygons are supported by filling functions (no self-intersections, no holes).
-    // - Concave polygon fill is more expensive than convex one: it has O(N^2) complexity. Provided as a convenience fo user but not used by main library.
-    IMGUI_API void  AddPolyline(const std::vector<ImVec2>& points, ImU32 col, float thickness, ImDrawFlags flags);
-    IMGUI_API void  AddConvexPolyFilled(const std::vector<ImVec2>& points, ImU32 col);
-    IMGUI_API void  AddConcavePolyFilled(const std::vector<ImVec2>& points, ImU32 col);
-#endif
-
 
     // Image primitives
     // - Read FAQ to understand what ImTextureID/ImTextureRef are.
@@ -3777,7 +3604,6 @@ struct ImDrawList
     IMGUI_API void  PathBezierQuadraticCurveTo(const ImVec2& p2, const ImVec2& p3, int num_segments = 0);               // Quadratic Bezier (3 control points)
     IMGUI_API void  PathRect(const ImVec2& rect_min, const ImVec2& rect_max, float rounding = 0.0f, ImDrawFlags flags = 0);
 
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
     // Advanced: Draw Callbacks
     // - May be used to alter render state (change sampler, blending, current shader). May be used to emit custom rendering commands (difficult to do correctly, but possible).
     // - Use special GetPlatformIO().DrawCallback_ResetRenderState callback to instruct backend to reset its render state to the default.
@@ -3789,7 +3615,6 @@ struct ImDrawList
     //   - If userdata_size > 0,  we copy/store 'userdata_size' bytes pointed to by 'userdata'. We store them in a buffer stored inside the drawlist. ImDrawCmd::UserCallbackData will point inside that buffer so you have to retrieve data from there. Your callback may need to use ImDrawCmd::UserCallbackDataSize if you expect dynamically-sized data.
     //   - Support for userdata_size > 0 was added in v1.91.4, October 2024. So earlier code always only allowed to copy/store a simple void*.
     IMGUI_API void  AddCallback(ImDrawCallback callback, void* userdata = NULL, size_t userdata_size = 0);
-#endif
 
     // Advanced: Miscellaneous
     IMGUI_API void  AddDrawCmd();                                               // This is useful if you need to forcefully create a new draw call (to allow for dependent rendering / blending). Otherwise primitives are merged into the same draw-call as much as possible
@@ -3838,6 +3663,7 @@ struct ImDrawList
     // [Internal helpers]
     IMGUI_API void  _SetDrawListSharedData(ImDrawListSharedData* data);
     IMGUI_API void  _ResetForNewFrame();
+    IMGUI_API void  _SetPixelDensity(float pixel_density);
     IMGUI_API void  _ClearFreeMemory();
     IMGUI_API void  _PopUnusedDrawCmd();
     IMGUI_API void  _TryMergeDrawCmds();
@@ -3949,20 +3775,8 @@ struct ImTextureData
     ~ImTextureData()    { DestroyPixels(); }
     IMGUI_API void      Create(ImTextureFormat format, int w, int h);
     IMGUI_API void      DestroyPixels();
-
-    #ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
-    void*      GetPixels()                 { IM_ASSERT(Pixels != NULL); return Pixels; }
-    void*      GetPixelsAt(int x, int y)   { IM_ASSERT(Pixels != NULL); return Pixels + (x + y * Width) * BytesPerPixel; }
-    #endif
-
-    #ifdef IMGUI_BUNDLE_PYTHON_API
-    // GetPixelsArray(): returns the pixel data as a NumPy array.
-    //
-    // Note: GetPixelsAt(x, y) is not implemented for Python, but you can use the offset below:
-    //    offset = (y * tex.width + x) * tex.bytes_per_pixel
-    ImGuiNpBuffer       GetPixelsArray()          { return ImGuiNpBuffer{Pixels, Width * Height * BytesPerPixel}; }
-    #endif
-
+    void*               GetPixels()                 { IM_ASSERT(Pixels != NULL); return Pixels; }
+    void*               GetPixelsAt(int x, int y)   { IM_ASSERT(Pixels != NULL); return Pixels + (x + y * Width) * BytesPerPixel; }
     int                 GetSizeInBytes() const      { return Width * Height * BytesPerPixel; }
     int                 GetPitch() const            { return Width * BytesPerPixel; }
     ImTextureRef        GetTexRef()                 { ImTextureRef tex_ref; tex_ref._TexData = this; tex_ref._TexID = ImTextureID_Invalid; return tex_ref; }
@@ -4035,15 +3849,6 @@ struct ImFontGlyph
     int             PackId;             // [Internal] ImFontAtlasRectId value (FIXME: Cold data, could be moved elsewhere?)
 
     ImFontGlyph()   { memset((void*)this, 0, sizeof(*this)); PackId = -1; }
-
-#ifdef IMGUI_BUNDLE_PYTHON_API
-	
-    // [ADAPT_IMGUI_BUNDLE]
-    bool isColored() const { return Colored != 0; }
-    bool isVisible() const { return Visible != 0; }
-    unsigned int getCodepoint() const { return Codepoint; }
-    // [/ADAPT_IMGUI_BUNDLE]
-#endif // IMGUI_BUNDLE_PYTHON_API
 };
 
 // Helper to build glyph ranges from text/string data. Feed your application strings/characters to it then call BuildRanges().
@@ -4123,8 +3928,8 @@ struct ImFontAtlas
     IMGUI_API void              CompactCache();                                 // Compact cached glyphs and texture.
     IMGUI_API void              SetFontLoader(const ImFontLoader* font_loader); // Change font loader at runtime.
 
-    // Clearing the atlas/fonts has little use nowadays, unless you want to batch remove all fonts. 
-    // - Since 1.92, you can call ClearFonts() mid-frame, if you load new fonts afterwards. 
+    // Clearing the atlas/fonts has little use nowadays, unless you want to batch remove all fonts.
+    // - Since 1.92, you can call ClearFonts() mid-frame, if you load new fonts afterwards.
     // - As we are transitioning toward our new font system the semantic for those functions gets increasingly misleading and are often a source of issues.
     //   TL;DR; most likely, don't use any of those functions. We expect to obsolete/rework them.
     IMGUI_API void              Clear();                    // Clear everything (fonts + textures). Don't call mid-frame!
@@ -4169,18 +3974,6 @@ struct ImFontAtlas
     IMGUI_API const ImWchar*    GetGlyphRangesThai();                   // Default + Thai characters
     IMGUI_API const ImWchar*    GetGlyphRangesVietnamese();             // Default + Vietnamese characters
 #endif
-
-    //-------------------------------------------
-    // [ADAPT_IMGUI_BUNDLE]
-    //-------------------------------------------
-
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    IMGUI_API ImFont* _AddFontFromFileTTF(
-        const char* filename,
-        float size_pixels,
-        const ImFontConfig* font_cfg = NULL);
-#endif
-    // [/ADAPT_IMGUI_BUNDLE]
 
     //-------------------------------------------
     // [ALPHA] Custom Rectangles/Glyphs API
@@ -4230,20 +4023,6 @@ struct ImFontAtlas
     union { ImTextureRef TexRef; ImTextureRef TexID; }; // Latest texture identifier == TexData->GetTexRef(). // RENAMED TexID to TexRef in 1.92.0.
 #endif
     ImTextureData*              TexData;            // Latest texture.
-
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    // Convenience methods for python in order to get/set the font texture Id
-    // (because currently TexID is in a union and we can't access it directly)
-    // Note: this uses the old way of setting the fonts texture.
-    // Newer backends should implement ImGuiBackendFlags_RendererHasTextures
-    // and be able to handle Texture updates
-    // See https://github.com/ocornut/imgui/issues/8465
-    // For inspiration, look at
-    //        def _update_texture(self, tex: imgui.ImTextureData):
-    // inside ImGui Bundle (bindings/imgui_bundle/python_backends/opengl_xxx_backend.py)
-    void        Python_SetTextureID(ImTextureID id) { TexRef = ImTextureRef(id); }
-    ImTextureID Python_GetTextureID() { return TexRef.GetTexID(); }
-#endif
 
     // [Internal]
     ImVector<ImTextureData*>    TexList;            // Texture list (most often TexList.Size == 1). TexData is always == TexList.back(). DO NOT USE DIRECTLY, USE GetDrawData().Textures[]/GetPlatformIO().Textures[] instead!
@@ -4369,15 +4148,7 @@ struct ImFont
     // 'wrap_width' enable automatic word-wrapping across multiple lines to fit into given width. 0.0f to disable.
     IMGUI_API ImFontBaked*      GetFontBaked(float font_size, float density = -1.0f);  // Get or create baked data for given size
     IMGUI_API ImVec2            CalcTextSizeA(float size, float max_width, float wrap_width, const char* text_begin, const char* text_end = NULL, const char** out_remaining = NULL);
-
-#ifdef IMGUI_BUNDLE_PYTHON_UNSUPPORTED_API
     IMGUI_API const char*       CalcWordWrapPosition(float size, const char* text, const char* text_end, float wrap_width);
-#endif
-#ifdef IMGUI_BUNDLE_PYTHON_API
-    // Python API for CalcWordWrapPosition (will return an index in the text, not a pointer)
-    IMGUI_API int               CalcWordWrapPositionPython(float size, const char* text, float wrap_width);
-#endif
-
     IMGUI_API void              RenderChar(ImDrawList* draw_list, float size, const ImVec2& pos, ImU32 col, ImWchar c, const ImVec4* cpu_fine_clip = NULL);
     IMGUI_API void              RenderText(ImDrawList* draw_list, float size, const ImVec2& pos, ImU32 col, const ImVec4& clip_rect, const char* text_begin, const char* text_end, float wrap_width = 0.0f, ImDrawTextFlags flags = 0);
 #ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -4545,20 +4316,13 @@ struct ImGuiPlatformIO
 
     // Optional: Access OS clipboard
     // (default to use native Win32 clipboard on Windows, otherwise uses a private clipboard. Override to access OS clipboard on other architectures)
-    // [ADAPT_IMGUI_BUNDLE]
-    // const char* (*Platform_GetClipboardTextFn)(ImGuiContext* ctx);  // Should return NULL on failure (e.g. clipboard data is not text).
-    // void        (*Platform_SetClipboardTextFn)(ImGuiContext* ctx, const char* text);
-    BundleHybridCallback<BundleHybridStr(ImGuiContext*)> Platform_GetClipboardTextFn;
-    BundleHybridCallback<void(ImGuiContext*, const char*)> Platform_SetClipboardTextFn;
-    // [/ADAPT_IMGUI_BUNDLE]
+    const char* (*Platform_GetClipboardTextFn)(ImGuiContext* ctx);                      // Should return NULL on failure (e.g. clipboard data is not text).
+    void        (*Platform_SetClipboardTextFn)(ImGuiContext* ctx, const char* text);
     void*       Platform_ClipboardUserData;
 
     // Optional: Open link/folder/file in OS Shell
     // (default to use ShellExecuteW() on Windows, system() on Linux/Mac. expected to return false on failure, but some platforms may always return true)
-    // [ADAPT_IMGUI_BUNDLE]
-    //bool        (*Platform_OpenInShellFn)(ImGuiContext* ctx, const char* path);
-    BundleHybridCallback<bool(ImGuiContext*, const char*)> Platform_OpenInShellFn;
-    // [/ADAPT_IMGUI_BUNDLE]
+    bool        (*Platform_OpenInShellFn)(ImGuiContext* ctx, const char* path);
     void*       Platform_OpenInShellUserData;
 
     // Optional: Notify OS Input Method Editor of the screen position of your cursor for text input position (e.g. when using Japanese/Chinese IME on Windows)
@@ -4854,7 +4618,7 @@ typedef ImFontAtlasRect ImFontAtlasCustomRect;
 #pragma warning (pop)
 #endif
 
-#if IMGUI_HAS_STACK_LAYOUT
+#ifdef IMGUI_HAS_STACK_LAYOUT
 #include "imgui_stacklayout.h"
 #endif
 
