@@ -9,6 +9,16 @@
 ###############################################################################
 # ruff: noqa: B008, E741
 # mypy: disable-error-code="overload-cannot-match, overload-overlap"
+"""Dear ImGui: the immediate mode GUI library, on which every other module of the bundle builds.
+
+The app's code draws its widgets at each frame, and reads the user's actions from them in the same call:
+`if imgui.button("OK"): ...`. This module holds the widgets, the windows, the layout, the tables, the draw
+lists, the styles and the IO. To run an app, see `immapp.run` (or `hello_imgui.run`).
+
+The names follow the C++ API: `ImGui::Button` is `imgui.button`, `ImGuiWindowFlags_NoTitleBar` is
+`imgui.WindowFlags_.no_title_bar`. Its interactive manual, each demo next to its code, is in the ImGui Explorer.
+"""
+
 from __future__ import annotations
 import sys
 from typing import (
@@ -81,6 +91,7 @@ Window = internal.Window
 uint = int
 uchar = int
 char = int
+# typedef int ImFontAtlasRectId;    /* original C++ signature */
 ImFontAtlasRectId = int
 
 NpBuffer: TypeAlias = NDArray[np.uint8]
@@ -140,7 +151,6 @@ typedef int ImGuiSortDirection;     // -> enum ImGuiSortDirection_   // Enum: A 
 typedef int ImGuiStyleVar;          // -> enum ImGuiStyleVar_        // Enum: A variable identifier for styling
 typedef int ImGuiTableBgTarget;     // -> enum ImGuiTableBgTarget_   // Enum: A color target for TableSetBgColor()
 typedef int ImDrawFlags;            // -> enum ImDrawFlags_          // Flags: for ImDrawList functions
-typedef int ImDrawListFlags;        // -> enum ImDrawListFlags_      // Flags: for ImDrawList instance
 typedef int ImFontAtlasFlags;       // -> enum ImFontAtlasFlags_     // Flags: for ImFontAtlas build
 typedef int ImGuiBackendFlags;      // -> enum ImGuiBackendFlags_    // Flags: for io.BackendFlags
 typedef int ImGuiButtonFlags;       // -> enum ImGuiButtonFlags_     // Flags: for InvisibleButton()
@@ -165,44 +175,78 @@ typedef int ImGuiTreeNodeFlags;     // -> enum ImGuiTreeNodeFlags_   // Flags: f
 typedef int ImGuiViewportFlags;     // -> enum ImGuiViewportFlags_   // Flags: for ImGuiViewport
 typedef int ImGuiWindowFlags;       // -> enum ImGuiWindowFlags_     // Flags: for Begin(), BeginChild()
 """
+# typedef int ImGuiCol;    /* original C++ signature */
 Col = int  # -> enum Col_             # Enum: A color identifier for styling
+# typedef int ImGuiCond;    /* original C++ signature */
 Cond = int  # -> enum Cond_            # Enum: A condition for many Set*() functions
+# typedef int ImGuiDataType;    /* original C++ signature */
 DataType = int  # -> enum DataType_        # Enum: A primary data type
 NavInput = int  # -> enum NavInput_        # Enum: An input identifier for navigation
+# typedef int ImGuiMouseButton;    /* original C++ signature */
 MouseButton = int  # -> enum MouseButton_     # Enum: A mouse button identifier (0=left, 1=right, 2=middle)
+# typedef int ImGuiMouseCursor;    /* original C++ signature */
 MouseCursor = int  # -> enum MouseCursor_     # Enum: A mouse cursor identifier
+# typedef int ImGuiStyleVar;    /* original C++ signature */
 StyleVar = int  # -> enum StyleVar_        # Enum: A variable identifier for styling
+# typedef int ImGuiTableBgTarget;    /* original C++ signature */
 TableBgTarget = int  # -> enum TableBgTarget_   # Enum: A color target for TableSetBgColor()
+# typedef int ImDrawFlags;    /* original C++ signature */
 ImDrawFlags = int  # -> enum ImDrawFlags_          # Flags: for ImDrawList functions
-ImDrawListFlags = int  # -> enum ImDrawListFlags_      # Flags: for ImDrawList instance
+# typedef int ImFontAtlasFlags;    /* original C++ signature */
 ImFontAtlasFlags = int  # -> enum ImFontAtlasFlags_     # Flags: for ImFontAtlas build
+# typedef int ImGuiBackendFlags;    /* original C++ signature */
 BackendFlags = int  # -> enum BackendFlags_    # Flags: for io.BackendFlags
+# typedef int ImGuiButtonFlags;    /* original C++ signature */
 ButtonFlags = int  # -> enum ButtonFlags_     # Flags: for InvisibleButton()
+# typedef int ImGuiColorEditFlags;    /* original C++ signature */
 ColorEditFlags = int  # -> enum ColorEditFlags_  # Flags: for ColorEdit4(), ColorPicker4() etc.
+# typedef int ImGuiConfigFlags;    /* original C++ signature */
 ConfigFlags = int  # -> enum ConfigFlags_     # Flags: for io.ConfigFlags
+# typedef int ImGuiComboFlags;    /* original C++ signature */
 ComboFlags = int  # -> enum ComboFlags_      # Flags: for BeginCombo()
+# typedef int ImGuiDockNodeFlags;    /* original C++ signature */
 DockNodeFlags = int  # -> enum DockNodeFlags_   // Flags: for DockSpace()
+# typedef int ImGuiDragDropFlags;    /* original C++ signature */
 DragDropFlags = int  # -> enum DragDropFlags_   # Flags: for BeginDragDropSource(), AcceptDragDropPayload()
+# typedef int ImGuiFocusedFlags;    /* original C++ signature */
 FocusedFlags = int  # -> enum FocusedFlags_    # Flags: for IsWindowFocused()
+# typedef int ImGuiHoveredFlags;    /* original C++ signature */
 HoveredFlags = int  # -> enum HoveredFlags_    # Flags: for IsItemHovered(), IsWindowHovered() etc.
+# typedef int ImGuiInputTextFlags;    /* original C++ signature */
 InputTextFlags = int  # -> enum InputTextFlags_  # Flags: for InputText(), InputTextMultiline()
 ModFlags = int  # -> enum ModFlags_        # Flags: for io.KeyMods (Ctrl/Shift/Alt/Super)
+# typedef int ImGuiPopupFlags;    /* original C++ signature */
 PopupFlags = int  # -> enum PopupFlags_      # Flags: for OpenPopup*(), BeginPopupContext*(), IsPopupOpen()
+# typedef int ImGuiSelectableFlags;    /* original C++ signature */
 SelectableFlags = int  # -> enum SelectableFlags_ # Flags: for Selectable()
+# typedef int ImGuiSliderFlags;    /* original C++ signature */
 SliderFlags = int  # -> enum SliderFlags_     # Flags: for DragFloat(), DragInt(), SliderFloat(), SliderInt() etc.
+# typedef int ImGuiTabBarFlags;    /* original C++ signature */
 TabBarFlags = int  # -> enum TabBarFlags_     # Flags: for BeginTabBar()
+# typedef int ImGuiTabItemFlags;    /* original C++ signature */
 TabItemFlags = int  # -> enum TabItemFlags_    # Flags: for BeginTabItem()
+# typedef int ImGuiTableFlags;    /* original C++ signature */
 TableFlags = int  # -> enum TableFlags_      # Flags: For BeginTable()
+# typedef int ImGuiTableColumnFlags;    /* original C++ signature */
 TableColumnFlags = int  # -> enum TableColumnFlags_# Flags: For TableSetupColumn()
+# typedef int ImGuiTableRowFlags;    /* original C++ signature */
 TableRowFlags = int  # -> enum TableRowFlags_   # Flags: For TableNextRow()
+# typedef int ImGuiTreeNodeFlags;    /* original C++ signature */
 TreeNodeFlags = int  # -> enum TreeNodeFlags_   # Flags: for TreeNode(), TreeNodeEx(), CollapsingHeader()
+# typedef int ImGuiViewportFlags;    /* original C++ signature */
 ViewportFlags = int  # -> enum ViewportFlags_   # Flags: for ImGuiViewport
+# typedef int ImGuiWindowFlags;    /* original C++ signature */
 WindowFlags = int  # -> enum WindowFlags_     # Flags: for Begin(), BeginChild()
 ToggleFlags = int  # -> enum ToggleFlags_
+# typedef int ImGuiChildFlags;    /* original C++ signature */
 ChildFlags = int  # -> enum ChildFlags_
+# typedef int ImGuiInputFlags;    /* original C++ signature */
 InputFlags = int  # -> enum ImGuiInputFlags_      // Flags: for Shortcut(), SetNextItemShortcut()
+# typedef int ImGuiKeyChord;    /* original C++ signature */
 KeyChord = ModFlags  # == int. We generally use ImGuiKeyChord to mean "a ImGuiKey or-ed with any number of ImGuiMod_XXX value", but you may store only mods in there.
+# typedef int ImFontFlags;    /* original C++ signature */
 ImFontFlags = int  # -> enum ImFontFlags_          // Flags: for ImFont
+# typedef int ImGuiListClipperFlags;    /* original C++ signature */
 ListClipperFlags = int
 
 """
@@ -213,6 +257,7 @@ ListClipperFlags = int
 typedef void* ImTextureID;          // Default: store a pointer or an integer fitting in a pointer (most renderer backends are ok with that)
 #endif
 """
+# typedef ImU64 ImTextureID;    /* original C++ signature */
 ImTextureID = int
 
 """
@@ -223,6 +268,7 @@ ImTextureID = int
 typedef unsigned short ImDrawIdx;   // Default: 16-bit (for maximum compatibility with renderer backends)
 #endif
 """
+# typedef unsigned short ImDrawIdx;    /* original C++ signature */
 ImDrawIdx = int
 
 """
@@ -238,14 +284,23 @@ typedef signed   long long  ImS64;  // 64-bit signed integer
 typedef unsigned long long  ImU64;  // 64-bit unsigned integer
 """
 # Scalar data types
+# typedef unsigned int ImGuiID;    /* original C++ signature */
 ID = int  # A unique ID used by widgets (typically the result of hashing a stack of string)
+# typedef signed char ImS8;    /* original C++ signature */
 ImS8 = int  # 8-bit integer
+# typedef unsigned char ImU8;    /* original C++ signature */
 ImU8 = int  # 8-bit integer
+# typedef signed short ImS16;    /* original C++ signature */
 ImS16 = int  # 16-bit integer
+# typedef unsigned short ImU16;    /* original C++ signature */
 ImU16 = int  # 16-bit integer
+# typedef signed int ImS32;    /* original C++ signature */
 ImS32 = int  # 32-bit integer == int
+# typedef unsigned int ImU32;    /* original C++ signature */
 ImU32 = int  # 32-bit integer (often used to store packed colors)
+# typedef signed long long ImS64;    /* original C++ signature */
 ImS64 = int  # 64-bit integer
+# typedef unsigned long long ImU64;    /* original C++ signature */
 ImU64 = int  # 64-bit integer
 
 """
@@ -259,8 +314,11 @@ typedef ImWchar32 ImWchar;
 typedef ImWchar16 ImWchar;
 #endif
 """
+# typedef ImWchar32 ImWchar;    /* original C++ signature */
 ImWchar = int
+# typedef unsigned short ImWchar16;    /* original C++ signature */
 ImWchar16 = int
+# typedef unsigned int ImWchar32;    /* original C++ signature */
 ImWchar32 = int
 
 """
@@ -275,13 +333,18 @@ typedef void    (*ImGuiMemFreeFunc)(void* ptr, void* user_data);                
     typedef void (*ImDrawCallback)(const ImDrawList* parent_list, const ImDrawCmd* cmd);
 #endif
 """
+# typedef void* (*ImGuiMemAllocFunc)(size_t sz, void* user_data);    /* original C++ signature */
 MemAllocFunc = Any
+# typedef void (*ImGuiMemFreeFunc)(void* ptr, void* user_data);    /* original C++ signature */
 MemFreeFunc = Any
+# typedef void (*ImDrawCallback)(const ImDrawList* parent_list, const ImDrawCmd* cmd);    /* original C++ signature */
 ImDrawCallback = Any
 
 # using ImGuiInputTextCallback = std::function<int(ImGuiInputTextCallbackData*)>;  // Callback function for ImGui::InputText()
 # using ImGuiSizeCallback = std::function<void(ImGuiSizeCallbackData*)>;           // Callback function for ImGui::SetNextWindowSizeConstraints()
+# typedef int (*ImGuiInputTextCallback)(ImGuiInputTextCallbackData* data);    /* original C++ signature */
 InputTextCallback = Callable[[InputTextCallbackData], int] | None
+# typedef void (*ImGuiSizeCallback)(ImGuiSizeCallbackData* data);    /* original C++ signature */
 SizeCallback = Callable[[SizeCallbackData], None] | None
 
 """
@@ -414,7 +477,7 @@ class Vec4Protocol(Protocol):
 # // [SECTION] Misc data structures (ImGuiInputTextCallbackData, ImGuiSizeCallbackData, ImGuiWindowClass, ImGuiPayload)
 # // [SECTION] Helpers (ImGuiOnceUponAFrame, ImGuiTextFilter, ImGuiTextBuffer, ImGuiStorage, ImGuiListClipper, Math Operators, ImColor)
 # // [SECTION] Multi-Select API flags and structures (ImGuiMultiSelectFlags, ImGuiMultiSelectIO, ImGuiSelectionRequest, ImGuiSelectionBasicStorage, ImGuiSelectionExternalStorage)
-# // [SECTION] Drawing API (ImDrawCallback, ImDrawCmd, ImDrawIdx, ImDrawVert, ImDrawChannel, ImDrawListSplitter, ImDrawFlags, ImDrawListFlags, ImDrawList, ImDrawData)
+# // [SECTION] Drawing API (ImDrawCallback, ImDrawCmd, ImDrawIdx, ImDrawVert, ImDrawChannel, ImDrawListSplitter, ImDrawFlags, ImDrawList, ImDrawData)
 # // [SECTION] Texture API (ImTextureFormat, ImTextureStatus, ImTextureRect, ImTextureData)
 # // [SECTION] Font API (ImFontConfig, ImFontGlyph, ImFontGlyphRangesBuilder, ImFontAtlasFlags, ImFontAtlas, ImFontBaked, ImFont)
 # // [SECTION] Viewports (ImGuiViewportFlags, ImGuiViewport)
@@ -489,16 +552,17 @@ class Vec4Protocol(Protocol):
 # #endif
 #
 
+# struct ImVec2    /* original C++ signature */
 class ImVec2(Vec2Protocol):
     # float x,     /* original C++ signature */
     x: float
     # y;    /* original C++ signature */
     y: float
-    # constexpr inline ImVec2()                    : x(0.0f), y(0.0f) { }    /* original C++ signature */
+    # constexpr inline ImVec2()                    : x(0.0f), y(0.0f);    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # constexpr inline ImVec2(float _x, float _y)  : x(_x), y(_y) { }    /* original C++ signature */
+    # constexpr inline ImVec2(float _x, float _y)  : x(_x), y(_y);    /* original C++ signature */
     @overload
     def __init__(self, _x: float, _y: float) -> None:
         pass
@@ -520,6 +584,7 @@ class ImVec2(Vec2Protocol):
         """Create from a dict with keys x, y"""
         pass
 
+# struct ImVec4    /* original C++ signature */
 class ImVec4(Vec4Protocol):
     """ImVec4: 4D vector used to store clipping rectangles, colors etc. [Compile-time configurable type]"""
 
@@ -531,11 +596,11 @@ class ImVec4(Vec4Protocol):
     z: float
     # w;    /* original C++ signature */
     w: float
-    # constexpr inline ImVec4()                                        : x(0.0f), y(0.0f), z(0.0f), w(0.0f) { }    /* original C++ signature */
+    # constexpr inline ImVec4()                                        : x(0.0f), y(0.0f), z(0.0f), w(0.0f);    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # constexpr inline ImVec4(float _x, float _y, float _z, float _w)  : x(_x), y(_y), z(_z), w(_w) { }    /* original C++ signature */
+    # constexpr inline ImVec4(float _x, float _y, float _z, float _w)  : x(_x), y(_y), z(_z), w(_w);    /* original C++ signature */
     @overload
     def __init__(self, _x: float, _y: float, _z: float, _w: float) -> None:
         pass
@@ -582,12 +647,13 @@ class ImVec4(Vec4Protocol):
 # - If your backend is using ImTextureID to store an index/offset and you need 0 to be valid, You can add '#define ImTextureID_Invalid ((ImTextureID)-1)' in your imconfig.h file.
 # - From 2026/03/12 to 2026/03/19 we experimented with changing to default to -1, but I worried it would cause too many issues in third-party code so it was reverted.
 
+# struct ImTextureRef    /* original C++ signature */
 class ImTextureRef:
-    # ImTextureRef()                          { _TexData = NULL; _TexID = ImTextureID_Invalid; }    /* original C++ signature */
+    # ImTextureRef();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # ImTextureRef(ImTextureID tex_id)        { _TexData = NULL; _TexID = tex_id; }    /* original C++ signature */
+    # ImTextureRef(ImTextureID tex_id);    /* original C++ signature */
     @overload
     def __init__(self, tex_id: ImTextureID) -> None:
         pass
@@ -1301,12 +1367,6 @@ def push_id(str_id: str) -> None:
     """push string into the ID stack (will hash string)."""
     pass
 
-# IMGUI_API void          PushID(const char* str_id_begin, const char* str_id_end);           /* original C++ signature */
-@overload
-def push_id(str_id_begin: str, str_id_end: str) -> None:
-    """push string into the ID stack (will hash string)."""
-    pass
-
 # IMGUI_API void          PushID(const void* ptr_id);                                         /* original C++ signature */
 @overload
 def push_id(ptr_id: Any) -> None:
@@ -1330,11 +1390,6 @@ def get_id(str_id: str) -> ID:
     """calculate unique ID (hash of whole ID stack + given parameter). e.g. if you want to query into ImGuiStorage yourself"""
     pass
 
-# IMGUI_API ImGuiID       GetID(const char* str_id_begin, const char* str_id_end);    /* original C++ signature */
-@overload
-def get_id(str_id_begin: str, str_id_end: str) -> ID:
-    pass
-
 # IMGUI_API ImGuiID       GetID(const void* ptr_id);    /* original C++ signature */
 @overload
 def get_id(ptr_id: Any) -> ID:
@@ -1348,7 +1403,7 @@ def get_id(int_id: int) -> ID:
 # Widgets: Text
 # - Note that all functions taking format strings in the API may be passed ("%s", text) or ("%.*s", text_len, text): which will automatically bypass the formatter.
 # IMGUI_API void          TextUnformatted(const char* text, const char* text_end = NULL);     /* original C++ signature */
-def text_unformatted(text: str, text_end: Optional[str] = None) -> None:
+def text_unformatted(text: str) -> None:
     """raw text without formatting. Practically equivalent to 'Text("%s", text)' but doesn't require null terminated string if 'text_end' is specified."""
     pass
 
@@ -2767,9 +2822,7 @@ def get_state_storage() -> Storage:
     pass
 
 # IMGUI_API ImVec2        CalcTextSize(const char* text, const char* text_end = NULL, bool hide_text_after_double_hash = false, float wrap_width = -1.0f);    /* original C++ signature */
-def calc_text_size(
-    text: str, text_end: Optional[str] = None, hide_text_after_double_hash: bool = False, wrap_width: float = -1.0
-) -> ImVec2:
+def calc_text_size(text: str, hide_text_after_double_hash: bool = False, wrap_width: float = -1.0) -> ImVec2:
     """Text Utilities"""
     pass
 
@@ -3041,6 +3094,7 @@ def find_viewport_by_platform_handle(platform_handle: Any) -> Viewport:
 # [SECTION] Flags & Enumerations
 # -----------------------------------------------------------------------------
 
+# enum ImGuiWindowFlags_    /* original C++ signature */
 class WindowFlags_(enum.IntFlag):
     """Flags for ImGui::Begin()
     (Those are per-window flags. There are shared flags in ImGuiIO: io.ConfigWindowsResizeFromEdges and io.ConfigWindowsMoveFromTitleBarOnly)
@@ -3135,6 +3189,7 @@ class WindowFlags_(enum.IntFlag):
 
     # Obsolete names
 
+# enum ImGuiChildFlags_    /* original C++ signature */
 class ChildFlags_(enum.IntFlag):
     """Flags for ImGui::BeginChild()
     (Legacy: bit 0 must always correspond to ImGuiChildFlags_Borders to be backward compatible with old API using 'bool border = False'.)
@@ -3186,6 +3241,7 @@ class ChildFlags_(enum.IntFlag):
 
     # Obsolete names
 
+# enum ImGuiItemFlags_    /* original C++ signature */
 class ItemFlags_(enum.IntFlag):
     """Flags for ImGui::PushItemFlag()
     (Those are shared by all submitted items)
@@ -3256,6 +3312,7 @@ class ItemFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 9)  # False    // [BETA] Represent a mixed/indeterminate value. Replace value label with "-" and apply edits on validation.
 
+# enum ImGuiInputTextFlags_    /* original C++ signature */
 class InputTextFlags_(enum.IntFlag):
     """Flags for ImGui::InputText()
     (Those are per-item flags. There are shared flags in ImGuiIO: io.ConfigInputTextCursorBlink and io.ConfigInputTextEnterKeepActive)
@@ -3357,6 +3414,7 @@ class InputTextFlags_(enum.IntFlag):
     # Obsolete names
     # ImGuiInputTextFlags_AlwaysInsertMode  = ImGuiInputTextFlags_AlwaysOverwrite   // [renamed in 1.82] name was not matching behavior
 
+# enum ImGuiTreeNodeFlags_    /* original C++ signature */
 class TreeNodeFlags_(enum.IntFlag):
     """Flags for ImGui::TreeNodeEx(), ImGui::CollapsingHeader*()"""
 
@@ -3441,6 +3499,7 @@ class TreeNodeFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 20)  # Horizontal lines to child nodes. Vertical line drawn down to bottom-most child node. Slower (for large trees).
 
+# enum ImGuiPopupFlags_    /* original C++ signature */
 class PopupFlags_(enum.IntFlag):
     """Flags for OpenPopup*(), BeginPopupContext*(), IsPopupOpen() functions.
     - IMPORTANT: If you ever used the left mouse button with BeginPopupContextXXX() helpers before 1.92.6: Read "API BREAKING CHANGES" 2026/01/07 (1.92.6) entry in imgui.cpp or GitHub topic #9157.
@@ -3491,6 +3550,7 @@ class PopupFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 0x03)  # [Internal] Reserve legacy bits 0-1 to detect incorrectly passing 1 or 2 to the function.
 
+# enum ImGuiSelectableFlags_    /* original C++ signature */
 class SelectableFlags_(enum.IntFlag):
     """Flags for ImGui::Selectable()"""
 
@@ -3519,6 +3579,7 @@ class SelectableFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 6)  # Auto-select when moved into, unless Ctrl is held. Automatic when in a BeginMultiSelect() block.
 
+# enum ImGuiComboFlags_    /* original C++ signature */
 class ComboFlags_(enum.IntFlag):
     """Flags for ImGui::BeginCombo()"""
 
@@ -3548,6 +3609,7 @@ class ComboFlags_(enum.IntFlag):
         enum.auto()
     )  # (= ComboFlags_HeightSmall | ComboFlags_HeightRegular | ComboFlags_HeightLarge | ComboFlags_HeightLargest)
 
+# enum ImGuiTabBarFlags_    /* original C++ signature */
 class TabBarFlags_(enum.IntFlag):
     """Flags for ImGui::BeginTabBar()"""
 
@@ -3590,6 +3652,7 @@ class TabBarFlags_(enum.IntFlag):
     # ImGuiTabBarFlags_FittingPolicyDefault_          = ImGuiTabBarFlags_FittingPolicyMixed,    /* original C++ signature */
     fitting_policy_default_ = enum.auto()  # (= TabBarFlags_FittingPolicyMixed)
 
+# enum ImGuiTabItemFlags_    /* original C++ signature */
 class TabItemFlags_(enum.IntFlag):
     """Flags for ImGui::BeginTabItem()"""
 
@@ -3626,6 +3689,7 @@ class TabItemFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 8)  # Tab is selected when trying to close + closure is not immediately assumed (will wait for user to stop submitting the tab). Otherwise closure is assumed when pressing the X, so if you keep submitting the tab may reappear at end of tab bar.
 
+# enum ImGuiFocusedFlags_    /* original C++ signature */
 class FocusedFlags_(enum.IntFlag):
     """Flags for ImGui::IsWindowFocused()"""
 
@@ -3651,6 +3715,7 @@ class FocusedFlags_(enum.IntFlag):
     # }
     root_and_child_windows = enum.auto()  # (= FocusedFlags_RootWindow | FocusedFlags_ChildWindows)
 
+# enum ImGuiHoveredFlags_    /* original C++ signature */
 class HoveredFlags_(enum.IntFlag):
     """Flags for ImGui::IsItemHovered(), ImGui::IsWindowHovered()
     Note: if you are trying to check whether your mouse should be dispatched to Dear ImGui or to your app, you should use 'io.WantCaptureMouse' instead! Please read the FAQ!
@@ -3748,6 +3813,7 @@ class HoveredFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 17)  # IsItemHovered() only: Disable shared delay system where moving from one item to the next keeps the previous timer for a short time (standard for tooltips with long delays)
 
+# enum ImGuiDockNodeFlags_    /* original C++ signature */
 class DockNodeFlags_(enum.IntFlag):
     """Flags for ImGui::DockSpace(), shared/inherited by child nodes.
     (Some flags can be applied to individual nodes directly)
@@ -3782,6 +3848,7 @@ class DockNodeFlags_(enum.IntFlag):
     # ImGuiDockNodeFlags_NoUndocking                  = 1 << 7,       /* original C++ signature */
     no_undocking = enum.auto()  # (= 1 << 7)  #       // Disable undocking this node.
 
+# enum ImGuiDragDropFlags_    /* original C++ signature */
 class DragDropFlags_(enum.IntFlag):
     """Flags for ImGui::BeginDragDropSource(), ImGui::AcceptDragDropPayload()"""
 
@@ -3844,6 +3911,7 @@ class DragDropFlags_(enum.IntFlag):
 
 # Standard Drag and Drop payload types. You can define you own payload types using short strings. Types starting with '_' are defined by Dear ImGui.
 
+# enum ImGuiDataType_    /* original C++ signature */
 class DataType_(enum.IntFlag):
     """A primary data type"""
 
@@ -3875,6 +3943,7 @@ class DataType_(enum.IntFlag):
     # }
     count = enum.auto()  # (= 12)
 
+# enum ImGuiDir    /* original C++ signature */
 class Dir(enum.IntFlag):
     """A cardinal direction"""
 
@@ -3892,6 +3961,7 @@ class Dir(enum.IntFlag):
     # }
     count = enum.auto()  # (= 4)
 
+# enum ImGuiSortDirection    /* original C++ signature */
 class SortDirection(enum.IntFlag):
     """A sorting direction"""
 
@@ -3902,6 +3972,7 @@ class SortDirection(enum.IntFlag):
     # ImGuiSortDirection_Descending   = 2         /* original C++ signature */
     descending = enum.auto()  # (= 2)  # Descending = 9->0, Z->A etc.
 
+# enum ImGuiKey    /* original C++ signature */
 class Key(enum.IntFlag):
     """A key identifier (ImGuiKey_XXX or ImGuiMod_XXX value): can represent Keyboard, Mouse and Gamepad values.
     All our named keys are >= 512. Keys value 0 to 511 are left unused and were legacy native/opaque key values (< 1.87).
@@ -4291,6 +4362,7 @@ class Key(enum.IntFlag):
     # ImGuiMod_Mask_                  = 0xF000,      /* original C++ signature */
     mod_mask_ = enum.auto()  # (= 0xF000)  # 4-bits
 
+# enum ImGuiInputFlags_    /* original C++ signature */
 class InputFlags_(enum.IntFlag):
     """Flags for Shortcut(), SetNextItemShortcut(),
     (and for upcoming extended versions of IsKeyPressed(), IsMouseClicked(), Shortcut(), SetKeyOwner(), SetItemKeyOwner() that are still in imgui_internal.h)
@@ -4343,6 +4415,7 @@ class InputFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 18)  # Automatically display a tooltip when hovering item [BETA] Unsure of right api (opt-in/opt-out)
 
+# enum ImGuiConfigFlags_    /* original C++ signature */
 class ConfigFlags_(enum.IntFlag):
     """Configuration flags stored in io.ConfigFlags. Set by user/application.
     Note that nowadays most of our configuration options are in other ImGuiIO fields, e.g. io.ConfigWindowsMoveFromTitleBarOnly.
@@ -4386,6 +4459,7 @@ class ConfigFlags_(enum.IntFlag):
     # ImGuiConfigFlags_IsTouchScreen          = 1 << 21,      /* original C++ signature */
     is_touch_screen = enum.auto()  # (= 1 << 21)  # Application is using a touch screen instead of a mouse.
 
+# enum ImGuiBackendFlags_    /* original C++ signature */
 class BackendFlags_(enum.IntFlag):
     """Backend capabilities flags stored in io.BackendFlags. Set by imgui_impl_xxx or custom backend."""
 
@@ -4424,6 +4498,7 @@ class BackendFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 13)  # Backend Platform supports honoring viewport->ParentViewport/ParentViewportId value, by applying the corresponding parent/child relationship at the Platform level. Child windows always appear in front of their parent window.
 
+# enum ImGuiCol_    /* original C++ signature */
 class Col_(enum.IntFlag):
     """Enumeration for PushStyleColor() / PopStyleColor()"""
 
@@ -4564,6 +4639,7 @@ class Col_(enum.IntFlag):
     # ImGuiCol_COUNT,    /* original C++ signature */
     count = enum.auto()  # (= 63)
 
+# enum ImGuiStyleVar_    /* original C++ signature */
 class StyleVar_(enum.IntFlag):
     """Enumeration for PushStyleVar() / PopStyleVar() to temporarily modify the ImGuiStyle structure.
     - The enum only refers to fields of ImGuiStyle which makes sense to be pushed/popped inside UI code.
@@ -4672,6 +4748,7 @@ class StyleVar_(enum.IntFlag):
     # }
     count = enum.auto()  # (= 46)
 
+# enum ImGuiButtonFlags_    /* original C++ signature */
 class ButtonFlags_(enum.IntFlag):
     """Flags for InvisibleButton() [extended in imgui_internal.h]"""
 
@@ -4696,6 +4773,7 @@ class ButtonFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 12)  # Hit testing will allow subsequent widgets to overlap this one. Require previous frame HoveredId to match before being usable. Shortcut to calling SetNextItemAllowOverlap().
 
+# enum ImGuiColorEditFlags_    /* original C++ signature */
 class ColorEditFlags_(enum.IntFlag):
     """Flags for ColorEdit3() / ColorEdit4() / ColorPicker3() / ColorPicker4() / ColorButton()"""
 
@@ -4826,6 +4904,7 @@ class ColorEditFlags_(enum.IntFlag):
 
     # Obsolete names
 
+# enum ImGuiSliderFlags_    /* original C++ signature */
 class SliderFlags_(enum.IntFlag):
     """Flags for DragFloat(), DragInt(), SliderFloat(), SliderInt() etc.
     We use the same sets of flags for DragXXX() and SliderXXX() functions as the features are the same and it makes it easier to swap them.
@@ -4875,6 +4954,7 @@ class SliderFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 0x7000000F)  # [Internal] We treat using those bits as being potentially a 'float power' argument from legacy API (obsoleted 2020-08) that has got miscast to this enum, and will trigger an assert if needed.
 
+# enum ImGuiMouseButton_    /* original C++ signature */
 class MouseButton_(enum.IntFlag):
     """Identify a mouse button.
     Those values are guaranteed to be stable and we frequently use 0/1 directly. Named enums provided for convenience.
@@ -4890,6 +4970,7 @@ class MouseButton_(enum.IntFlag):
     # }
     count = enum.auto()  # (= 5)
 
+# enum ImGuiMouseCursor_    /* original C++ signature */
 class MouseCursor_(enum.IntFlag):
     """Enumeration for GetMouseCursor()
     User code may request backend to display given cursor by calling SetMouseCursor(), which is why we have some cursors that are marked unused here
@@ -4925,6 +5006,7 @@ class MouseCursor_(enum.IntFlag):
     # }
     count = enum.auto()  # (= 11)
 
+# enum ImGuiMouseSource    /* original C++ signature */
 class MouseSource(enum.IntFlag):
     """Enumeration for AddMouseSourceEvent() actual source of Mouse Input data.
     Historically we use "Mouse" terminology everywhere to indicate pointer data, e.g. MousePos, IsMousePressed(), io.AddMousePosEvent()
@@ -4946,6 +5028,7 @@ class MouseSource(enum.IntFlag):
     # }
     count = enum.auto()  # (= 3)
 
+# enum ImGuiCond_    /* original C++ signature */
 class Cond_(enum.IntFlag):
     """Enumeration for ImGui::SetNextWindow***(), SetWindow***(), SetNextItem***() functions
     Represent a condition.
@@ -4971,6 +5054,7 @@ class Cond_(enum.IntFlag):
 # [SECTION] Tables API flags and structures (ImGuiTableFlags, ImGuiTableColumnFlags, ImGuiTableRowFlags, ImGuiTableBgTarget, ImGuiTableSortSpecs, ImGuiTableColumnSortSpecs)
 # -----------------------------------------------------------------------------
 
+# enum ImGuiTableFlags_    /* original C++ signature */
 class TableFlags_(enum.IntFlag):
     """Flags for ImGui::BeginTable()
     - Important! Sizing policies have complex and subtle side effects, much more so than you would expect.
@@ -5131,6 +5215,7 @@ class TableFlags_(enum.IntFlag):
         enum.auto()
     )  # (= TableFlags_SizingFixedFit | TableFlags_SizingFixedSame | TableFlags_SizingStretchProp | TableFlags_SizingStretchSame)
 
+# enum ImGuiTableColumnFlags_    /* original C++ signature */
 class TableColumnFlags_(enum.IntFlag):
     """Flags for ImGui::TableSetupColumn()"""
 
@@ -5224,6 +5309,7 @@ class TableColumnFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 30)  # [Internal] Disable user resizing this column directly (it may however we resized indirectly from its left edge)
 
+# enum ImGuiTableRowFlags_    /* original C++ signature */
 class TableRowFlags_(enum.IntFlag):
     """Flags for ImGui::TableNextRow()"""
 
@@ -5234,6 +5320,7 @@ class TableRowFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 0)  # Identify header row (set default background color + width of its contents accounted differently for auto column width)
 
+# enum ImGuiTableBgTarget_    /* original C++ signature */
 class TableBgTarget_(enum.IntFlag):
     """Enum for ImGui::TableSetBgColor()
     Background colors are rendering in 3 layers:
@@ -5257,6 +5344,7 @@ class TableBgTarget_(enum.IntFlag):
     # ImGuiTableBgTarget_CellBg                   = 3,            /* original C++ signature */
     cell_bg = enum.auto()  # (= 3)  # Set cell background color (top-most color)
 
+# struct ImGuiTableSortSpecs    /* original C++ signature */
 class TableSortSpecs:
     """Sorting specifications for a table (often handling sort specs for a single column, occasionally more)
     Obtained by calling TableGetSortSpecs().
@@ -5273,13 +5361,14 @@ class TableSortSpecs:
         bool  # Set to True when specs have changed since last time! Use this to sort again, then clear the flag.
     )
 
-    # ImGuiTableSortSpecs()       { memset((void*)this, 0, sizeof(*this)); }    /* original C++ signature */
+    # ImGuiTableSortSpecs();    /* original C++ signature */
     def __init__(self) -> None:
         pass
 
     def get_specs(self, idx: int) -> TableColumnSortSpecs:
         pass
 
+# struct ImGuiTableColumnSortSpecs    /* original C++ signature */
 class TableColumnSortSpecs:
     """Sorting specification for one column of a table (sizeof == 12 bytes)"""
 
@@ -5292,7 +5381,7 @@ class TableColumnSortSpecs:
     # ImGuiSortDirection          SortDirection;    /* original C++ signature */
     sort_direction: SortDirection  # ImGuiSortDirection_Ascending or ImGuiSortDirection_Descending
 
-    # ImGuiTableColumnSortSpecs() { memset((void*)this, 0, sizeof(*this)); }    /* original C++ signature */
+    # ImGuiTableColumnSortSpecs();    /* original C++ signature */
     def __init__(self) -> None:
         pass
 
@@ -5316,8 +5405,8 @@ class TableColumnSortSpecs:
 # Defining a custom placement new() with a custom parameter allows us to bypass including <new> which on some platforms complains when user has disabled exceptions.
 # -----------------------------------------------------------------------------
 
+# struct ImNewWrapper    /* original C++ signature */
 class ImNewWrapper:
-    # ImNewWrapper();    /* original C++ signature */
     def __init__(self) -> None:
         """Auto-generated default constructor"""
         pass
@@ -5335,55 +5424,56 @@ class ImNewWrapper:
 
 #  ------------------------------------------------------------------------
 #      <template specializations for class ImVector>
+# struct ImVector<int>    /* original C++ signature */
 class ImVector_int:  # Python specialization for ImVector<int>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_int) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> int:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: int) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: int) -> None:
         """(private API)"""
         pass
@@ -5398,55 +5488,56 @@ class ImVector_int:  # Python specialization for ImVector<int>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<uint>    /* original C++ signature */
 class ImVector_uint:  # Python specialization for ImVector<uint>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_uint) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> uint:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: uint) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: uint) -> None:
         """(private API)"""
         pass
@@ -5461,55 +5552,56 @@ class ImVector_uint:  # Python specialization for ImVector<uint>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<float>    /* original C++ signature */
 class ImVector_float:  # Python specialization for ImVector<float>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_float) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> float:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: float) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: float) -> None:
         """(private API)"""
         pass
@@ -5524,55 +5616,56 @@ class ImVector_float:  # Python specialization for ImVector<float>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<char>    /* original C++ signature */
 class ImVector_char:  # Python specialization for ImVector<char>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_char) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> char:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: str) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: str) -> None:
         """(private API)"""
         pass
@@ -5587,55 +5680,56 @@ class ImVector_char:  # Python specialization for ImVector<char>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<uchar>    /* original C++ signature */
 class ImVector_uchar:  # Python specialization for ImVector<uchar>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_uchar) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> uchar:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: uchar) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: uchar) -> None:
         """(private API)"""
         pass
@@ -5650,55 +5744,56 @@ class ImVector_uchar:  # Python specialization for ImVector<uchar>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImDrawCmd>    /* original C++ signature */
 class ImVector_ImDrawCmd:  # Python specialization for ImVector<ImDrawCmd>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImDrawCmd) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImDrawCmd:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImDrawCmd) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImDrawCmd) -> None:
         """(private API)"""
         pass
@@ -5713,55 +5808,56 @@ class ImVector_ImDrawCmd:  # Python specialization for ImVector<ImDrawCmd>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImDrawChannel>    /* original C++ signature */
 class ImVector_ImDrawChannel:  # Python specialization for ImVector<ImDrawChannel>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImDrawChannel) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImDrawChannel:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImDrawChannel) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImDrawChannel) -> None:
         """(private API)"""
         pass
@@ -5776,55 +5872,56 @@ class ImVector_ImDrawChannel:  # Python specialization for ImVector<ImDrawChanne
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImDrawVert>    /* original C++ signature */
 class ImVector_ImDrawVert:  # Python specialization for ImVector<ImDrawVert>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImDrawVert) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImDrawVert:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImDrawVert) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImDrawVert) -> None:
         """(private API)"""
         pass
@@ -5839,55 +5936,56 @@ class ImVector_ImDrawVert:  # Python specialization for ImVector<ImDrawVert>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImVec4>    /* original C++ signature */
 class ImVector_ImVec4:  # Python specialization for ImVector<ImVec4>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImVec4Like) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImVec4:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImVec4Like) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImVec4Like) -> None:
         """(private API)"""
         pass
@@ -5902,55 +6000,56 @@ class ImVector_ImVec4:  # Python specialization for ImVector<ImVec4>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImVec2>    /* original C++ signature */
 class ImVector_ImVec2:  # Python specialization for ImVector<ImVec2>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImVec2Like) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImVec2:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImVec2Like) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImVec2Like) -> None:
         """(private API)"""
         pass
@@ -5965,55 +6064,56 @@ class ImVector_ImVec2:  # Python specialization for ImVector<ImVec2>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImDrawList *>    /* original C++ signature */
 class ImVector_ImDrawList_ptr:  # Python specialization for ImVector<ImDrawList *>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImDrawList_ptr) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImDrawList:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImDrawList) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImDrawList) -> None:
         """(private API)"""
         pass
@@ -6028,55 +6128,56 @@ class ImVector_ImDrawList_ptr:  # Python specialization for ImVector<ImDrawList 
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImFont *>    /* original C++ signature */
 class ImVector_ImFont_ptr:  # Python specialization for ImVector<ImFont *>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImFont_ptr) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImFont:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImFont) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImFont) -> None:
         """(private API)"""
         pass
@@ -6091,55 +6192,56 @@ class ImVector_ImFont_ptr:  # Python specialization for ImVector<ImFont *>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImFontAtlas *>    /* original C++ signature */
 class ImVector_ImFontAtlas_ptr:  # Python specialization for ImVector<ImFontAtlas *>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImFontAtlas_ptr) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImFontAtlas:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImFontAtlas) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImFontAtlas) -> None:
         """(private API)"""
         pass
@@ -6154,55 +6256,56 @@ class ImVector_ImFontAtlas_ptr:  # Python specialization for ImVector<ImFontAtla
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImFontGlyph>    /* original C++ signature */
 class ImVector_ImFontGlyph:  # Python specialization for ImVector<ImFontGlyph>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImFontGlyph) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImFontGlyph:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImFontGlyph) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImFontGlyph) -> None:
         """(private API)"""
         pass
@@ -6217,55 +6320,56 @@ class ImVector_ImFontGlyph:  # Python specialization for ImVector<ImFontGlyph>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiPlatformMonitor>    /* original C++ signature */
 class ImVector_PlatformMonitor:  # Python specialization for ImVector<ImGuiPlatformMonitor>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_PlatformMonitor) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> PlatformMonitor:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: PlatformMonitor) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: PlatformMonitor) -> None:
         """(private API)"""
         pass
@@ -6280,55 +6384,56 @@ class ImVector_PlatformMonitor:  # Python specialization for ImVector<ImGuiPlatf
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiViewport *>    /* original C++ signature */
 class ImVector_Viewport_ptr:  # Python specialization for ImVector<ImGuiViewport *>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_Viewport_ptr) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> Viewport:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: Viewport) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: Viewport) -> None:
         """(private API)"""
         pass
@@ -6343,55 +6448,56 @@ class ImVector_Viewport_ptr:  # Python specialization for ImVector<ImGuiViewport
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiWindow *>    /* original C++ signature */
 class ImVector_Window_ptr:  # Python specialization for ImVector<ImGuiWindow *>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_Window_ptr) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> Window:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: Window) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: Window) -> None:
         """(private API)"""
         pass
@@ -6406,55 +6512,56 @@ class ImVector_Window_ptr:  # Python specialization for ImVector<ImGuiWindow *>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImFontConfig>    /* original C++ signature */
 class ImVector_ImFontConfig:  # Python specialization for ImVector<ImFontConfig>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImFontConfig) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImFontConfig:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImFontConfig) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImFontConfig) -> None:
         """(private API)"""
         pass
@@ -6469,55 +6576,56 @@ class ImVector_ImFontConfig:  # Python specialization for ImVector<ImFontConfig>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImFontConfig *>    /* original C++ signature */
 class ImVector_ImFontConfig_ptr:  # Python specialization for ImVector<ImFontConfig *>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImFontConfig_ptr) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImFontConfig:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImFontConfig) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImFontConfig) -> None:
         """(private API)"""
         pass
@@ -6532,55 +6640,56 @@ class ImVector_ImFontConfig_ptr:  # Python specialization for ImVector<ImFontCon
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiFocusScopeData>    /* original C++ signature */
 class ImVector_FocusScopeData:  # Python specialization for ImVector<ImGuiFocusScopeData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_FocusScopeData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> FocusScopeData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: FocusScopeData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: FocusScopeData) -> None:
         """(private API)"""
         pass
@@ -6595,55 +6704,56 @@ class ImVector_FocusScopeData:  # Python specialization for ImVector<ImGuiFocusS
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiSelectionRequest>    /* original C++ signature */
 class ImVector_SelectionRequest:  # Python specialization for ImVector<ImGuiSelectionRequest>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_SelectionRequest) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> SelectionRequest:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: SelectionRequest) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: SelectionRequest) -> None:
         """(private API)"""
         pass
@@ -6658,55 +6768,56 @@ class ImVector_SelectionRequest:  # Python specialization for ImVector<ImGuiSele
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImRect>    /* original C++ signature */
 class ImVector_ImRect:  # Python specialization for ImVector<ImRect>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImRect) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImRect:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImRect) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImRect) -> None:
         """(private API)"""
         pass
@@ -6721,55 +6832,56 @@ class ImVector_ImRect:  # Python specialization for ImVector<ImRect>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiColorMod>    /* original C++ signature */
 class ImVector_ColorMod:  # Python specialization for ImVector<ImGuiColorMod>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ColorMod) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ColorMod:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ColorMod) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ColorMod) -> None:
         """(private API)"""
         pass
@@ -6784,55 +6896,56 @@ class ImVector_ColorMod:  # Python specialization for ImVector<ImGuiColorMod>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiGroupData>    /* original C++ signature */
 class ImVector_GroupData:  # Python specialization for ImVector<ImGuiGroupData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_GroupData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> GroupData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: GroupData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: GroupData) -> None:
         """(private API)"""
         pass
@@ -6847,55 +6960,56 @@ class ImVector_GroupData:  # Python specialization for ImVector<ImGuiGroupData>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiPopupData>    /* original C++ signature */
 class ImVector_PopupData:  # Python specialization for ImVector<ImGuiPopupData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_PopupData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> PopupData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: PopupData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: PopupData) -> None:
         """(private API)"""
         pass
@@ -6910,55 +7024,56 @@ class ImVector_PopupData:  # Python specialization for ImVector<ImGuiPopupData>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiViewportP *>    /* original C++ signature */
 class ImVector_ViewportP_ptr:  # Python specialization for ImVector<ImGuiViewportP *>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ViewportP_ptr) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ViewportP:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ViewportP) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ViewportP) -> None:
         """(private API)"""
         pass
@@ -6973,55 +7088,56 @@ class ImVector_ViewportP_ptr:  # Python specialization for ImVector<ImGuiViewpor
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiInputEvent>    /* original C++ signature */
 class ImVector_InputEvent:  # Python specialization for ImVector<ImGuiInputEvent>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_InputEvent) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> InputEvent:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: InputEvent) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: InputEvent) -> None:
         """(private API)"""
         pass
@@ -7036,55 +7152,56 @@ class ImVector_InputEvent:  # Python specialization for ImVector<ImGuiInputEvent
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiWindowStackData>    /* original C++ signature */
 class ImVector_WindowStackData:  # Python specialization for ImVector<ImGuiWindowStackData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_WindowStackData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> WindowStackData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: WindowStackData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: WindowStackData) -> None:
         """(private API)"""
         pass
@@ -7099,55 +7216,56 @@ class ImVector_WindowStackData:  # Python specialization for ImVector<ImGuiWindo
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiTableColumnSortSpecs>    /* original C++ signature */
 class ImVector_TableColumnSortSpecs:  # Python specialization for ImVector<ImGuiTableColumnSortSpecs>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_TableColumnSortSpecs) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> TableColumnSortSpecs:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: TableColumnSortSpecs) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: TableColumnSortSpecs) -> None:
         """(private API)"""
         pass
@@ -7162,55 +7280,56 @@ class ImVector_TableColumnSortSpecs:  # Python specialization for ImVector<ImGui
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiTableInstanceData>    /* original C++ signature */
 class ImVector_TableInstanceData:  # Python specialization for ImVector<ImGuiTableInstanceData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_TableInstanceData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> TableInstanceData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: TableInstanceData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: TableInstanceData) -> None:
         """(private API)"""
         pass
@@ -7225,55 +7344,56 @@ class ImVector_TableInstanceData:  # Python specialization for ImVector<ImGuiTab
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiTableTempData>    /* original C++ signature */
 class ImVector_TableTempData:  # Python specialization for ImVector<ImGuiTableTempData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_TableTempData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> TableTempData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: TableTempData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: TableTempData) -> None:
         """(private API)"""
         pass
@@ -7288,55 +7408,56 @@ class ImVector_TableTempData:  # Python specialization for ImVector<ImGuiTableTe
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiPtrOrIndex>    /* original C++ signature */
 class ImVector_PtrOrIndex:  # Python specialization for ImVector<ImGuiPtrOrIndex>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_PtrOrIndex) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> PtrOrIndex:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: PtrOrIndex) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: PtrOrIndex) -> None:
         """(private API)"""
         pass
@@ -7351,55 +7472,56 @@ class ImVector_PtrOrIndex:  # Python specialization for ImVector<ImGuiPtrOrIndex
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiSettingsHandler>    /* original C++ signature */
 class ImVector_SettingsHandler:  # Python specialization for ImVector<ImGuiSettingsHandler>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_SettingsHandler) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> SettingsHandler:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: SettingsHandler) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: SettingsHandler) -> None:
         """(private API)"""
         pass
@@ -7414,55 +7536,56 @@ class ImVector_SettingsHandler:  # Python specialization for ImVector<ImGuiSetti
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiShrinkWidthItem>    /* original C++ signature */
 class ImVector_ShrinkWidthItem:  # Python specialization for ImVector<ImGuiShrinkWidthItem>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ShrinkWidthItem) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ShrinkWidthItem:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ShrinkWidthItem) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ShrinkWidthItem) -> None:
         """(private API)"""
         pass
@@ -7477,55 +7600,56 @@ class ImVector_ShrinkWidthItem:  # Python specialization for ImVector<ImGuiShrin
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiStackLevelInfo>    /* original C++ signature */
 class ImVector_StackLevelInfo:  # Python specialization for ImVector<ImGuiStackLevelInfo>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_StackLevelInfo) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> StackLevelInfo:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: StackLevelInfo) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: StackLevelInfo) -> None:
         """(private API)"""
         pass
@@ -7540,55 +7664,56 @@ class ImVector_StackLevelInfo:  # Python specialization for ImVector<ImGuiStackL
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiTabItem>    /* original C++ signature */
 class ImVector_TabItem:  # Python specialization for ImVector<ImGuiTabItem>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_TabItem) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> TabItem:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: TabItem) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: TabItem) -> None:
         """(private API)"""
         pass
@@ -7603,55 +7728,56 @@ class ImVector_TabItem:  # Python specialization for ImVector<ImGuiTabItem>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiKeyRoutingData>    /* original C++ signature */
 class ImVector_KeyRoutingData:  # Python specialization for ImVector<ImGuiKeyRoutingData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_KeyRoutingData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> KeyRoutingData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: KeyRoutingData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: KeyRoutingData) -> None:
         """(private API)"""
         pass
@@ -7666,55 +7792,56 @@ class ImVector_KeyRoutingData:  # Python specialization for ImVector<ImGuiKeyRou
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiListClipperData>    /* original C++ signature */
 class ImVector_ListClipperData:  # Python specialization for ImVector<ImGuiListClipperData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ListClipperData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ListClipperData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ListClipperData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ListClipperData) -> None:
         """(private API)"""
         pass
@@ -7729,55 +7856,56 @@ class ImVector_ListClipperData:  # Python specialization for ImVector<ImGuiListC
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiListClipperRange>    /* original C++ signature */
 class ImVector_ListClipperRange:  # Python specialization for ImVector<ImGuiListClipperRange>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ListClipperRange) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ListClipperRange:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ListClipperRange) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ListClipperRange) -> None:
         """(private API)"""
         pass
@@ -7792,55 +7920,56 @@ class ImVector_ListClipperRange:  # Python specialization for ImVector<ImGuiList
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiOldColumnData>    /* original C++ signature */
 class ImVector_OldColumnData:  # Python specialization for ImVector<ImGuiOldColumnData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_OldColumnData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> OldColumnData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: OldColumnData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: OldColumnData) -> None:
         """(private API)"""
         pass
@@ -7855,55 +7984,56 @@ class ImVector_OldColumnData:  # Python specialization for ImVector<ImGuiOldColu
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiOldColumns>    /* original C++ signature */
 class ImVector_OldColumns:  # Python specialization for ImVector<ImGuiOldColumns>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_OldColumns) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> OldColumns:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: OldColumns) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: OldColumns) -> None:
         """(private API)"""
         pass
@@ -7918,55 +8048,56 @@ class ImVector_OldColumns:  # Python specialization for ImVector<ImGuiOldColumns
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiStyleMod>    /* original C++ signature */
 class ImVector_StyleMod:  # Python specialization for ImVector<ImGuiStyleMod>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_StyleMod) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> StyleMod:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: StyleMod) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: StyleMod) -> None:
         """(private API)"""
         pass
@@ -7981,55 +8112,56 @@ class ImVector_StyleMod:  # Python specialization for ImVector<ImGuiStyleMod>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiTableHeaderData>    /* original C++ signature */
 class ImVector_TableHeaderData:  # Python specialization for ImVector<ImGuiTableHeaderData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_TableHeaderData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> TableHeaderData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: TableHeaderData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: TableHeaderData) -> None:
         """(private API)"""
         pass
@@ -8044,55 +8176,56 @@ class ImVector_TableHeaderData:  # Python specialization for ImVector<ImGuiTable
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiTreeNodeStackData>    /* original C++ signature */
 class ImVector_TreeNodeStackData:  # Python specialization for ImVector<ImGuiTreeNodeStackData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_TreeNodeStackData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> TreeNodeStackData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: TreeNodeStackData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: TreeNodeStackData) -> None:
         """(private API)"""
         pass
@@ -8107,55 +8240,56 @@ class ImVector_TreeNodeStackData:  # Python specialization for ImVector<ImGuiTre
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImGuiMultiSelectTempData>    /* original C++ signature */
 class ImVector_MultiSelectTempData:  # Python specialization for ImVector<ImGuiMultiSelectTempData>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_MultiSelectTempData) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> MultiSelectTempData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: MultiSelectTempData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: MultiSelectTempData) -> None:
         """(private API)"""
         pass
@@ -8170,55 +8304,56 @@ class ImVector_MultiSelectTempData:  # Python specialization for ImVector<ImGuiM
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImTextureData *>    /* original C++ signature */
 class ImVector_ImTextureData_ptr:  # Python specialization for ImVector<ImTextureData *>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImTextureData_ptr) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImTextureData:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImTextureData) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImTextureData) -> None:
         """(private API)"""
         pass
@@ -8233,55 +8368,56 @@ class ImVector_ImTextureData_ptr:  # Python specialization for ImVector<ImTextur
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImTextureRef>    /* original C++ signature */
 class ImVector_ImTextureRef:  # Python specialization for ImVector<ImTextureRef>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImTextureRef) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImTextureRef:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImTextureRef) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImTextureRef) -> None:
         """(private API)"""
         pass
@@ -8296,55 +8432,56 @@ class ImVector_ImTextureRef:  # Python specialization for ImVector<ImTextureRef>
         """Address of the underlying array (e.g. to create a numpy view of it)"""
         pass
 
+# struct ImVector<ImTextureRect>    /* original C++ signature */
 class ImVector_ImTextureRect:  # Python specialization for ImVector<ImTextureRect>
 
     # Provide standard typedefs but we don't use them ourselves.
 
     # Constructors, destructor
-    # inline ImVector()                                       { Size = Capacity = 0; Data = NULL; }    /* original C++ signature */
+    # inline ImVector();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # inline ImVector(const ImVector<T>& src)                 { Size = Capacity = 0; Data = NULL; operator=(src); }    /* original C++ signature */
+    # inline ImVector(const ImVector<T>& src);    /* original C++ signature */
     @overload
     def __init__(self, src: ImVector_ImTextureRect) -> None:
         pass
-    # inline void         clear()                             { if (Data) { Size = Capacity = 0; IM_FREE(Data); Data = NULL; } }      /* original C++ signature */
+    # inline void         clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
         Important: does not destruct anything
         """
         pass
-    # inline void         clear_destruct()                    { for (int n = 0; n < Size; n++) Data[n].~T(); clear(); }               /* original C++ signature */
+    # inline void         clear_destruct();    /* original C++ signature */
     def clear_destruct(self) -> None:
         """(private API)
 
         Important: never called automatically! always explicit.
         """
         pass
-    # inline bool         empty() const                       { return Size == 0; }    /* original C++ signature */
+    # inline bool         empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # inline int          size() const                        { return Size; }    /* original C++ signature */
+    # inline int          size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # inline T&        operator[](int i)       { IM_ASSERT(i >= 0 && i < Size); return Data[i]; }    /* original C++ signature */
+    # inline T&        operator[](int i);    /* original C++ signature */
     def __getitem__(self, i: int) -> ImTextureRect:
         """(private API)"""
         pass
     # NB: It is illegal to call push_back/push_front/insert with a reference pointing inside the ImVector data itself! e.g. v.push_back(v[10]) is forbidden.
-    # inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_grow_capacity(Size + 1)); memcpy(&Data[Size], &v, sizeof(v)); Size++; }    /* original C++ signature */
+    # inline void         push_back(const T& v);    /* original C++ signature */
     def push_back(self, v: ImTextureRect) -> None:
         """(private API)"""
         pass
-    # inline void         pop_back()                          { IM_ASSERT(Size > 0); Size--; }    /* original C++ signature */
+    # inline void         pop_back();    /* original C++ signature */
     def pop_back(self) -> None:
         """(private API)"""
         pass
-    # inline void         push_front(const T& v)              { if (Size == 0) push_back(v); else insert(Data, v); }    /* original C++ signature */
+    # inline void         push_front(const T& v);    /* original C++ signature */
     def push_front(self, v: ImTextureRect) -> None:
         """(private API)"""
         pass
@@ -8388,6 +8525,7 @@ ImVector_ImU8 = ImVector_uchar
 # and ImGui::PushStyleColor(ImGuiCol_XXX)/PopStyleColor() for colors.
 # -----------------------------------------------------------------------------
 
+# struct ImGuiStyle    /* original C++ signature */
 class Style:
     # Font scaling
     # - recap: ImGui::GetFontSize() == FontSizeBase * (FontScaleMain * FontScaleDpi * other_scaling_factors)
@@ -8551,11 +8689,11 @@ class Style:
 
     # Rendering & Tessellation
     # bool        AntiAliasedLines;    /* original C++ signature */
-    anti_aliased_lines: bool  # Enable anti-aliased lines/borders. Disable if you are really tight on CPU/GPU. Latched at the beginning of the frame (copied to ImDrawList).
-    # bool        AntiAliasedLinesUseTex;    /* original C++ signature */
-    anti_aliased_lines_use_tex: bool  # Enable anti-aliased lines/borders using textures where possible. Require backend to render with bilinear filtering (NOT point/nearest filtering). Latched at the beginning of the frame (copied to ImDrawList).
+    anti_aliased_lines: bool  # Enable anti-aliased lines/borders. Used at the beginning of the frame to set ImDrawFlags_AALines in all draw-lists.
+    # bool        AntiAliasedLineEnds;    /* original C++ signature */
+    anti_aliased_line_ends: bool  # Enable anti-aliased lines/borders ends. Nicer for thick lines but more expensive. Used at the beginning of the frame to set ImDrawFlags_AALineEnds in all draw-lists.
     # bool        AntiAliasedFill;    /* original C++ signature */
-    anti_aliased_fill: bool  # Enable anti-aliased edges around filled shapes (rounded rectangles, circles, etc.). Disable if you are really tight on CPU/GPU. Latched at the beginning of the frame (copied to ImDrawList).
+    anti_aliased_fill: bool  # Enable anti-aliased edges around filled shapes (rounded rectangles, circles, etc.). Used at the beginning of the frame to set ImDrawFlags_AAFill in all draw-lists.
     # float       CurveTessellationMaxError;    /* original C++ signature */
     curve_tessellation_max_error: float  # Maximum error (in pixels) when using PathBezierCurveTo() without a specific number of segments. Decrease for highly tessellated curves (higher quality, more polygons), increase to reduce quality.
     # float       CircleTessellationMaxError;    /* original C++ signature */
@@ -8612,6 +8750,7 @@ class Style:
 # Also see ImGui::GetPlatformIO() and ImGuiPlatformIO struct for OS/platform related functions: clipboard, IME etc.
 # -----------------------------------------------------------------------------
 
+# struct ImGuiKeyData    /* original C++ signature */
 class KeyData:
     """[Internal] Storage used by IsKeyDown(), IsKeyPressed() etc functions.
     If prior to 1.87 you used io.KeysDownDuration[] (which was marked as internal), you should use GetKeyData(key)->DownDuration and *NOT* io.KeysData[key]->DownDuration.
@@ -8625,7 +8764,6 @@ class KeyData:
     down_duration_prev: float  # Last frame duration the key has been down
     # float       AnalogValue;    /* original C++ signature */
     analog_value: float  # 0.0..1.0 for gamepad values
-    # ImGuiKeyData(bool Down = bool(), float DownDuration = float(), float DownDurationPrev = float(), float AnalogValue = float());    /* original C++ signature */
     def __init__(
         self,
         down: bool = bool(),
@@ -8636,6 +8774,7 @@ class KeyData:
         """Auto-generated default constructor with named params"""
         pass
 
+# struct ImGuiIO    /* original C++ signature */
 class IO:
     # ------------------------------------------------------------------
     # Configuration                            // Default value
@@ -8833,6 +8972,14 @@ class IO:
     # - Backends may have other side-effects on focus loss, so this will reduce side-effects but not necessary remove all of them.
     # bool        ConfigDebugIgnoreFocusLoss;    /* original C++ signature */
     config_debug_ignore_focus_loss: bool  # = False          // Ignore io.AddFocusEvent(False), consequently not calling io.ClearInputKeys()/io.ClearInputMouse() in input processing.
+
+    # Option to compare < 1.93.0 rendering details vs 1.93.0 rendering details. (#9504)
+    # - Equivalent to calling PushDrawFlag(ImDrawList_StrokeLegacy,True) on every draw list instances.
+    # - Suggested use, e.g. io.ConfigDebugDrawListDefaultsToStrokeLegacy = io.KeyShift; // Map to SHIFT modifier
+    # bool        ConfigDebugDrawListDefaultsToStrokeLegacy;    /* original C++ signature */
+    config_debug_draw_list_defaults_to_stroke_legacy: (
+        bool  # False // Default all ImDrawList to ImDrawList_StrokeLegacy mode, mimicking pre-1.93.0 rendering.
+    )
 
     # ------------------------------------------------------------------
     # Platform Identifiers
@@ -9093,6 +9240,7 @@ class IO:
 # [SECTION] Misc data structures (ImGuiInputTextCallbackData, ImGuiSizeCallbackData, ImGuiPayload)
 # -----------------------------------------------------------------------------
 
+# struct ImGuiInputTextCallbackData    /* original C++ signature */
 class InputTextCallbackData:
     """Shared state of InputText(), passed as an argument to your callback when a ImGuiInputTextFlags_Callback* flag is used.
     The callback function should return 0 by default.
@@ -9151,25 +9299,26 @@ class InputTextCallbackData:
     def delete_chars(self, pos: int, bytes_count: int) -> None:
         pass
     # IMGUI_API void      InsertChars(int pos, const char* text, const char* text_end = NULL);    /* original C++ signature */
-    def insert_chars(self, pos: int, text: str, text_end: Optional[str] = None) -> None:
+    def insert_chars(self, pos: int, text: str) -> None:
         pass
-    # void                SelectAll()                 { SelectionStart = 0; CursorPos = SelectionEnd = BufTextLen; }    /* original C++ signature */
+    # void                SelectAll();    /* original C++ signature */
     def select_all(self) -> None:
         """(private API)"""
         pass
-    # void                SetSelection(int s, int e)  { IM_ASSERT(s >= 0 && s <= BufTextLen); IM_ASSERT(e >= 0 && e <= BufTextLen); SelectionStart = s; CursorPos = SelectionEnd = e; }    /* original C++ signature */
+    # void                SetSelection(int s, int e);    /* original C++ signature */
     def set_selection(self, s: int, e: int) -> None:
         """(private API)"""
         pass
-    # void                ClearSelection()            { SelectionStart = SelectionEnd = BufTextLen; }    /* original C++ signature */
+    # void                ClearSelection();    /* original C++ signature */
     def clear_selection(self) -> None:
         """(private API)"""
         pass
-    # bool                HasSelection() const        { return SelectionStart != SelectionEnd; }    /* original C++ signature */
+    # bool                HasSelection() const;    /* original C++ signature */
     def has_selection(self) -> bool:
         """(private API)"""
         pass
 
+# struct ImGuiSizeCallbackData    /* original C++ signature */
 class SizeCallbackData:
     """Resizing callback data to apply custom constraint. As enabled by SetNextWindowSizeConstraints(). Callback is called during the next Begin().
     NB: For basic min/max size constraint on each axis you don't need to use the callback! The SetNextWindowSizeConstraints() parameters are enough.
@@ -9185,7 +9334,6 @@ class SizeCallbackData:
     desired_size: (
         ImVec2  # Read-write.  Desired size, based on user's mouse position. Write to this field to restrain resizing.
     )
-    # ImGuiSizeCallbackData(ImVec2 Pos = ImVec2(), ImVec2 CurrentSize = ImVec2(), ImVec2 DesiredSize = ImVec2());    /* original C++ signature */
     def __init__(
         self,
         pos: Optional[ImVec2Like] = None,
@@ -9202,6 +9350,7 @@ class SizeCallbackData:
         """
         pass
 
+# struct ImGuiWindowClass    /* original C++ signature */
 class WindowClass:
     """[ALPHA] Rarely used / very advanced uses only. Use with SetNextWindowClass() and DockSpace() functions.
     Important: the content of this class is still highly WIP and likely to change and be refactored
@@ -9235,10 +9384,11 @@ class WindowClass:
     # void*               PlatformIconData;    /* original C++ signature */
     platform_icon_data: Any  # [EXPERIMENTAL] Pass opaque data for Platform backend to handle.
 
-    # ImGuiWindowClass() { memset((void*)this, 0, sizeof(*this)); ParentViewportId = (ImGuiID)-1; DockingAllowUnclassed = true; }    /* original C++ signature */
+    # ImGuiWindowClass();    /* original C++ signature */
     def __init__(self) -> None:
         pass
 
+# struct ImGuiPayload    /* original C++ signature */
 class Payload:
     """Data payload for Drag and Drop operations: AcceptDragDropPayload(), GetDragDropPayload()"""
 
@@ -9260,22 +9410,22 @@ class Payload:
     # bool            Delivery;    /* original C++ signature */
     delivery: bool  # Set when AcceptDragDropPayload() was called and mouse button is released over the target item.
 
-    # ImGuiPayload()  { Clear(); }    /* original C++ signature */
+    # ImGuiPayload();    /* original C++ signature */
     def __init__(self) -> None:
         pass
-    # void Clear()    { SourceId = SourceParentId = 0; Data = NULL; DataSize = 0; memset(DataType, 0, sizeof(DataType)); DataFrameCount = -1; Preview = Delivery = false; }    /* original C++ signature */
+    # void Clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)"""
         pass
-    # bool IsDataType(const char* type) const { return DataFrameCount != -1 && strcmp(type, DataType) == 0; }    /* original C++ signature */
+    # bool IsDataType(const char* type) const;    /* original C++ signature */
     def is_data_type(self, type: str) -> bool:
         """(private API)"""
         pass
-    # bool IsPreview() const                  { return Preview; }    /* original C++ signature */
+    # bool IsPreview() const;    /* original C++ signature */
     def is_preview(self) -> bool:
         """(private API)"""
         pass
-    # bool IsDelivery() const                 { return Delivery; }    /* original C++ signature */
+    # bool IsDelivery() const;    /* original C++ signature */
     def is_delivery(self) -> bool:
         """(private API)"""
         pass
@@ -9286,68 +9436,57 @@ class Payload:
 
 # Helper: Unicode defines
 
+# struct ImGuiOnceUponAFrame    /* original C++ signature */
 class OnceUponAFrame:
     """Helper: Execute a block of code at maximum once a frame. Convenient if you want to quickly create a UI within deep-nested code that runs multiple times every frame.
     Usage: static ImGuiOnceUponAFrame oaf; if (oaf) ImGui::Text("This will be called only once per frame");
     """
 
-    # ImGuiOnceUponAFrame() { RefFrame = -1; }    /* original C++ signature */
+    # ImGuiOnceUponAFrame();    /* original C++ signature */
     def __init__(self) -> None:
         pass
     # mutable int RefFrame;    /* original C++ signature */
     ref_frame: int
-    # operator bool() const { int current_frame = ImGui::GetFrameCount(); if (RefFrame == current_frame) return false; RefFrame = current_frame; return true; }    /* original C++ signature */
+    # operator bool() const;    /* original C++ signature */
     def __bool__(self) -> bool:
         pass
 
+# struct ImGuiTextFilter    /* original C++ signature */
 class TextFilter:
-    """Helper: Parse and apply text filters. In format "aaaaa[,bbbb][,ccccc]" """
-
     # IMGUI_API           ImGuiTextFilter(const char* default_filter = "");    /* original C++ signature */
     def __init__(self, default_filter: str = "") -> None:
         pass
-    # IMGUI_API bool      Draw(const char* label = "Filter (inc,-exc)", float width = 0.0f);      /* original C++ signature */
-    def draw(self, label: str = "Filter (inc,-exc)", width: float = 0.0) -> bool:
-        """Helper calling InputText+Build"""
-        pass
     # IMGUI_API bool      PassFilter(const char* text, const char* text_end = NULL) const;    /* original C++ signature */
-    def pass_filter(self, text: str, text_end: Optional[str] = None) -> bool:
+    def pass_filter(self, text: str) -> bool:
         pass
-    # IMGUI_API void      Build();    /* original C++ signature */
+    # IMGUI_API void      Build();                                            /* original C++ signature */
     def build(self) -> None:
+        """Update internal data when filter changes"""
         pass
-    # void                Clear()          { InputBuf[0] = 0; Build(); }    /* original C++ signature */
+    # inline void         Clear();    /* original C++ signature */
     def clear(self) -> None:
-        """(private API)"""
+        """(private API)
+
+        Clear filter
+        """
         pass
-    # bool                IsActive() const { return !Filters.empty(); }    /* original C++ signature */
+    # inline bool         IsActive() const;    /* original C++ signature */
     def is_active(self) -> bool:
-        """(private API)"""
+        """(private API)
+
+        Useful if you need e.g. an alternative code-path when there are no filters
+        """
         pass
-
-    class TextRange:
-        """[Internal]"""
-
-        # const char*     b;    /* original C++ signature */
-        b: str  # (const)
-        # const char*     e;    /* original C++ signature */
-        e: str  # (const)
-
-        # ImGuiTextRange()                                { b = e = NULL; }    /* original C++ signature */
-        @overload
-        def __init__(self) -> None:
-            pass
-        # ImGuiTextRange(const char* _b, const char* _e)  { b = _b; e = _e; }    /* original C++ signature */
-        @overload
-        def __init__(self, _b: str, _e: str) -> None:
-            pass
-        # bool            empty() const                   { return b == e; }    /* original C++ signature */
-        def empty(self) -> bool:
-            """(private API)"""
-            pass
-
-    # int                     CountGrep;    /* original C++ signature */
-    count_grep: int
+    # Helper to call InputText() + Build() when buffer is changed.
+    # IMGUI_API bool      Draw(const char* label = "Filter");    /* original C++ signature */
+    def draw(self, label: str = "Filter") -> bool:
+        pass
+    # IMGUI_API bool      DrawWithHint(const char* label = "Filter", const char* hint = "incl -excl");    /* original C++ signature */
+    def draw_with_hint(self, label: str = "Filter", hint: str = "incl -excl") -> bool:
+        pass
+    # Members
+    # int                 _CountExclude;    /* original C++ signature */
+    _count_exclude: int  # [Internal] >= 0 count of leading exclude
 
     @property
     def input_buf(self) -> str:
@@ -9357,6 +9496,7 @@ class TextFilter:
     @input_buf.setter
     def input_buf(self, value: str) -> None: ...
 
+# struct ImGuiTextBuffer    /* original C++ signature */
 class TextBuffer:
     """Helper: Growable text buffer for logging/accumulating text
     (this could be called 'ImGuiTextBuilder' / 'ImGuiStringBuilder')
@@ -9365,76 +9505,78 @@ class TextBuffer:
     # ImVector<char>      Buf;    /* original C++ signature */
     buf: ImVector_char
 
-    # ImGuiTextBuffer()   { }    /* original C++ signature */
+    # ImGuiTextBuffer();    /* original C++ signature */
     def __init__(self) -> None:
         pass
-    # inline char         operator[](int i) const { IM_ASSERT(Buf.Data != NULL); return Buf.Data[i]; }    /* original C++ signature */
+    # inline char         operator[](int i) const;    /* original C++ signature */
     def __getitem__(self, i: int) -> int:
         """(private API)"""
         pass
-    # const char*         begin() const           { return Buf.Data ? &Buf.front() : EmptyString; }    /* original C++ signature */
+    # const char*         begin() const;    /* original C++ signature */
     def begin(self) -> str:
         """(private API)"""
         pass
-    # const char*         end() const             { return Buf.Data ? &Buf.back() : EmptyString; }     /* original C++ signature */
+    # const char*         end() const;    /* original C++ signature */
     def end(self) -> str:
         """(private API)
 
         Buf is zero-terminated, so end() will point on the zero-terminator
         """
         pass
-    # int                 size() const            { return Buf.Size ? Buf.Size - 1 : 0; }    /* original C++ signature */
+    # int                 size() const;    /* original C++ signature */
     def size(self) -> int:
         """(private API)"""
         pass
-    # bool                empty() const           { return Buf.Size <= 1; }    /* original C++ signature */
+    # bool                empty() const;    /* original C++ signature */
     def empty(self) -> bool:
         """(private API)"""
         pass
-    # void                clear()                 { Buf.clear(); }    /* original C++ signature */
+    # void                clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)"""
         pass
-    # void                resize(int size)        { if (Buf.Size > size) Buf.Data[size] = 0; Buf.resize(size ? size + 1 : 0, 0); }     /* original C++ signature */
+    # void                resize(int size);    /* original C++ signature */
     def resize(self, size: int) -> None:
         """(private API)
 
         Similar to resize(0) on ImVector: empty string but don't free buffer.
         """
         pass
-    # void                reserve(int capacity)   { Buf.reserve(capacity); }    /* original C++ signature */
+    # void                reserve(int capacity);    /* original C++ signature */
     def reserve(self, capacity: int) -> None:
         """(private API)"""
         pass
-    # const char*         c_str() const           { return Buf.Data ? Buf.Data : EmptyString; }    /* original C++ signature */
+    # const char*         c_str() const;    /* original C++ signature */
     def c_str(self) -> str:
         """(private API)"""
         pass
     # IMGUI_API void      append(const char* str, const char* str_end = NULL);    /* original C++ signature */
-    def append(self, str: str, str_end: Optional[str] = None) -> None:
+    def append(self, str: str) -> None:
         pass
     # IMGUI_API void      appendf(const char* fmt, ...) ;    /* original C++ signature */
     def appendf(self, fmt: str) -> None:
         pass
 
+# struct ImGuiStoragePair    /* original C++ signature */
 class StoragePair:
     """[Internal] Key+Value for ImGuiStorage"""
 
     # ImGuiID     key;    /* original C++ signature */
     key: ID
-    # ImGuiStoragePair(ImGuiID _key, int _val)    { key = _key; val_i = _val; }    /* original C++ signature */
+    # ImGuiStoragePair(ImGuiID _key, int _val);    /* original C++ signature */
     @overload
     def __init__(self, _key: ID, _val: int) -> None:
         pass
-    # ImGuiStoragePair(ImGuiID _key, float _val)  { key = _key; val_f = _val; }    /* original C++ signature */
+    # ImGuiStoragePair(ImGuiID _key, float _val);    /* original C++ signature */
     @overload
     def __init__(self, _key: ID, _val: float) -> None:
         pass
-    # ImGuiStoragePair(ImGuiID _key, void* _val)  { key = _key; val_p = _val; }    /* original C++ signature */
+    # ImGuiStoragePair(ImGuiID _key, void* _val);    /* original C++ signature */
     @overload
     def __init__(self, _key: ID, _val: Any) -> None:
         pass
 
+# struct ImGuiStorage    /* original C++ signature */
 class Storage:
     """Helper: Key->Value storage
     Typically you don't have to worry about this since a storage is held within each Window.
@@ -9446,7 +9588,7 @@ class Storage:
     Types are NOT stored, so it is up to you to make sure your Key don't collide with different types.
     """
 
-    # void                Clear() { Data.clear(); }    /* original C++ signature */
+    # void                Clear();    /* original C++ signature */
     def clear(self) -> None:
         """- Get***() functions find pair, never add/allocate. Pairs are sorted so a query is O(log N)
          - Set***() functions find pair, insertion on demand if missing.
@@ -9500,11 +9642,12 @@ class Storage:
     def set_all_int(self, val: int) -> None:
         """Obsolete: use on your own storage if you know only integer are being stored (open/close all tree nodes)"""
         pass
-    # ImGuiStorage();    /* original C++ signature */
+
     def __init__(self) -> None:
         """Auto-generated default constructor"""
         pass
 
+# enum ImGuiListClipperFlags_    /* original C++ signature */
 class ListClipperFlags_(enum.IntFlag):
     """Flags for ImGuiListClipper (currently not fully exposed in function calls: a future refactor will likely add this to ImGuiListClipper::Begin function equivalent)"""
 
@@ -9515,6 +9658,7 @@ class ListClipperFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 0)  # [Internal] Disabled modifying table row counters. Avoid assumption that 1 clipper item == 1 table row.
 
+# struct ImGuiListClipper    /* original C++ signature */
 class ListClipper:
     """Helper: Manually clip large list of items.
     If you have lots evenly spaced items and you have random access to the list, you can perform coarse
@@ -9578,7 +9722,7 @@ class ListClipper:
     def step(self) -> bool:
         """Call until it returns False. The DisplayStart/DisplayEnd fields will be set and you can process/draw those items."""
         pass
-    # inline void     IncludeItemByIndex(int item_index)                  { IncludeItemsByIndex(item_index, item_index + 1); }    /* original C++ signature */
+    # inline void     IncludeItemByIndex(int item_index);    /* original C++ signature */
     def include_item_by_index(self, item_index: int) -> None:
         """Call IncludeItemByIndex() or IncludeItemsByIndex() *BEFORE* first call to Step() if you need a range of items to not be clipped, regardless of their visibility.
          (Due to alignment / padding of certain items it is possible that an extra item may be included on either end of the display range).
@@ -9606,6 +9750,7 @@ class ListClipper:
 # - User can declare their own format by #defining the 5 _SHIFT/_MASK macros in their imconfig file.
 # - Any setting other than the default will need custom backend support. The only standard backend that supports anything else than the default is DirectX9.
 
+# struct ImColor    /* original C++ signature */
 class ImColor:
     """Helper: ImColor() implicitly converts colors to either ImU32 (packed 4x1 byte) or ImVec4 (4x1 float)
     Prefer using IM_COL32() macros if you want a guaranteed compile-time ImU32 for usage with ImDrawList API.
@@ -9616,32 +9761,32 @@ class ImColor:
     # ImVec4          Value;    /* original C++ signature */
     value: ImVec4
 
-    # constexpr ImColor()                                             { }    /* original C++ signature */
+    # constexpr ImColor();    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # constexpr ImColor(float r, float g, float b, float a = 1.0f)    : Value(r, g, b, a) { }    /* original C++ signature */
+    # constexpr ImColor(float r, float g, float b, float a = 1.0f)    : Value(r, g, b, a);    /* original C++ signature */
     @overload
     def __init__(self, r: float, g: float, b: float, a: float = 1.0) -> None:
         pass
-    # constexpr ImColor(const ImVec4& col)                            : Value(col) {}    /* original C++ signature */
+    # constexpr ImColor(const ImVec4& col)                            : Value(col);    /* original C++ signature */
     @overload
     def __init__(self, col: ImVec4Like) -> None:
         pass
-    # constexpr ImColor(int r, int g, int b, int a = 255)             : Value((float)r * (1.0f / 255.0f), (float)g * (1.0f / 255.0f), (float)b * (1.0f / 255.0f), (float)a* (1.0f / 255.0f)) {}    /* original C++ signature */
+    # constexpr ImColor(int r, int g, int b, int a = 255)             : Value((float)r * (1.0f / 255.0f), (float)g * (1.0f / 255.0f), (float)b * (1.0f / 255.0f), (float)a* (1.0f / 255.0f));    /* original C++ signature */
     @overload
     def __init__(self, r: int, g: int, b: int, a: int = 255) -> None:
         pass
-    # constexpr ImColor(ImU32 rgba)                                   : Value((float)((rgba >> IM_COL32_R_SHIFT) & 0xFF) * (1.0f / 255.0f), (float)((rgba >> IM_COL32_G_SHIFT) & 0xFF) * (1.0f / 255.0f), (float)((rgba >> IM_COL32_B_SHIFT) & 0xFF) * (1.0f / 255.0f), (float)((rgba >> IM_COL32_A_SHIFT) & 0xFF) * (1.0f / 255.0f)) {}    /* original C++ signature */
+    # constexpr ImColor(ImU32 rgba)                                   : Value((float)((rgba >> IM_COL32_R_SHIFT) & 0xFF) * (1.0f / 255.0f), (float)((rgba >> IM_COL32_G_SHIFT) & 0xFF) * (1.0f / 255.0f), (float)((rgba >> IM_COL32_B_SHIFT) & 0xFF) * (1.0f / 255.0f), (float)((rgba >> IM_COL32_A_SHIFT) & 0xFF) * (1.0f / 255.0f));    /* original C++ signature */
     @overload
     def __init__(self, rgba: ImU32) -> None:
         pass
     # FIXME-OBSOLETE: May need to obsolete/cleanup those helpers.
-    # inline void    SetHSV(float h, float s, float v, float a = 1.0f){ ImGui::ColorConvertHSVtoRGB(h, s, v, Value.x, Value.y, Value.z); Value.w = a; }    /* original C++ signature */
+    # inline void    SetHSV(float h, float s, float v, float a = 1.0f);    /* original C++ signature */
     def set_hsv(self, h: float, s: float, v: float, a: float = 1.0) -> None:
         """(private API)"""
         pass
-    # static ImColor HSV(float h, float s, float v, float a = 1.0f)   { float r, g, b; ImGui::ColorConvertHSVtoRGB(h, s, v, r, g, b); return ImColor(r, g, b, a); }    /* original C++ signature */
+    # static ImColor HSV(float h, float s, float v, float a = 1.0f);    /* original C++ signature */
     @staticmethod
     def hsv(h: float, s: float, v: float, a: float = 1.0) -> ImColor:
         """(private API)"""
@@ -9696,6 +9841,7 @@ class ImColor:
 # - As most users will want to store an index, for convenience and to reduce confusion we use ImS64 instead of None*,
 #   being syntactically easier to downcast. Feel free to reinterpret_cast and store a pointer inside.
 
+# enum ImGuiMultiSelectFlags_    /* original C++ signature */
 class MultiSelectFlags_(enum.IntFlag):
     """Flags for BeginMultiSelect()"""
 
@@ -9777,6 +9923,7 @@ class MultiSelectFlags_(enum.IntFlag):
 
     # Obsolete names
 
+# struct ImGuiMultiSelectIO    /* original C++ signature */
 class MultiSelectIO:
     """Main IO structure returned by BeginMultiSelect()/EndMultiSelect().
     This mainly contains a list of selection requests.
@@ -9800,7 +9947,6 @@ class MultiSelectIO:
     range_src_reset: bool  #        app:w     /  ms:r          // (If using deletion) Set before EndMultiSelect() to reset ResetSrcItem (e.g. if deleted selection).
     # int                         ItemsCount;    /* original C++ signature */
     items_count: int  #  ms:w, app:r     /        app:r   // 'int items_count' parameter to BeginMultiSelect() is copied here for convenience, allowing simpler calls to your ApplyRequests handler. Not used internally.
-    # ImGuiMultiSelectIO(ImVector<ImGuiSelectionRequest> Requests = ImVector<ImGuiSelectionRequest>(), ImGuiSelectionUserData RangeSrcItem = ImGuiSelectionUserData(), ImGuiSelectionUserData NavIdItem = ImGuiSelectionUserData(), bool NavIdSelected = bool(), bool RangeSrcReset = bool(), int ItemsCount = int());    /* original C++ signature */
     def __init__(
         self,
         requests: Optional[ImVector_SelectionRequest] = None,
@@ -9820,6 +9966,7 @@ class MultiSelectIO:
         """
         pass
 
+# enum ImGuiSelectionRequestType    /* original C++ signature */
 class SelectionRequestType(enum.IntFlag):
     """Selection request type"""
 
@@ -9834,6 +9981,7 @@ class SelectionRequestType(enum.IntFlag):
         enum.auto()
     )  # (= 2)  # Request app to select/unselect [RangeFirstItem..RangeLastItem] items (inclusive) based on value of Selected. Only EndMultiSelect() request this, app code can read after BeginMultiSelect() and it will always be False.
 
+# struct ImGuiSelectionRequest    /* original C++ signature */
 class SelectionRequest:
     """Selection request item"""
 
@@ -9848,7 +9996,6 @@ class SelectionRequest:
     range_first_item: SelectionUserData  #                  /  ms:w, app:r   // Parameter for SetRange request (this is generally == RangeSrcItem when shift selecting from top to bottom).
     # ImGuiSelectionUserData      RangeLastItem;    /* original C++ signature */
     range_last_item: SelectionUserData  #                  /  ms:w, app:r   // Parameter for SetRange request (this is generally == RangeSrcItem when shift selecting from bottom to top). Inclusive!
-    # ImGuiSelectionRequest(ImGuiSelectionRequestType Type = ImGuiSelectionRequestType(), bool Selected = bool(), ImS8 RangeDirection = ImS8(), ImGuiSelectionUserData RangeFirstItem = ImGuiSelectionUserData(), ImGuiSelectionUserData RangeLastItem = ImGuiSelectionUserData());    /* original C++ signature */
     def __init__(
         self,
         type: SelectionRequestType = SelectionRequestType.none,
@@ -9866,6 +10013,7 @@ class SelectionRequest:
         """
         pass
 
+# struct ImGuiSelectionBasicStorage    /* original C++ signature */
 class SelectionBasicStorage:
     """Optional helper to store multi-selection state + apply multi-selection requests.
     - Used by our demos and provided as a convenience to easily implement basic multi-selection.
@@ -9923,7 +10071,7 @@ class SelectionBasicStorage:
     def set_item_selected(self, id_: ID, selected: bool) -> None:
         """Add/remove an item from selection (generally done by ApplyRequests() function)"""
         pass
-    # inline ImGuiID  GetStorageIdFromIndex(int idx)              { return AdapterIndexToStorageId(this, idx); }      /* original C++ signature */
+    # inline ImGuiID  GetStorageIdFromIndex(int idx);    /* original C++ signature */
     def get_storage_id_from_index(self, idx: int) -> ID:
         """(private API)
 
@@ -9931,6 +10079,7 @@ class SelectionBasicStorage:
         """
         pass
 
+# struct ImGuiSelectionExternalStorage    /* original C++ signature */
 class SelectionExternalStorage:
     """Optional helper to apply multi-selection requests to existing randomly accessible storage.
     Convenient if you want to quickly wire multi-select API on e.g. an array of bool or items storing their own selection state.
@@ -9950,11 +10099,9 @@ class SelectionExternalStorage:
         pass
 
 # -----------------------------------------------------------------------------
-# [SECTION] Drawing API (ImDrawCmd, ImDrawIdx, ImDrawVert, ImDrawChannel, ImDrawListSplitter, ImDrawListFlags, ImDrawList, ImDrawData)
+# [SECTION] Drawing API (ImDrawCmd, ImDrawIdx, ImDrawVert, ImDrawChannel, ImDrawListSplitter, ImDrawFlags, ImDrawList, ImDrawData)
 # Hold a series of drawing commands. The user provides a renderer for ImDrawData which essentially contains an array of ImDrawList.
 # -----------------------------------------------------------------------------
-
-# The maximum line width to bake anti-aliased textures for. Build atlas with ImFontAtlasFlags_NoBakedLines to disable baking.
 
 # ImDrawIdx: vertex index. [Compile-time configurable type]
 # - To use 16-bit indices + allow large meshes: backend need to set 'io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset' and handle ImDrawCmd::VtxOffset (recommended).
@@ -9968,6 +10115,7 @@ class SelectionExternalStorage:
 # The expected behavior from your rendering function is 'if (cmd.UserCallback != None) { cmd.UserCallback(parent_list, cmd); } else { RenderTriangles() }'
 # If you want to override the signature of ImDrawCallback, you can simply use e.g. '#define ImDrawCallback MyDrawCallback' (in imconfig.h) + update rendering backend accordingly.
 
+# struct ImDrawCmd    /* original C++ signature */
 class ImDrawCmd:
     """Typically, 1 command = 1 GPU draw call (unless command is a callback)
     - VtxOffset: When 'io.BackendFlags & ImGuiBackendFlags_RendererHasVtxOffset' is enabled,
@@ -9993,7 +10141,7 @@ class ImDrawCmd:
     # int             UserCallbackDataOffset;    /* original C++ signature */
     user_callback_data_offset: int  # 4 // [Internal] Offset of callback user data when using storage, otherwise -1.
 
-    # ImDrawCmd()     { memset((void*)this, 0, sizeof(*this)); }     /* original C++ signature */
+    # ImDrawCmd();    /* original C++ signature */
     def __init__(self) -> None:
         """Also ensure our padding fields are zeroed"""
         pass
@@ -10010,6 +10158,7 @@ class ImDrawCmd:
 # Vertex layout
 # #ifndef IMGUI_OVERRIDE_DRAWVERT_STRUCT_LAYOUT
 #
+# struct ImDrawVert    /* original C++ signature */
 class ImDrawVert:
     # ImVec2  pos;    /* original C++ signature */
     pos: ImVec2
@@ -10017,7 +10166,6 @@ class ImDrawVert:
     uv: ImVec2
     # ImU32   col;    /* original C++ signature */
     col: ImU32
-    # ImDrawVert(ImVec2 pos = ImVec2(), ImVec2 uv = ImVec2(), ImU32 col = ImU32());    /* original C++ signature */
     def __init__(self, pos: Optional[ImVec2Like] = None, uv: Optional[ImVec2Like] = None, col: ImU32 = ImU32()) -> None:
         """Auto-generated default constructor with named params
 
@@ -10033,6 +10181,7 @@ class ImDrawVert:
 # #endif
 #
 
+# struct ImDrawCmdHeader    /* original C++ signature */
 class ImDrawCmdHeader:
     """[Internal] For use by ImDrawList"""
 
@@ -10042,7 +10191,6 @@ class ImDrawCmdHeader:
     tex_ref: ImTextureRef
     # unsigned int    VtxOffset;    /* original C++ signature */
     vtx_offset: int
-    # ImDrawCmdHeader(ImVec4 ClipRect = ImVec4(), ImTextureRef TexRef = ImTextureRef());    /* original C++ signature */
     def __init__(self, clip_rect: Optional[ImVec4Like] = None, tex_ref: Optional[ImTextureRef] = None) -> None:
         """Auto-generated default constructor with named params
 
@@ -10053,6 +10201,7 @@ class ImDrawCmdHeader:
         """
         pass
 
+# struct ImDrawChannel    /* original C++ signature */
 class ImDrawChannel:
     """[Internal] For use by ImDrawListSplitter"""
 
@@ -10060,7 +10209,6 @@ class ImDrawChannel:
     _cmd_buffer: ImVector_ImDrawCmd
     # ImVector<ImDrawIdx>         _IdxBuffer;    /* original C++ signature */
     _idx_buffer: ImVector_ImDrawIdx
-    # ImDrawChannel(ImVector<ImDrawCmd> _CmdBuffer = ImVector<ImDrawCmd>(), ImVector<ImDrawIdx> _IdxBuffer = ImVector<ImDrawIdx>());    /* original C++ signature */
     def __init__(
         self, _cmd_buffer: Optional[ImVector_ImDrawCmd] = None, _idx_buffer: Optional[ImVector_ImDrawIdx] = None
     ) -> None:
@@ -10073,6 +10221,7 @@ class ImDrawChannel:
         """
         pass
 
+# struct ImDrawListSplitter    /* original C++ signature */
 class ImDrawListSplitter:
     """Split/Merge functions are used to split the draw list into different layers which can be drawn into out of order.
     This is used by the Columns/Tables API, so items of each column can be batched together in a same draw call.
@@ -10085,10 +10234,10 @@ class ImDrawListSplitter:
     # ImVector<ImDrawChannel>     _Channels;    /* original C++ signature */
     _channels: ImVector_ImDrawChannel  # Draw channels (not resized down so _Count might be < Channels.Size)
 
-    # inline ImDrawListSplitter()  { memset((void*)this, 0, sizeof(*this)); }    /* original C++ signature */
+    # inline ImDrawListSplitter();    /* original C++ signature */
     def __init__(self) -> None:
         pass
-    # inline void                 Clear() { _Current = 0; _Count = 1; }     /* original C++ signature */
+    # inline void                 Clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)
 
@@ -10108,93 +10257,142 @@ class ImDrawListSplitter:
     def set_current_channel(self, draw_list: ImDrawList, channel_idx: int) -> None:
         pass
 
+# enum ImDrawFlags_    /* original C++ signature */
 class ImDrawFlags_(enum.IntFlag):
     """Flags for ImDrawList functions"""
 
-    # ImDrawFlags_None                        = 0,    /* original C++ signature */
+    # ImDrawFlags_None                    = 0,    /* original C++ signature */
     none = enum.auto()  # (= 0)
+    # ImDrawFlags_Closed                = 1,        // -> FLAG MOVED BELOW. Prior to 1.92.8 (May 2026): ImDrawFlags_Closed was guaranteed to be == (1<<0) == 1, for legacy compatibility reason. Hardcoded use of 1 or True should be replaced with 'ImDrawFlags_Closed'.
 
-    # Rounding for AddRect(), AddRectFilled(), PathRect()
-    # - When not specified, we defaults to ImDrawFlags_RoundCornersAll! So you only need to use those flags if you want another configuration.
-    # ImDrawFlags_RoundCornersTopLeft         = 1 << 4,     /* original C++ signature */
-    round_corners_top_left = (
-        enum.auto()
-    )  # (= 1 << 4)  # Round top-left corner only (when rounding > 0.0, we default to all corners).
-    # ImDrawFlags_RoundCornersTopRight        = 1 << 5,     /* original C++ signature */
-    round_corners_top_right = (
-        enum.auto()
-    )  # (= 1 << 5)  # Round top-right corner only (when rounding > 0.0, we default to all corners).
-    # ImDrawFlags_RoundCornersBottomLeft      = 1 << 6,     /* original C++ signature */
-    round_corners_bottom_left = (
-        enum.auto()
-    )  # (= 1 << 6)  # Round bottom-left corner only (when rounding > 0.0, we default to all corners).
-    # ImDrawFlags_RoundCornersBottomRight     = 1 << 7,     /* original C++ signature */
-    round_corners_bottom_right = (
-        enum.auto()
-    )  # (= 1 << 7)  # Round bottom-right corner only (when rounding > 0.0, we default to all corners).
-    # ImDrawFlags_RoundCornersNone            = 1 << 8,     /* original C++ signature */
-    round_corners_none = (
-        enum.auto()
-    )  # (= 1 << 8)  # Disable rounding even if `float rounding > 0.0`. This is NOT zero, NOT an implicit flag!
-    # ImDrawFlags_RoundCornersAll             = ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight | ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersBottomRight,     /* original C++ signature */
-    round_corners_all = (
-        enum.auto()
-    )  # (= ImDrawFlags_.round_corners_top_left | ImDrawFlags_.round_corners_top_right | ImDrawFlags_.round_corners_bottom_left | ImDrawFlags_.round_corners_bottom_right)  # (Default!!)
-    # ImDrawFlags_RoundCornersDefault_        = ImDrawFlags_RoundCornersAll,     /* original C++ signature */
-    round_corners_default_ = (
-        enum.auto()
-    )  # (= ImDrawFlags_.round_corners_all)  # Default to ALL corners if none of the _RoundCornersXX flags are specified!
-    # ImDrawFlags_RoundCornersTop             = ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight,    /* original C++ signature */
-    round_corners_top = enum.auto()  # (= ImDrawFlags_.round_corners_top_left | ImDrawFlags_.round_corners_top_right)
-    # ImDrawFlags_RoundCornersBottom          = ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersBottomRight,    /* original C++ signature */
-    round_corners_bottom = (
-        enum.auto()
-    )  # (= ImDrawFlags_.round_corners_bottom_left | ImDrawFlags_.round_corners_bottom_right)
-    # ImDrawFlags_RoundCornersLeft            = ImDrawFlags_RoundCornersBottomLeft | ImDrawFlags_RoundCornersTopLeft,    /* original C++ signature */
-    round_corners_left = enum.auto()  # (= ImDrawFlags_.round_corners_bottom_left | ImDrawFlags_.round_corners_top_left)
-    # ImDrawFlags_RoundCornersRight           = ImDrawFlags_RoundCornersBottomRight | ImDrawFlags_RoundCornersTopRight,    /* original C++ signature */
-    round_corners_right = (
-        enum.auto()
-    )  # (= ImDrawFlags_.round_corners_bottom_right | ImDrawFlags_.round_corners_top_right)
-    # ImDrawFlags_RoundCornersMask_           = ImDrawFlags_RoundCornersAll | ImDrawFlags_RoundCornersNone,    /* original C++ signature */
-    round_corners_mask_ = enum.auto()  # (= ImDrawFlags_.round_corners_all | ImDrawFlags_.round_corners_none)
+    # About usage of flags:
+    # - "Prim" column:  'OK' = flag can be used to configure an individual AddXXX() call.
+    # - "Scope" column: 'OK' = initialized by ImGui based on Style options (e.g. whether anti-aliased is enabled) + may be modified using ImDrawList::PushDrawFlag().
+    #                          OK(0)/OK(1) indicates whether this flag is set in the default ImGui Style settings.
 
-    # Stroke options
-    # ImDrawFlags_Closed                      = 1 << 9,     /* original C++ signature */
-    closed = enum.auto()  # (= 1 << 9)  # PathStroke(), AddPolyline(): specify that shape should be closed.
-    # ImDrawFlags_Closed                    = 1,      // Prior to 1.92.8 (May 2026), ImDrawFlags_Closed was guaranteed to be == 1<<0 == 1 for legacy compatibility reason. Hardcoded use of 1 or True should be replaced.
+    # - Rounding default to ImDrawFlags_RoundAll when 'rounding > 0'.
+    # - So you only need to use the ImDrawFlags_RoundXXX flags if you want a special configuration (e.g. a rectangle with one rounded corner).
+    # Rounding for AddRectXXX(), PathRect() ------ // Prim/Scope?
+    # ImDrawFlags_RoundTopLeft            = 1 << 4,       /* original C++ signature */
+    round_top_left = (
+        enum.auto()
+    )  # (= 1 << 4)  # OK   --    // Round top-left corner only (when 'rounding > 0.0', we default to all corners).
+    # ImDrawFlags_RoundTopRight           = 1 << 5,       /* original C++ signature */
+    round_top_right = (
+        enum.auto()
+    )  # (= 1 << 5)  # OK   --    // Round top-right corner only (when 'rounding > 0.0', we default to all corners).
+    # ImDrawFlags_RoundBottomLeft         = 1 << 6,       /* original C++ signature */
+    round_bottom_left = (
+        enum.auto()
+    )  # (= 1 << 6)  # OK   --    // Round bottom-left corner only (when 'rounding > 0.0', we default to all corners).
+    # ImDrawFlags_RoundBottomRight        = 1 << 7,       /* original C++ signature */
+    round_bottom_right = (
+        enum.auto()
+    )  # (= 1 << 7)  # OK   --    // Round bottom-right corner only (when 'rounding > 0.0', we default to all corners).
+    # ImDrawFlags_RoundNone               = 1 << 8,       /* original C++ signature */
+    round_none = (
+        enum.auto()
+    )  # (= 1 << 8)  # OK   --    // Disable rounding even when 'rounding > 0.0'. This value is NOT zero, it is NOT an implicit flag!
+    # ImDrawFlags_RoundAll                = ImDrawFlags_RoundTopLeft | ImDrawFlags_RoundTopRight | ImDrawFlags_RoundBottomLeft | ImDrawFlags_RoundBottomRight,     /* original C++ signature */
+    round_all = (
+        enum.auto()
+    )  # (= ImDrawFlags_.round_top_left | ImDrawFlags_.round_top_right | ImDrawFlags_.round_bottom_left | ImDrawFlags_.round_bottom_right)  # (Default!!)
+    # ImDrawFlags_RoundTop                = ImDrawFlags_RoundTopLeft | ImDrawFlags_RoundTopRight,    /* original C++ signature */
+    round_top = enum.auto()  # (= ImDrawFlags_.round_top_left | ImDrawFlags_.round_top_right)
+    # ImDrawFlags_RoundBottom             = ImDrawFlags_RoundBottomLeft | ImDrawFlags_RoundBottomRight,    /* original C++ signature */
+    round_bottom = enum.auto()  # (= ImDrawFlags_.round_bottom_left | ImDrawFlags_.round_bottom_right)
+    # ImDrawFlags_RoundLeft               = ImDrawFlags_RoundBottomLeft | ImDrawFlags_RoundTopLeft,    /* original C++ signature */
+    round_left = enum.auto()  # (= ImDrawFlags_.round_bottom_left | ImDrawFlags_.round_top_left)
+    # ImDrawFlags_RoundRight              = ImDrawFlags_RoundBottomRight | ImDrawFlags_RoundTopRight,    /* original C++ signature */
+    round_right = enum.auto()  # (= ImDrawFlags_.round_bottom_right | ImDrawFlags_.round_top_right)
 
-    # ImDrawFlags_InvalidMask_                = ~0x7FFFFFF0,     /* original C++ signature */
-    invalid_mask_ = enum.auto()  # (= ~0x7FFFFFF0)  # == 0x8000000F,
+    # Stroke Options ----------------------------- // Prim/Scope?
+    # ImDrawFlags_Closed                  = 1 << 9,       /* original C++ signature */
+    closed = (
+        enum.auto()
+    )  # (= 1 << 9)  # OK   --     // PathStroke(), AddPolyline(): specify that shape should be closed.
+    # ImDrawFlags_JoinMiter               = 1 << 10,      /* original C++ signature */
+    join_miter = (
+        enum.auto()
+    )  # (= 1 << 10)  # OK   --     // PathStroke(), AddPolyline(): use miter joins/corners only. This assumes that the input polyline does not have corners sharper than 90 degrees. Slightly faster.
+    # ImDrawFlags_CapSquare               = 1 << 11,      /* original C++ signature */
+    cap_square = enum.auto()  # (= 1 << 11)  # OK   --     // PathStroke(), AddPolyline(): use square cap line ends.
 
-class ImDrawListFlags_(enum.IntFlag):
-    """Flags for ImDrawList instance. Those are set automatically by ImGui:: functions from ImGuiIO settings, and generally not manipulated directly.
-    It is however possible to temporarily alter flags between calls to ImDrawList:: functions.
-    """
+    # About Stroke Ends:
+    # - Rendering is optimized for fast pixel-perfect UI, so line ends are not anti-aliased by default. It's cheaper (we can emit less vertices).
+    # - For more free-form drawings, light graphs and markers, or when using thick strokes: you can turn them on using the ImDrawFlags_AALineEnds flag.
+    # - See 'Demo->Examples->Custom Rendering' to interactively toy with those flags.
+    # - 'OK*' indicates using this at the AddXXX() call site is unlikely: it would only makes sense if (1) the option is disabled in style/scope and (2) you want to forcefully enable it for a single primitives. Possible but unlikely! Only supported for functions taking flags inputs.
+    # Stroke/Fill Anti-aliasing ------------------ // Prim/Scope?
+    # ImDrawFlags_AAFill                  = 1 << 12,      /* original C++ signature */
+    aa_fill = enum.auto()  # (= 1 << 12)  # OK*  OK(1)  // Enable anti-aliasing for Filled shapes.
+    # ImDrawFlags_AALines                 = 1 << 13,      /* original C++ signature */
+    aa_lines = enum.auto()  # (= 1 << 13)  # OK*  OK(1)  // Enable anti-aliasing for Strokes (lines, borders).
+    # ImDrawFlags_AALineEnds              = 1 << 14,      /* original C++ signature */
+    aa_line_ends = (
+        enum.auto()
+    )  # (= 1 << 14)  # OK   OK(0)  // Enable anti-aliasing for Strokes Ends. Requires AALines to also be enabled. Useful on thick strokes or for precise continuity of multiple lines. A little more costly.
+    # ImDrawFlags_NoAA                  = 1 << 15,  // OK   --     // Disable anti-aliasing for a given primitive.
+    # ImDrawFlags_NoAALineEnds          = 1 << 16,  // OK   --     // Disable anti-aliasing ends for a given primitive.
 
-    # ImDrawListFlags_None                    = 0,    /* original C++ signature */
-    none = enum.auto()  # (= 0)
-    # ImDrawListFlags_AntiAliasedLines        = 1 << 0,      /* original C++ signature */
-    anti_aliased_lines = (
+    # About Stroke Position:
+    # - Read https://github.com/ocornut/imgui/wiki/Draw-List (this guide includes a precise list of differences between 1.92.9 and 1.93.0)
+    # - Read https://github.com/ocornut/imgui/wiki/Pixel-Perfect-Rendering
+    # Stroke Position relative to shape outline -- // Prim/Scope?
+    # ImDrawFlags_StrokeInside            = 1 << 17,      /* original C++ signature */
+    stroke_inside = (
         enum.auto()
-    )  # (= 1 << 0)  # Enable anti-aliased lines/borders (*2 the number of triangles for 1.0 wide line or lines thin enough to be drawn using textures, otherwise *3 the number of triangles)
-    # ImDrawListFlags_AntiAliasedLinesUseTex  = 1 << 1,      /* original C++ signature */
-    anti_aliased_lines_use_tex = (
+    )  # (= 1 << 17)  # OK   --     // Draw stroke inside of the shape outline (default for closed shapes and AddLineH, AddLineV functions)
+    # ImDrawFlags_StrokeCenter            = 2 << 17,      /* original C++ signature */
+    stroke_center = (
         enum.auto()
-    )  # (= 1 << 1)  # Enable anti-aliased lines/borders using textures when possible. Require backend to render with bilinear filtering (NOT point/nearest filtering).
-    # ImDrawListFlags_AntiAliasedFill         = 1 << 2,      /* original C++ signature */
-    anti_aliased_fill = (
+    )  # (= 2 << 17)  # OK   --     // Draw stroke at the center of the shape outline (default for paths, bezier, and AddLine functions)
+    # ImDrawFlags_StrokeCenterBiased      = 3 << 17,      /* original C++ signature */
+    stroke_center_biased = (
         enum.auto()
-    )  # (= 1 << 2)  # Enable anti-aliased edge around filled shapes (rounded rectangles, circles).
-    # ImDrawListFlags_AllowVtxOffset          = 1 << 3,      /* original C++ signature */
-    allow_vtx_offset = (
+    )  # (= 3 << 17)  # OK   --     // Draw stroke at the center of the shape outline, so that half thickness rounded down will be outside, and the rest inside the shape outline. Useful for axis-aligned shapes: AddLineH, AddLineV, AddRect. Does not animate well!
+    # ImDrawFlags_StrokeOutside           = 4 << 17,      /* original C++ signature */
+    stroke_outside = enum.auto()  # (= 4 << 17)  # OK   --     // Draw stroke outside of the shape outline
+    # ImDrawFlags_StrokeLegacy            = 7 << 17,      /* original C++ signature */
+    stroke_legacy = (
         enum.auto()
-    )  # (= 1 << 3)  # Can emit 'VtxOffset > 0' to allow large meshes. Set when 'ImGuiBackendFlags_RendererHasVtxOffset' is enabled.
-    # ImDrawListFlags_TextNoPixelSnap         = 1 << 4,      /* original C++ signature */
+    )  # (= 7 << 17)  # OK   OK(0)  // Use legacy positioning + enable JoinMiter + disable AALineEnds. Must be all bits set.
+
+    # Other Options ------------------------------ // Prim/Scope?
+    # ImDrawFlags_TextNoPixelSnap         = 1 << 20,      /* original C++ signature */
     text_no_pixel_snap = (
         enum.auto()
-    )  # (= 1 << 4)  # Disable automatically snapping AddText() calls to pixel boundaries.
+    )  # (= 1 << 20)  # OK   OK(0)  // Disable automatically snapping AddText() calls to pixel boundaries.
+    # ImDrawFlags_UseTexForRoundCorners   = 1 << 21,      /* original C++ signature */
+    use_tex_for_round_corners = (
+        enum.auto()
+    )  # (= 1 << 21)  # --   OK(1)  // Enable using textures instead of strokes to draw rounded corners/circles where possible (faster). Used by default unless 'ImFontAtlasFlags_NoBakedRoundCorners' is enabled in the font atlas.
+    # ImDrawFlags_UseVtxOffset            = 1 << 22,      /* original C++ signature */
+    use_vtx_offset = (
+        enum.auto()
+    )  # (= 1 << 22)  # --   OK(1)  // Can emit 'VtxOffset > 0' to allow large meshes with 16-bit ImDrawIdx. Used by default when 'ImGuiBackendFlags_RendererHasVtxOffset' is enabled by the backend.
+    # ImDrawFlags_AllowTexForRoundCorners_= 1 << 23,      /* original C++ signature */
+    allow_tex_for_round_corners_ = enum.auto()  # (= 1 << 23)  # --   OK(1)  // [Internal]
 
+    # [Internal]
+    # ImDrawFlags_RoundMask_              = ImDrawFlags_RoundAll | ImDrawFlags_RoundNone,     /* original C++ signature */
+    round_mask_ = enum.auto()  # (= ImDrawFlags_.round_all | ImDrawFlags_.round_none)  # [Internal]
+    # ImDrawFlags_AllowInPushScope_       = ImDrawFlags_AAFill | ImDrawFlags_AALines | ImDrawFlags_AALineEnds | ImDrawFlags_StrokeLegacy | ImDrawFlags_TextNoPixelSnap | ImDrawFlags_UseTexForRoundCorners | ImDrawFlags_UseVtxOffset | ImDrawFlags_RoundMask_,     /* original C++ signature */
+    allow_in_push_scope_ = (
+        enum.auto()
+    )  # (= ImDrawFlags_.aa_fill | ImDrawFlags_.aa_lines | ImDrawFlags_.aa_line_ends | ImDrawFlags_.stroke_legacy | ImDrawFlags_.text_no_pixel_snap | ImDrawFlags_.use_tex_for_round_corners | ImDrawFlags_.use_vtx_offset | ImDrawFlags_.round_mask_)  # [Internal] Values allowed in PushDrawFlag() scope.
+    # ImDrawFlags_AllowInFrameScope_      = ImDrawFlags_AllowInPushScope_ | ImDrawFlags_AllowTexForRoundCorners_,    /* original C++ signature */
+    allow_in_frame_scope_ = (
+        enum.auto()
+    )  # (= ImDrawFlags_.allow_in_push_scope_ | ImDrawFlags_.allow_tex_for_round_corners_)
+    # ImDrawFlags_StrokeMask_             = 0x07 << 17,                  /* original C++ signature */
+    stroke_mask_ = enum.auto()  # (= 0x07 << 17)  # [Internal]
+    # ImDrawFlags_InvalidMask_            = ~0x7FFFFFF0,                 /* original C++ signature */
+    invalid_mask_ = enum.auto()  # (= ~0x7FFFFFF0)  # [Internal] == 0x8000000F. Reserved to detect misuses.
+
+    # Obsolete names
+
+# struct ImDrawList    /* original C++ signature */
 class ImDrawList:
     """Draw command list
     This is the low-level list of polygons that ImGui:: functions are filling. At the end of the frame,
@@ -10216,8 +10414,8 @@ class ImDrawList:
     idx_buffer: ImVector_ImDrawIdx  # Index buffer. Each command consume ImDrawCmd::ElemCount of those
     # ImVector<ImDrawVert>    VtxBuffer;    /* original C++ signature */
     vtx_buffer: ImVector_ImDrawVert  # Vertex buffer.
-    # ImDrawListFlags         Flags;    /* original C++ signature */
-    flags: ImDrawListFlags  # Flags, you may poke into these to adjust anti-aliasing settings per-primitive.
+    # ImDrawFlags             Flags;    /* original C++ signature */
+    flags: ImDrawFlags  # Current flags for drawing primitives.  Alter with PushDrawFlag()/PopDrawFlags() to adjust defaults to a given scope.
 
     # [Internal, used while building lists]
     # unsigned int            _VtxCurrentIdx;    /* original C++ signature */
@@ -10243,9 +10441,13 @@ class ImDrawList:
     # ImVector<ImU8>          _CallbacksDataBuf;    /* original C++ signature */
     _callbacks_data_buf: ImVector_ImU8  # [Internal]
     # float                   _FringeScale;    /* original C++ signature */
-    _fringe_scale: float  # [Internal] anti-alias fringe is scaled by this value, this helps to keep things sharp while zooming at vertex buffer content.
+    _fringe_scale: float  # [Internal] anti-alias fringe is scaled by this value, this helps to keep things sharp while zooming at vertex buffer content
     # float                   _InvFringeScale;    /* original C++ signature */
     _inv_fringe_scale: float  # [internal] 1.0 / _FringeScale // FIXME: Consider renaming to _PixelDensity.
+    # bool                    _FringeScaleIsInteger;    /* original C++ signature */
+    _fringe_scale_is_integer: (
+        bool  # [Internal] True if 1/_FringeScale is a whole number, used to select fast path for rendering
+    )
     # const char*             _OwnerName;    /* original C++ signature */
     _owner_name: str  # Pointer to owner window's name for debugging # (const)
 
@@ -10273,11 +10475,18 @@ class ImDrawList:
     # IMGUI_API void  PopTexture();    /* original C++ signature */
     def pop_texture(self) -> None:
         pass
-    # inline ImVec2   GetClipRectMin() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.x, cr.y); }    /* original C++ signature */
+    # IMGUI_API void  PushDrawFlag(ImDrawFlags flags, bool enabled);     /* original C++ signature */
+    def push_draw_flag(self, flags: ImDrawFlags, enabled: bool) -> None:
+        """[BETA] Please notify me if you are using this."""
+        pass
+    # IMGUI_API void  PopDrawFlag();    /* original C++ signature */
+    def pop_draw_flag(self) -> None:
+        pass
+    # inline ImVec2   GetClipRectMin() const;    /* original C++ signature */
     def get_clip_rect_min(self) -> ImVec2:
         """(private API)"""
         pass
-    # inline ImVec2   GetClipRectMax() const { const ImVec4& cr = _ClipRectStack.back(); return ImVec2(cr.z, cr.w); }    /* original C++ signature */
+    # inline ImVec2   GetClipRectMax() const;    /* original C++ signature */
     def get_clip_rect_max(self) -> ImVec2:
         """(private API)"""
         pass
@@ -10288,11 +10497,20 @@ class ImDrawList:
     #   In older versions (until Dear ImGui 1.77) the AddCircle functions defaulted to num_segments == 12.
     #   In future versions we will use textures to provide cheaper and higher-quality circles.
     #   Use AddNgon() and AddNgonFilled() functions if you need to guarantee a specific number of sides.
-    # IMGUI_API void  AddLine(const ImVec2& p1, const ImVec2& p2, ImU32 col, float thickness = 1.0f);    /* original C++ signature */
-    def add_line(self, p1: ImVec2Like, p2: ImVec2Like, col: ImU32, thickness: float = 1.0) -> None:
+    # IMGUI_API void  AddLine(const ImVec2& p1, const ImVec2& p2, ImU32 col, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
+    def add_line(
+        self, p1: ImVec2Like, p2: ImVec2Like, col: ImU32, thickness: float = 1.0, flags: ImDrawFlags = 0
+    ) -> None:
         pass
-    # IMGUI_API void  AddLineH(float min_x, float max_x, float y, ImU32 col, float thickness = 1.0f);    /* original C++ signature */
-    def add_line_h(self, min_x: float, max_x: float, y: float, col: ImU32, thickness: float = 1.0) -> None:
+    # IMGUI_API void  AddLineH(float min_x, float max_x, float y, ImU32 col, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
+    def add_line_h(
+        self, min_x: float, max_x: float, y: float, col: ImU32, thickness: float = 1.0, flags: ImDrawFlags = 0
+    ) -> None:
+        pass
+    # IMGUI_API void  AddLineV(float x, float min_y, float max_y, ImU32 col, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
+    def add_line_v(
+        self, x: float, min_y: float, max_y: float, col: ImU32, thickness: float = 1.0, flags: ImDrawFlags = 0
+    ) -> None:
         pass
     # IMGUI_API void  AddRect(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding = 0.0f, float thickness = 1.0f, ImDrawFlags flags = 0);       /* original C++ signature */
     def add_rect(
@@ -10323,37 +10541,58 @@ class ImDrawList:
         col_bot_left: ImU32,
     ) -> None:
         pass
-    # IMGUI_API void  AddQuad(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col, float thickness = 1.0f);    /* original C++ signature */
+    # IMGUI_API void  AddQuad(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
     def add_quad(
-        self, p1: ImVec2Like, p2: ImVec2Like, p3: ImVec2Like, p4: ImVec2Like, col: ImU32, thickness: float = 1.0
+        self,
+        p1: ImVec2Like,
+        p2: ImVec2Like,
+        p3: ImVec2Like,
+        p4: ImVec2Like,
+        col: ImU32,
+        thickness: float = 1.0,
+        flags: ImDrawFlags = 0,
     ) -> None:
         pass
     # IMGUI_API void  AddQuadFilled(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col);    /* original C++ signature */
     def add_quad_filled(self, p1: ImVec2Like, p2: ImVec2Like, p3: ImVec2Like, p4: ImVec2Like, col: ImU32) -> None:
         pass
-    # IMGUI_API void  AddTriangle(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImU32 col, float thickness = 1.0f);    /* original C++ signature */
-    def add_triangle(self, p1: ImVec2Like, p2: ImVec2Like, p3: ImVec2Like, col: ImU32, thickness: float = 1.0) -> None:
+    # IMGUI_API void  AddTriangle(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImU32 col, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
+    def add_triangle(
+        self, p1: ImVec2Like, p2: ImVec2Like, p3: ImVec2Like, col: ImU32, thickness: float = 1.0, flags: ImDrawFlags = 0
+    ) -> None:
         pass
     # IMGUI_API void  AddTriangleFilled(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImU32 col);    /* original C++ signature */
     def add_triangle_filled(self, p1: ImVec2Like, p2: ImVec2Like, p3: ImVec2Like, col: ImU32) -> None:
         pass
-    # IMGUI_API void  AddCircle(const ImVec2& center, float radius, ImU32 col, int num_segments = 0, float thickness = 1.0f);    /* original C++ signature */
+    # IMGUI_API void  AddCircle(const ImVec2& center, float radius, ImU32 col, int num_segments = 0, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
     def add_circle(
-        self, center: ImVec2Like, radius: float, col: ImU32, num_segments: int = 0, thickness: float = 1.0
+        self,
+        center: ImVec2Like,
+        radius: float,
+        col: ImU32,
+        num_segments: int = 0,
+        thickness: float = 1.0,
+        flags: ImDrawFlags = 0,
     ) -> None:
         pass
     # IMGUI_API void  AddCircleFilled(const ImVec2& center, float radius, ImU32 col, int num_segments = 0);    /* original C++ signature */
     def add_circle_filled(self, center: ImVec2Like, radius: float, col: ImU32, num_segments: int = 0) -> None:
         pass
-    # IMGUI_API void  AddNgon(const ImVec2& center, float radius, ImU32 col, int num_segments, float thickness = 1.0f);    /* original C++ signature */
+    # IMGUI_API void  AddNgon(const ImVec2& center, float radius, ImU32 col, int num_segments, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
     def add_ngon(
-        self, center: ImVec2Like, radius: float, col: ImU32, num_segments: int, thickness: float = 1.0
+        self,
+        center: ImVec2Like,
+        radius: float,
+        col: ImU32,
+        num_segments: int,
+        thickness: float = 1.0,
+        flags: ImDrawFlags = 0,
     ) -> None:
         pass
     # IMGUI_API void  AddNgonFilled(const ImVec2& center, float radius, ImU32 col, int num_segments);    /* original C++ signature */
     def add_ngon_filled(self, center: ImVec2Like, radius: float, col: ImU32, num_segments: int) -> None:
         pass
-    # IMGUI_API void  AddEllipse(const ImVec2& center, const ImVec2& radius, ImU32 col, float rot = 0.0f, int num_segments = 0, float thickness = 1.0f);    /* original C++ signature */
+    # IMGUI_API void  AddEllipse(const ImVec2& center, const ImVec2& radius, ImU32 col, float rot = 0.0f, int num_segments = 0, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
     def add_ellipse(
         self,
         center: ImVec2Like,
@@ -10362,6 +10601,7 @@ class ImDrawList:
         rot: float = 0.0,
         num_segments: int = 0,
         thickness: float = 1.0,
+        flags: ImDrawFlags = 0,
     ) -> None:
         pass
     # IMGUI_API void  AddEllipseFilled(const ImVec2& center, const ImVec2& radius, ImU32 col, float rot = 0.0f, int num_segments = 0);    /* original C++ signature */
@@ -10371,7 +10611,7 @@ class ImDrawList:
         pass
     # IMGUI_API void  AddText(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end = NULL);    /* original C++ signature */
     @overload
-    def add_text(self, pos: ImVec2Like, col: ImU32, text_begin: str, text_end: Optional[str] = None) -> None:
+    def add_text(self, pos: ImVec2Like, col: ImU32, text_begin: str) -> None:
         pass
     # IMGUI_API void  AddText(ImFont* font, float font_size, const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end = NULL, float wrap_width = 0.0f, const ImVec4* cpu_fine_clip_rect = NULL);    /* original C++ signature */
     @overload
@@ -10382,12 +10622,11 @@ class ImDrawList:
         pos: ImVec2Like,
         col: ImU32,
         text_begin: str,
-        text_end: Optional[str] = None,
         wrap_width: float = 0.0,
         cpu_fine_clip_rect: Optional[ImVec4Like] = None,
     ) -> None:
         pass
-    # IMGUI_API void  AddBezierCubic(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col, float thickness, int num_segments = 0);     /* original C++ signature */
+    # IMGUI_API void  AddBezierCubic(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, const ImVec2& p4, ImU32 col, float thickness, int num_segments = 0, ImDrawFlags flags = 0);     /* original C++ signature */
     def add_bezier_cubic(
         self,
         p1: ImVec2Like,
@@ -10397,19 +10636,23 @@ class ImDrawList:
         col: ImU32,
         thickness: float,
         num_segments: int = 0,
+        flags: ImDrawFlags = 0,
     ) -> None:
         """Cubic Bezier (4 control points)"""
         pass
-    # IMGUI_API void  AddBezierQuadratic(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImU32 col, float thickness, int num_segments = 0);                   /* original C++ signature */
+    # IMGUI_API void  AddBezierQuadratic(const ImVec2& p1, const ImVec2& p2, const ImVec2& p3, ImU32 col, float thickness, int num_segments = 0, ImDrawFlags flags = 0);                   /* original C++ signature */
     def add_bezier_quadratic(
-        self, p1: ImVec2Like, p2: ImVec2Like, p3: ImVec2Like, col: ImU32, thickness: float, num_segments: int = 0
+        self,
+        p1: ImVec2Like,
+        p2: ImVec2Like,
+        p3: ImVec2Like,
+        col: ImU32,
+        thickness: float,
+        num_segments: int = 0,
+        flags: ImDrawFlags = 0,
     ) -> None:
         """Quadratic Bezier (3 control points)"""
         pass
-    # General polygon
-    # - Only simple polygons are supported by filling functions (no self-intersections, no holes).
-    # - Concave polygon fill is more expensive than convex one: it has O(N^2) complexity. Provided as a convenience for the user but not used by the main library.
-
     # Image primitives
     # - Read FAQ to understand what ImTextureID/ImTextureRef are.
     # - "p_min" and "p_max" represent the upper-left and lower-right corners of the rectangle.
@@ -10468,27 +10711,27 @@ class ImDrawList:
     # Stateful path API, add points then finish with PathFillConvex() or PathStroke()
     # - Important: filled shapes must always use clockwise winding order! The anti-aliasing fringe depends on it. Counter-clockwise shapes will have "inward" anti-aliasing.
     #   so e.g. 'PathArcTo(center, radius, PI * -0.5, PI)' is ok, whereas 'PathArcTo(center, radius, PI, PI * -0.5)' won't have correct anti-aliasing when followed by PathFillConvex().
-    # inline    void  PathClear()                                                 { _Path.Size = 0; }    /* original C++ signature */
+    # inline    void  PathClear();    /* original C++ signature */
     def path_clear(self) -> None:
         """(private API)"""
         pass
-    # inline    void  PathLineTo(const ImVec2& pos)                               { _Path.push_back(pos); }    /* original C++ signature */
+    # inline    void  PathLineTo(const ImVec2& pos);    /* original C++ signature */
     def path_line_to(self, pos: ImVec2Like) -> None:
         """(private API)"""
         pass
-    # inline    void  PathLineToMergeDuplicate(const ImVec2& pos)                 { if (_Path.Size == 0 || memcmp(&_Path.Data[_Path.Size - 1], &pos, 8) != 0) _Path.push_back(pos); }    /* original C++ signature */
+    # inline    void  PathLineToMergeDuplicate(const ImVec2& pos);    /* original C++ signature */
     def path_line_to_merge_duplicate(self, pos: ImVec2Like) -> None:
         """(private API)"""
         pass
-    # inline    void  PathFillConvex(ImU32 col)                                   { AddConvexPolyFilled(_Path.Data, _Path.Size, col); _Path.Size = 0; }    /* original C++ signature */
-    def path_fill_convex(self, col: ImU32) -> None:
+    # inline    void  PathFillConvex(ImU32 col, ImDrawFlags flags = 0);    /* original C++ signature */
+    def path_fill_convex(self, col: ImU32, flags: ImDrawFlags = 0) -> None:
         """(private API)"""
         pass
-    # inline    void  PathFillConcave(ImU32 col)                                  { AddConcavePolyFilled(_Path.Data, _Path.Size, col); _Path.Size = 0; }    /* original C++ signature */
+    # inline    void  PathFillConcave(ImU32 col);    /* original C++ signature */
     def path_fill_concave(self, col: ImU32) -> None:
         """(private API)"""
         pass
-    # inline    void  PathStroke(ImU32 col, float thickness = 1.0f, ImDrawFlags flags = 0) { AddPolyline(_Path.Data, _Path.Size, col, thickness, flags); _Path.Size = 0; }    /* original C++ signature */
+    # inline    void  PathStroke(ImU32 col, float thickness = 1.0f, ImDrawFlags flags = 0);    /* original C++ signature */
     def path_stroke(self, col: ImU32, thickness: float = 1.0, flags: ImDrawFlags = 0) -> None:
         """(private API)"""
         pass
@@ -10533,15 +10776,15 @@ class ImDrawList:
     # - This API shouldn't have been in ImDrawList in the first place!
     #   Prefer using your own persistent instance of ImDrawListSplitter as you can stack them.
     #   Using the ImDrawList::ChannelsXXXX you cannot stack a split over another.
-    # inline void     ChannelsSplit(int count)    { _Splitter.Split(this, count); }    /* original C++ signature */
+    # inline void     ChannelsSplit(int count);    /* original C++ signature */
     def channels_split(self, count: int) -> None:
         """(private API)"""
         pass
-    # inline void     ChannelsMerge()             { _Splitter.Merge(this); }    /* original C++ signature */
+    # inline void     ChannelsMerge();    /* original C++ signature */
     def channels_merge(self) -> None:
         """(private API)"""
         pass
-    # inline void     ChannelsSetCurrent(int n)   { _Splitter.SetCurrentChannel(this, n); }    /* original C++ signature */
+    # inline void     ChannelsSetCurrent(int n);    /* original C++ signature */
     def channels_set_current(self, n: int) -> None:
         """(private API)"""
         pass
@@ -10575,15 +10818,15 @@ class ImDrawList:
         col: ImU32,
     ) -> None:
         pass
-    # inline    void  PrimWriteVtx(const ImVec2& pos, const ImVec2& uv, ImU32 col)    { _VtxWritePtr->pos = pos; _VtxWritePtr->uv = uv; _VtxWritePtr->col = col; _VtxWritePtr++; _VtxCurrentIdx++; }    /* original C++ signature */
+    # inline    void  PrimWriteVtx(const ImVec2& pos, const ImVec2& uv, ImU32 col);    /* original C++ signature */
     def prim_write_vtx(self, pos: ImVec2Like, uv: ImVec2Like, col: ImU32) -> None:
         """(private API)"""
         pass
-    # inline    void  PrimWriteIdx(ImDrawIdx idx)                                     { *_IdxWritePtr = idx; _IdxWritePtr++; }    /* original C++ signature */
+    # inline    void  PrimWriteIdx(ImDrawIdx idx);    /* original C++ signature */
     def prim_write_idx(self, idx: ImDrawIdx) -> None:
         """(private API)"""
         pass
-    # inline    void  PrimVtx(const ImVec2& pos, const ImVec2& uv, ImU32 col)         { PrimWriteIdx((ImDrawIdx)_VtxCurrentIdx); PrimWriteVtx(pos, uv, col); }     /* original C++ signature */
+    # inline    void  PrimVtx(const ImVec2& pos, const ImVec2& uv, ImU32 col);    /* original C++ signature */
     def prim_vtx(self, pos: ImVec2Like, uv: ImVec2Like, col: ImU32) -> None:
         """(private API)
 
@@ -10639,16 +10882,61 @@ class ImDrawList:
     # IMGUI_API void  _PathArcToN(const ImVec2& center, float radius, float a_min, float a_max, int num_segments);    /* original C++ signature */
     def _path_arc_to_n(self, center: ImVec2Like, radius: float, a_min: float, a_max: float, num_segments: int) -> None:
         pass
+    # IMGUI_API void  _AddRectFilledBaked(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float r, const ImVec4& tex_uvs, ImDrawFlags flags);    /* original C++ signature */
+    def _add_rect_filled_baked(
+        self, p_min: ImVec2Like, p_max: ImVec2Like, col: ImU32, r: float, tex_uvs: ImVec4Like, flags: ImDrawFlags
+    ) -> None:
+        pass
+    # IMGUI_API void  _AddRectBaked(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float r, float t, const ImVec4& tex_uvs, ImDrawFlags flags);    /* original C++ signature */
+    def _add_rect_baked(
+        self,
+        p_min: ImVec2Like,
+        p_max: ImVec2Like,
+        col: ImU32,
+        r: float,
+        t: float,
+        tex_uvs: ImVec4Like,
+        flags: ImDrawFlags,
+    ) -> None:
+        pass
+    # IMGUI_API void  _AddLine(const ImVec2& p1, const ImVec2& p2, ImU32 col, float thickness, ImDrawFlags flags);    /* original C++ signature */
+    def _add_line(self, p1: ImVec2Like, p2: ImVec2Like, col: ImU32, thickness: float, flags: ImDrawFlags) -> None:
+        pass
+    # IMGUI_API void  _AddRectTinyRounding(const ImVec2& p_min, const ImVec2& p_max, ImU32 col, float rounding, float thickness, ImDrawFlags flags);    /* original C++ signature */
+    def _add_rect_tiny_rounding(
+        self, p_min: ImVec2Like, p_max: ImVec2Like, col: ImU32, rounding: float, thickness: float, flags: ImDrawFlags
+    ) -> None:
+        pass
+    # IMGUI_API void  _SelectLineTexture(float screen_thickness, ImVec2* out_uv0, ImVec2* out_uv1, float* out_fringe, ImDrawFlags flags);    /* original C++ signature */
+    def _select_line_texture(
+        self, screen_thickness: float, out_uv0: ImVec2Like, out_uv1: ImVec2Like, out_fringe: float, flags: ImDrawFlags
+    ) -> float:
+        pass
+    # IMGUI_API float _CalculateCenterBiasedOffset(float thickness);    /* original C++ signature */
+    def _calculate_center_biased_offset(self, thickness: float) -> float:
+        pass
+    # IMGUI_API void  _AddPolyline(const ImVec2* points, int num_points, ImU32 col, float thickness, ImDrawFlags flags, float max_inner_offset);    /* original C++ signature */
+    def _add_polyline(
+        self,
+        points: ImVec2Like,
+        num_points: int,
+        col: ImU32,
+        thickness: float,
+        flags: ImDrawFlags,
+        max_inner_offset: float,
+    ) -> None:
+        pass
 
     def add_polyline(self, points: List[ImVec2Like], col: ImU32, thickness: float, flags: ImDrawFlags) -> None:
         pass
 
-    def add_convex_poly_filled(self, points: List[ImVec2Like], col: ImU32) -> None:
+    def add_convex_poly_filled(self, points: List[ImVec2Like], col: ImU32, flags: ImDrawFlags = 0) -> None:
         pass
 
     def add_concave_poly_filled(self, points: List[ImVec2Like], col: ImU32) -> None:
         pass
 
+# struct ImDrawData    /* original C++ signature */
 class ImDrawData:
     """All draw data to render a Dear ImGui frame
     (NB: the style and the naming convention here is a little inconsistent, we currently preserve them for backward compatibility purpose,
@@ -10678,7 +10966,7 @@ class ImDrawData:
     # ImVector<ImTextureData*>* Textures;    /* original C++ signature */
     textures: ImVector_ImTextureData_ptr  # List of textures to update. Most of the times the list is shared by all ImDrawData, has only 1 texture and it doesn't need any update. This almost always points to ImGui::GetPlatformIO().Textures[]. May be overridden or set to None if you want to manually update textures.
 
-    # ImDrawData()    { Clear(); }    /* original C++ signature */
+    # ImDrawData();    /* original C++ signature */
     def __init__(self) -> None:
         """Functions"""
         pass
@@ -10711,6 +10999,7 @@ class ImDrawData:
 # FOR ALL OTHER ImTextureXXXX TYPES: ONLY CORE LIBRARY AND RENDERER BACKENDS NEED TO KNOW AND CARE ABOUT THEM.
 # -----------------------------------------------------------------------------
 
+# enum ImTextureFormat    /* original C++ signature */
 class ImTextureFormat(enum.IntFlag):
     """We intentionally support a limited amount of texture formats to limit burden on CPU-side code and extension.
     Most standard backends only support RGBA32 but we provide a single channel option for low-resource/embedded systems.
@@ -10723,6 +11012,7 @@ class ImTextureFormat(enum.IntFlag):
     # ImTextureFormat_Alpha8,             /* original C++ signature */
     alpha8 = enum.auto()  # (= 1)  # 1 component per pixel, each is unsigned 8-bit. Total size = TexWidth * TexHeight
 
+# enum ImTextureStatus    /* original C++ signature */
 class ImTextureStatus(enum.IntFlag):
     """Status of a texture to communicate with Renderer Backend."""
 
@@ -10739,6 +11029,7 @@ class ImTextureStatus(enum.IntFlag):
     # ImTextureStatus_WantDestroy,        /* original C++ signature */
     want_destroy = enum.auto()  # (= 4)  # Requesting backend to destroy the texture. Set status to Destroyed when done.
 
+# struct ImTextureRect    /* original C++ signature */
 class ImTextureRect:
     """Coordinates of a rectangle within a texture.
     When a texture is in ImTextureStatus_WantUpdates state, we provide a list of individual rectangles to copy to the graphics system.
@@ -10753,11 +11044,11 @@ class ImTextureRect:
     w: int  # Size of rectangle to update (in pixels)
     # h;    /* original C++ signature */
     h: int  # Size of rectangle to update (in pixels)
-    # ImTextureRect();    /* original C++ signature */
     def __init__(self) -> None:
         """Auto-generated default constructor"""
         pass
 
+# struct ImTextureData    /* original C++ signature */
 class ImTextureData:
     """Specs and pixel storage for a texture used by Dear ImGui.
     This is only useful for (1) core library and (2) backends. End-user/applications do not need to care about this.
@@ -10806,7 +11097,7 @@ class ImTextureData:
     # bool                WantDestroyNextFrame;    /* original C++ signature */
     want_destroy_next_frame: bool  # rw   -   // [Internal] Queued to set ImTextureStatus_WantDestroy next frame. May still be used in the current frame.
 
-    # ImTextureData()     { memset((void*)this, 0, sizeof(*this)); Status = ImTextureStatus_Destroyed; TexID = ImTextureID_Invalid; }    /* original C++ signature */
+    # ImTextureData();    /* original C++ signature */
     def __init__(self) -> None:
         """Functions
         - If GetPixels() functions asserts while being called by your render loop, it could be caused by calling ImFontAtlas::Clear()/ClearFonts()?
@@ -10818,30 +11109,30 @@ class ImTextureData:
     # IMGUI_API void      DestroyPixels();    /* original C++ signature */
     def destroy_pixels(self) -> None:
         pass
-    # int                 GetSizeInBytes() const      { return Width * Height * BytesPerPixel; }    /* original C++ signature */
+    # int                 GetSizeInBytes() const;    /* original C++ signature */
     def get_size_in_bytes(self) -> int:
         """(private API)"""
         pass
-    # int                 GetPitch() const            { return Width * BytesPerPixel; }    /* original C++ signature */
+    # int                 GetPitch() const;    /* original C++ signature */
     def get_pitch(self) -> int:
         """(private API)"""
         pass
-    # ImTextureRef        GetTexRef()                 { ImTextureRef tex_ref; tex_ref._TexData = this; tex_ref._TexID = ImTextureID_Invalid; return tex_ref; }    /* original C++ signature */
+    # ImTextureRef        GetTexRef();    /* original C++ signature */
     def get_tex_ref(self) -> ImTextureRef:
         """(private API)"""
         pass
-    # ImTextureID         GetTexID() const            { return TexID; }    /* original C++ signature */
+    # ImTextureID         GetTexID() const;    /* original C++ signature */
     def get_tex_id(self) -> ImTextureID:
         """(private API)"""
         pass
     # Called by Renderer backend
     # - Call SetTexID() and SetStatus() after honoring texture requests. Never modify TexID and Status directly!
     # - A backend may decide to destroy a texture that we did not request to destroy, which is fine (e.g. freeing resources), but we immediately set the texture back in _WantCreate mode.
-    # void    SetTexID(ImTextureID tex_id)            { TexID = tex_id; }    /* original C++ signature */
+    # void    SetTexID(ImTextureID tex_id);    /* original C++ signature */
     def set_tex_id(self, tex_id: ImTextureID) -> None:
         """(private API)"""
         pass
-    # void    SetStatus(ImTextureStatus status)       { Status = status; if (status == ImTextureStatus_Destroyed && !WantDestroyNextFrame && Pixels != nullptr) Status = ImTextureStatus_WantCreate; }    /* original C++ signature */
+    # void    SetStatus(ImTextureStatus status);    /* original C++ signature */
     def set_status(self, status: ImTextureStatus) -> None:
         """(private API)"""
         pass
@@ -10858,6 +11149,7 @@ class ImTextureData:
 # [SECTION] Font API (ImFontConfig, ImFontGlyph, ImFontAtlasFlags, ImFontAtlas, ImFontGlyphRangesBuilder, ImFont)
 # -----------------------------------------------------------------------------
 
+# struct ImFontConfig    /* original C++ signature */
 class ImFontConfig:
     """A font input/source (we may rename this to ImFontSource in the future)"""
 
@@ -10917,6 +11209,7 @@ class ImFontConfig:
     def __init__(self) -> None:
         pass
 
+# struct ImFontGlyph    /* original C++ signature */
 class ImFontGlyph:
     """Hold rendering data for one glyph.
     (Note: some language parsers may fail to convert the bitfield members, in this case maybe drop store a single u32 or we can rework this)
@@ -10943,7 +11236,7 @@ class ImFontGlyph:
     # int             PackId;    /* original C++ signature */
     pack_id: int  # [Internal] ImFontAtlasRectId value (FIXME: Cold data, could be moved elsewhere?)
 
-    # ImFontGlyph()   { memset((void*)this, 0, sizeof(*this)); PackId = -1; }    /* original C++ signature */
+    # ImFontGlyph();    /* original C++ signature */
     def __init__(self) -> None:
         pass
 
@@ -10959,6 +11252,7 @@ class ImFontGlyph:
         """0x0000..0x10FFFF (bitfield accessor)"""
         pass
 
+# struct ImFontGlyphRangesBuilder    /* original C++ signature */
 class ImFontGlyphRangesBuilder:
     """Helper to build glyph ranges from text/string data. Feed your application strings/characters to it then call BuildRanges().
     This is essentially a tightly packed of vector of 64k booleans = 8KB storage.
@@ -10967,28 +11261,28 @@ class ImFontGlyphRangesBuilder:
     # ImVector<ImU32> UsedChars;    /* original C++ signature */
     used_chars: ImVector_ImU32  # Store 1-bit per Unicode code point (0=unused, 1=used)
 
-    # ImFontGlyphRangesBuilder()              { Clear(); }    /* original C++ signature */
+    # ImFontGlyphRangesBuilder();    /* original C++ signature */
     def __init__(self) -> None:
         pass
-    # inline void     Clear()                 { int size_in_bytes = (IM_UNICODE_CODEPOINT_MAX + 1) / 8; UsedChars.resize(size_in_bytes / (int)sizeof(ImU32)); memset(UsedChars.Data, 0, (size_t)size_in_bytes); }    /* original C++ signature */
+    # inline void     Clear();    /* original C++ signature */
     def clear(self) -> None:
         """(private API)"""
         pass
-    # inline bool     GetBit(size_t n) const  { int off = (int)(n >> 5); ImU32 mask = 1u << (n & 31); return (UsedChars[off] & mask) != 0; }      /* original C++ signature */
+    # inline bool     GetBit(size_t n) const;    /* original C++ signature */
     def get_bit(self, n: int) -> bool:
         """(private API)
 
         Get bit n in the array
         """
         pass
-    # inline void     SetBit(size_t n)        { int off = (int)(n >> 5); ImU32 mask = 1u << (n & 31); UsedChars[off] |= mask; }                   /* original C++ signature */
+    # inline void     SetBit(size_t n);    /* original C++ signature */
     def set_bit(self, n: int) -> None:
         """(private API)
 
         Set bit n in the array
         """
         pass
-    # inline void     AddChar(ImWchar c)      { SetBit(c); }                          /* original C++ signature */
+    # inline void     AddChar(ImWchar c);    /* original C++ signature */
     def add_char(self, c: ImWchar) -> None:
         """(private API)
 
@@ -10996,7 +11290,7 @@ class ImFontGlyphRangesBuilder:
         """
         pass
     # IMGUI_API void  AddText(const char* text, const char* text_end = NULL);         /* original C++ signature */
-    def add_text(self, text: str, text_end: Optional[str] = None) -> None:
+    def add_text(self, text: str) -> None:
         """Add string (each character of the UTF-8 string are added)"""
         pass
     # IMGUI_API void  BuildRanges(ImVector<ImWchar>* out_ranges);                     /* original C++ signature */
@@ -11004,6 +11298,7 @@ class ImFontGlyphRangesBuilder:
         """Output new ranges"""
         pass
 
+# struct ImFontAtlasRect    /* original C++ signature */
 class ImFontAtlasRect:
     """Output of ImFontAtlas::GetCustomRect() when using custom rectangles.
     Those values may not be cached/stored as they are only valid for the current value of atlas->TexRef
@@ -11023,10 +11318,11 @@ class ImFontAtlasRect:
     # uv1;    /* original C++ signature */
     uv1: ImVec2  # UV coordinates (in current texture)
 
-    # ImFontAtlasRect() { memset((void*)this, 0, sizeof(*this)); }    /* original C++ signature */
+    # ImFontAtlasRect();    /* original C++ signature */
     def __init__(self) -> None:
         pass
 
+# enum ImFontAtlasFlags_    /* original C++ signature */
 class ImFontAtlasFlags_(enum.IntFlag):
     """Flags for ImFontAtlas build"""
 
@@ -11041,8 +11337,11 @@ class ImFontAtlasFlags_(enum.IntFlag):
     # ImFontAtlasFlags_NoBakedLines       = 1 << 2,       /* original C++ signature */
     no_baked_lines = (
         enum.auto()
-    )  # (= 1 << 2)  # Don't build thick line textures into the atlas (save a little texture memory, allow support for point/nearest filtering). The AntiAliasedLinesUseTex features uses them, otherwise they will be rendered using polygons (more expensive for CPU/GPU).
+    )  # (= 1 << 2)  # Don't build anti-aliased line textures into the atlas (save a little texture memory). SINCE 1.93.0 THIS PREVENTS ANTI-ALIASED LINES FROM WORKING AND WILL DISABLE THEM.
+    # ImFontAtlasFlags_NoBakedRoundCorners= 1 << 3,       /* original C++ signature */
+    no_baked_round_corners = enum.auto()  # (= 1 << 3)  # Don't build round corners into the atlas.
 
+# struct ImFontAtlas    /* original C++ signature */
 class ImFontAtlas:
     """Load and rasterize multiple TTF/OTF fonts into a same texture. The font atlas will build a single texture holding:
      - One or more fonts.
@@ -11164,7 +11463,7 @@ class ImFontAtlas:
     # ImTextureFormat             TexDesiredFormat;    /* original C++ signature */
     tex_desired_format: ImTextureFormat  # Desired texture format (default to ImTextureFormat_RGBA32 but may be changed to ImTextureFormat_Alpha8).
     # int                         TexGlyphPadding;    /* original C++ signature */
-    tex_glyph_padding: int  # FIXME: Should be called "TexPackPadding". Padding between glyphs within texture in pixels. Defaults to 1. If your rendering method doesn't rely on bilinear filtering you may set this to 0 (will also need to set AntiAliasedLinesUseTex = False).
+    tex_glyph_padding: int  # FIXME: Should be called "TexPackPadding". Padding between glyphs within texture in pixels. Defaults to 1. If your rendering method never relies on bilinear filtering you may set this to 0.
     # int                         TexMinWidth;    /* original C++ signature */
     tex_min_width: int  # Minimum desired texture width. Must be a power of two. Default to 512.
     # int                         TexMinHeight;    /* original C++ signature */
@@ -11242,6 +11541,7 @@ class ImFontAtlas:
         """Get the font texture id (for older backends which do not implement ImGuiBackendFlags_RendererHasTextures)"""
         pass
 
+# struct ImFontBaked    /* original C++ signature */
 class ImFontBaked:
     """Font runtime data for a given size
     Important: pointers to ImFontBaked are only valid for the current frame.
@@ -11301,6 +11601,7 @@ class ImFontBaked:
     def is_glyph_loaded(self, c: ImWchar) -> bool:
         pass
 
+# enum ImFontFlags_    /* original C++ signature */
 class ImFontFlags_(enum.IntFlag):
     """Font flags
     (in future versions as we redesign font loading API, this will become more important and better documented. for now please consider this as internal/advanced use)
@@ -11321,6 +11622,7 @@ class ImFontFlags_(enum.IntFlag):
     # ImFontFlags_ImplicitRefSize         = 1 << 4,       /* original C++ signature */
     implicit_ref_size = enum.auto()  # (= 1 << 4)  # [Internal] Reference size was not set explicitly.
 
+# struct ImFont    /* original C++ signature */
 class ImFont:
     """Font runtime data and rendering
     - ImFontAtlas automatically loads a default embedded font for you if you didn't load one manually.
@@ -11354,7 +11656,7 @@ class ImFont:
     # bool                        EllipsisAutoBake;    /* original C++ signature */
     ellipsis_auto_bake: bool  # 1     //     // Mark when the "..." glyph (== EllipsisChar) needs to be generated by combining multiple '.'.
     # ImGuiStorage                RemapPairs;    /* original C++ signature */
-    remap_pairs: Storage  # 16    //     // Remapping pairs when using AddRemapChar(), otherwise empty.
+    remap_pairs: Storage  # 16    //     // Remapping pairs when using AddRemapCodepointXXX().
 
     # IMGUI_API ImFont();    /* original C++ signature */
     def __init__(self) -> None:
@@ -11363,11 +11665,11 @@ class ImFont:
     # IMGUI_API bool              IsGlyphInFont(ImWchar c);    /* original C++ signature */
     def is_glyph_in_font(self, c: ImWchar) -> bool:
         pass
-    # bool                        IsLoaded() const                { return OwnerAtlas != NULL; }    /* original C++ signature */
+    # bool                        IsLoaded() const;    /* original C++ signature */
     def is_loaded(self) -> bool:
         """(private API)"""
         pass
-    # const char*                 GetDebugName() const            { return Sources.Size ? Sources[0]->Name : "<unknown>"; }     /* original C++ signature */
+    # const char*                 GetDebugName() const;    /* original C++ signature */
     def get_debug_name(self) -> str:
         """(private API)
 
@@ -11401,7 +11703,6 @@ class ImFont:
         col: ImU32,
         clip_rect: ImVec4Like,
         text_begin: str,
-        text_end: str,
         wrap_width: float = 0.0,
         flags: ImDrawTextFlags = 0,
     ) -> None:
@@ -11410,13 +11711,17 @@ class ImFont:
     # IMGUI_API void              ClearOutputData();    /* original C++ signature */
     def clear_output_data(self) -> None:
         pass
-    # IMGUI_API void              AddRemapChar(ImWchar from_codepoint, ImWchar to_codepoint);     /* original C++ signature */
-    def add_remap_char(self, from_codepoint: ImWchar, to_codepoint: ImWchar) -> None:
+    # IMGUI_API void              AddRemapCodepoint(ImWchar from_codepoint, ImWchar to_codepoint);     /* original C++ signature */
+    def add_remap_codepoint(self, from_codepoint: ImWchar, to_codepoint: ImWchar) -> None:
         """Makes 'from_codepoint' character points to 'to_codepoint' glyph."""
+        pass
+    # IMGUI_API void              AddRemapCodepointToGlyphIndex(ImWchar from_codepoint, int font_src_idx, int glyph_idx);    /* original C++ signature */
+    def add_remap_codepoint_to_glyph_index(self, from_codepoint: ImWchar, font_src_idx: int, glyph_idx: int) -> None:
         pass
     # IMGUI_API bool              IsGlyphRangeUnused(unsigned int c_begin, unsigned int c_last);    /* original C++ signature */
     def is_glyph_range_unused(self, c_begin: int, c_last: int) -> bool:
         pass
+    # inline None               AddRemapChar(ImWchar from_codepoint, ImWchar to_codepoint) { AddRemapCodepoint(from_codepoint, to_codepoint); } // Renamed in 1.93.0 (Sep 2026)
 
     def calc_word_wrap_position_python(self, size: float, text: str, wrap_width: float) -> int:
         """Python API for CalcWordWrapPosition: returns an index in the text (text[:index] is what fits), not a pointer"""
@@ -11426,6 +11731,7 @@ class ImFont:
 # [SECTION] Viewports
 # -----------------------------------------------------------------------------
 
+# enum ImGuiViewportFlags_    /* original C++ signature */
 class ViewportFlags_(enum.IntFlag):
     """Flags stored in ImGuiViewport::Flags, giving indications to the platform backends."""
 
@@ -11480,6 +11786,7 @@ class ViewportFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 13)  # Platform Window: Window is focused (last call to Platform_GetWindowFocus() returned True)
 
+# struct ImGuiViewport    /* original C++ signature */
 class Viewport:
     """- Currently represents the Platform Window created by the application which is hosting our Dear ImGui windows.
     - With multi-viewport enabled, we extend this concept to have multiple active viewports.
@@ -11539,17 +11846,17 @@ class Viewport:
     # bool                PlatformRequestClose;    /* original C++ signature */
     platform_request_close: bool  # Platform window requested closure (e.g. window was moved by the OS / host window manager, e.g. pressing ALT-F4)
 
-    # ImGuiViewport()     { memset((void*)this, 0, sizeof(*this)); }    /* original C++ signature */
+    # ImGuiViewport();    /* original C++ signature */
     def __init__(self) -> None:
         pass
     # [/ADAPT_IMGUI_BUNDLE]
 
     # Helpers
-    # ImVec2              GetCenter() const       { return ImVec2(Pos.x + Size.x * 0.5f, Pos.y + Size.y * 0.5f); }    /* original C++ signature */
+    # ImVec2              GetCenter() const;    /* original C++ signature */
     def get_center(self) -> ImVec2:
         """(private API)"""
         pass
-    # ImVec2              GetWorkCenter() const   { return ImVec2(WorkPos.x + WorkSize.x * 0.5f, WorkPos.y + WorkSize.y * 0.5f); }    /* original C++ signature */
+    # ImVec2              GetWorkCenter() const;    /* original C++ signature */
     def get_work_center(self) -> ImVec2:
         """(private API)"""
         pass
@@ -11607,6 +11914,7 @@ class Viewport:
 #   or you may decide to never setup those pointers and call your code directly. They are a convenience, not an obligatory interface.
 # -----------------------------------------------------------------------------
 
+# struct ImGuiPlatformIO    /* original C++ signature */
 class PlatformIO:
     """Access via ImGui::GetPlatformIO()"""
 
@@ -11717,6 +12025,7 @@ class PlatformIO:
     platform_set_clipboard_text_fn: Optional[Callable[[Context, str], None]]
     platform_open_in_shell_fn: Optional[Callable[[Context, str], bool]]
 
+# struct ImGuiPlatformMonitor    /* original C++ signature */
 class PlatformMonitor:
     """(Optional) This is required when enabling multi-viewport. Represent the bounds of each connected monitor/display and their DPI.
     We use this information for multiple DPI support + clamping the position of popups and tooltips so they don't straddle multiple monitors.
@@ -11734,10 +12043,11 @@ class PlatformMonitor:
     dpi_scale: float  # 1.0 = 96 DPI
     # void*   PlatformHandle;    /* original C++ signature */
     platform_handle: Any  # Backend dependant data (e.g. HMONITOR, GLFWmonitor*, SDL Display Index, NSScreen*)
-    # ImGuiPlatformMonitor()          { MainPos = MainSize = WorkPos = WorkSize = ImVec2(0, 0); DpiScale = 1.0f; PlatformHandle = NULL; }    /* original C++ signature */
+    # ImGuiPlatformMonitor();    /* original C++ signature */
     def __init__(self) -> None:
         pass
 
+# struct ImGuiPlatformImeData    /* original C++ signature */
 class PlatformImeData:
     """(Optional) Support for IME (Input Method Editor) via the platform_io.Platform_SetImeDataFn() function. Handler is called during EndFrame()."""
 
@@ -11752,7 +12062,7 @@ class PlatformImeData:
     # ImGuiID ViewportId;    /* original C++ signature */
     viewport_id: ID  # ID of platform window/viewport.
 
-    # ImGuiPlatformImeData()          { memset((void*)this, 0, sizeof(*this)); }    /* original C++ signature */
+    # ImGuiPlatformImeData();    /* original C++ signature */
     def __init__(self) -> None:
         pass
 
@@ -11775,6 +12085,7 @@ class PlatformImeData:
 
 # #endif
 
+# <custom_bindings>
 def get_clipboard_text() -> str:
     pass
 
@@ -11813,6 +12124,7 @@ def push_font(font: Optional[ImFont], font_size_base_unscaled: float) -> None:
     """Use None as a shortcut to keep current font. Use 0.0 to keep current size."""
     pass
 
+# IMGUI_API bool          SliderFloat2(const char* label, float v[2], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);    /* original C++ signature */
 @overload
 def slider_float2(
     label: str, v: List[float], v_min: float, v_max: float, format: str = "%.3f", flags: SliderFlags = 0
@@ -11825,6 +12137,7 @@ def slider_float2(
 ) -> Tuple[bool, ImVec2]:
     pass
 
+# IMGUI_API bool          SliderFloat4(const char* label, float v[4], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);    /* original C++ signature */
 @overload
 def slider_float4(
     label: str, v: List[float], v_min: float, v_max: float, format: str = "%.3f", flags: SliderFlags = 0
@@ -11837,6 +12150,7 @@ def slider_float4(
 ) -> Tuple[bool, ImVec4]:
     pass
 
+# IMGUI_API bool          InputFloat2(const char* label, float v[2], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);    /* original C++ signature */
 @overload
 def input_float2(
     label: str, v: List[float], format: str = "%.3f", flags: InputTextFlags = 0
@@ -11847,6 +12161,7 @@ def input_float2(
 def input_float2(label: str, v: ImVec2Like, format: str = "%.3f", flags: InputTextFlags = 0) -> Tuple[bool, ImVec2]:
     pass
 
+# IMGUI_API bool          InputFloat4(const char* label, float v[4], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);    /* original C++ signature */
 @overload
 def input_float4(
     label: str, v: List[float], format: str = "%.3f", flags: InputTextFlags = 0
@@ -11857,6 +12172,7 @@ def input_float4(
 def input_float4(label: str, v: ImVec4Like, format: str = "%.3f", flags: InputTextFlags = 0) -> Tuple[bool, ImVec4]:
     pass
 
+# IMGUI_API bool          ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);    /* original C++ signature */
 @overload
 def color_edit3(label: str, col: List[float], flags: ColorEditFlags = 0) -> Tuple[bool, List[float]]:
     pass
@@ -11865,6 +12181,7 @@ def color_edit3(label: str, col: List[float], flags: ColorEditFlags = 0) -> Tupl
 def color_edit3(label: str, col: ImVec4Like, flags: ColorEditFlags = 0) -> Tuple[bool, ImVec4]:
     pass
 
+# IMGUI_API bool          ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags = 0);    /* original C++ signature */
 @overload
 def color_edit4(label: str, col: List[float], flags: ColorEditFlags = 0) -> Tuple[bool, List[float]]:
     pass
@@ -11873,6 +12190,7 @@ def color_edit4(label: str, col: List[float], flags: ColorEditFlags = 0) -> Tupl
 def color_edit4(label: str, col: ImVec4Like, flags: ColorEditFlags = 0) -> Tuple[bool, ImVec4]:
     pass
 
+# IMGUI_API bool          ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);    /* original C++ signature */
 @overload
 def color_picker3(label: str, col: List[float], flags: ColorEditFlags = 0) -> Tuple[bool, List[float]]:
     pass
@@ -11881,6 +12199,7 @@ def color_picker3(label: str, col: List[float], flags: ColorEditFlags = 0) -> Tu
 def color_picker3(label: str, col: ImVec4Like, flags: ColorEditFlags = 0) -> Tuple[bool, ImVec4]:
     pass
 
+# IMGUI_API bool          ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);    /* original C++ signature */
 @overload
 def color_picker4(
     label: str, col: List[float], flags: ColorEditFlags = 0, ref_col: Optional[List[float]] = None
@@ -11893,6 +12212,7 @@ def color_picker4(
 ) -> Tuple[bool, ImVec4]:
     pass
 
+# </custom_bindings>
 ####################    </generated_from:imgui.h>    ####################
 
 ####################    <generated_from:imgui_stacklayout.h>    ####################
@@ -12069,6 +12389,7 @@ def input_text_with_hint(
 
 ####################    <generated_from:imgui_pywrappers.h>    ####################
 
+# struct ImGuiPayload_PyId    /* original C++ signature */
 class Payload_PyId:
     # ImGuiPayloadId DataId;    /* original C++ signature */
     # Stores an id that represents the payload. For example, this could be given by python `id(object)`
@@ -12077,7 +12398,6 @@ class Payload_PyId:
     # std::string Type;    /* original C++ signature */
     # A string representing the type of payload. It cannot exceed 32 characters.
     type: str
-    # ImGuiPayload_PyId(ImGuiPayloadId DataId = ImGuiPayloadId(), std::string Type = std::string());    /* original C++ signature */
     def __init__(self, data_id: Optional[PayloadId] = None, type: str = "") -> None:
         """Auto-generated default constructor with named params
 

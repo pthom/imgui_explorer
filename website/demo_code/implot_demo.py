@@ -5,6 +5,12 @@
 # by Dear ImGui Bundle. It is not guaranteed to be up-to-date with the
 # latest version of the C++ code, but it should be close enough.
 ###############################################################################
+"""ImPlot: the full demo
+
+Every kind of plot of [ImPlot](https://github.com/epezent/implot), in Python: lines, scatter, bars, heatmaps,
+histograms, real-time plots and more. A port of implot_demo.cpp: browse it next to its code in the [Dear
+ImGui Explorer](https://pthom.github.io/imgui_explorer/?lib=implot).
+"""
 import time
 from imgui_bundle import imgui, immapp, implot, imgui_ctx, ImVec4, ImVec2, IM_COL32
 import numpy as np
@@ -3027,9 +3033,9 @@ def show_demo_window_maybe_docked(create_window: bool):
 
 
 def main():
-    from imgui_bundle import immapp, imgui_md
+    from imgui_bundle import immapp, rich_md
     def gui():
-        imgui_md.render_unindented("""
+        rich_md.render("""
         Below is `implot.show_demo_window()`
 
         Open [Dear ImGui Explorer](https://pthom.github.io/imgui_explorer/) (online) for a more complete version,

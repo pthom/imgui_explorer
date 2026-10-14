@@ -16,6 +16,16 @@
 #   See https://github.com/pthom/imgui_bundle/issues/467
 #
 # ruff: noqa: B008, F821, F811
+"""ImPlot: 2D plots for Dear ImGui: lines, scatter, bars, shaded areas, heatmaps, histograms, pie charts, real-time
+data.
+
+A plot lives between `begin_plot()` and `end_plot()`: the `setup_*` functions (axes, limits, legend) come first,
+then the `plot_*` functions. Run the app with `immapp.run(..., with_implot=True)`, which creates ImPlot's context.
+
+In Python, the data are numpy arrays. ImPlot's functions are templated on one numeric type, so the arrays of one
+call must share their dtype: convert them first (`xs = xs.astype(ys.dtype)`). Mismatched dtypes raise an error.
+"""
+
 from typing import Any, Optional, Tuple, List, overload
 import numpy as np
 import enum
@@ -86,40 +96,73 @@ typedef int ImPlotColormap;           // -> enum ImPlotColormap_
 typedef int ImPlotLocation;           // -> enum ImPlotLocation_
 typedef int ImPlotBin;                // -> enum ImPlotBin_
 """
+# typedef int ImAxis;    /* original C++ signature */
 ImAxis = int  # -> enum ImAxis_
+# typedef int ImPlotFlags;    /* original C++ signature */
 Flags = int  # -> enum Flags_
+# typedef int ImPlotAxisFlags;    /* original C++ signature */
 AxisFlags = int  # -> enum AxisFlags_
+# typedef int ImPlotSubplotFlags;    /* original C++ signature */
 SubplotFlags = int  # -> enum SubplotFlags_
+# typedef int ImPlotLegendFlags;    /* original C++ signature */
 LegendFlags = int  # -> enum LegendFlags_
+# typedef int ImPlotMouseTextFlags;    /* original C++ signature */
 MouseTextFlags = int  # -> enum MouseTextFlags_
+# typedef int ImPlotDragToolFlags;    /* original C++ signature */
 DragToolFlags = int  # -> DragToolFlags_
+# typedef int ImPlotColormapScaleFlags;    /* original C++ signature */
 ColormapScaleFlags = int  # -> ColormapScaleFlags_
 
+# typedef int ImPlotItemFlags;    /* original C++ signature */
 ItemFlags = int  # -> ItemFlags_
+# typedef int ImPlotLineFlags;    /* original C++ signature */
 LineFlags = int  # -> LineFlags_
+# typedef int ImPlotScatterFlags;    /* original C++ signature */
 ScatterFlags = int  # -> ScatterFlags
+# typedef int ImPlotStairsFlags;    /* original C++ signature */
 StairsFlags = int  # -> StairsFlags_
+# typedef int ImPlotShadedFlags;    /* original C++ signature */
 ShadedFlags = int  # -> ShadedFlags_
+# typedef int ImPlotBarsFlags;    /* original C++ signature */
 BarsFlags = int  # -> BarsFlags_
+# typedef int ImPlotBarGroupsFlags;    /* original C++ signature */
 BarGroupsFlags = int  # -> BarGroupsFlags_
+# typedef int ImPlotErrorBarsFlags;    /* original C++ signature */
 ErrorBarsFlags = int  # -> ErrorBarsFlags_
+# typedef int ImPlotStemsFlags;    /* original C++ signature */
 StemsFlags = int  # -> StemsFlags_
+# typedef int ImPlotInfLinesFlags;    /* original C++ signature */
 InfLinesFlags = int  # -> InfLinesFlags_
+# typedef int ImPlotPieChartFlags;    /* original C++ signature */
 PieChartFlags = int  # -> PieChartFlags_
+# typedef int ImPlotHeatmapFlags;    /* original C++ signature */
 HeatmapFlags = int  # -> HeatmapFlags_
+# typedef int ImPlotHistogramFlags;    /* original C++ signature */
 HistogramFlags = int  # -> HistogramFlags_
+# typedef int ImPlotDigitalFlags;    /* original C++ signature */
 DigitalFlags = int  # -> DigitalFlags_
+# typedef int ImPlotImageFlags;    /* original C++ signature */
 ImageFlags = int  # -> ImageFlags_
+# typedef int ImPlotTextFlags;    /* original C++ signature */
 TextFlags = int  # -> TextFlags_
+# typedef int ImPlotDummyFlags;    /* original C++ signature */
 DummyFlags = int  # -> DummyFlags_
 
+# typedef int ImPlotCond;    /* original C++ signature */
 Cond = int  # -> enum Cond_
+# typedef int ImPlotCol;    /* original C++ signature */
 Col = int  # -> enum Col_
+# typedef int ImPlotStyleVar;    /* original C++ signature */
 StyleVar = int  # -> enum StyleVar_
+# typedef int ImPlotScale;    /* original C++ signature */
 Scale = int  # -> enum Scale_
+# typedef int ImPlotMarker;    /* original C++ signature */
 Marker = int  # -> enum Marker_
+# typedef int ImPlotColormap;    /* original C++ signature */
 Colormap = int  # -> enum Colormap_
+# typedef int ImPlotLocation;    /* original C++ signature */
 Location = int  # -> enum Location_
+# typedef int ImPlotBin;    /* original C++ signature */
 Bin = int  # -> enum Bin_
 
 # ImPlotContext is an opaque structure
@@ -196,10 +239,10 @@ ItemFlags_None = ItemFlags_.none
 # IMGUI_BUNDLE_PYTHON_API is defined when building the python bindings.
 # #ifdef IMGUI_BUNDLE_PYTHON_API
 #
+# struct BoxedValue    /* original C++ signature */
 class BoxedValue:
     # double value;    /* original C++ signature */
     value: float
-    # BoxedValue(double value = double());    /* original C++ signature */
     def __init__(self, value: float = float()) -> None:
         """Auto-generated default constructor with named params"""
         pass
@@ -225,6 +268,7 @@ class BoxedValue:
 
 # Enums/Flags
 
+# enum ImAxis_    /* original C++ signature */
 class ImAxis_(enum.IntFlag):
     """Axis indices. The values assigned may change; NEVER hardcode these."""
 
@@ -247,6 +291,7 @@ class ImAxis_(enum.IntFlag):
     # bookkeeping
     count = enum.auto()  # (= 6)
 
+# enum ImPlotProp_    /* original C++ signature */
 class Prop_(enum.IntFlag):
     """Plotting properties. These provide syntactic sugar for creating ImPlotSpecs from (ImPlotProp,value) pairs. See ImPlotSpec documentation."""
 
@@ -299,6 +344,7 @@ class Prop_(enum.IntFlag):
         enum.auto()
     )  # (= 16)  # optional item flags; can be composed from common ImPlotItemFlags and/or specialized ImPlotXFlags
 
+# enum ImPlotFlags_    /* original C++ signature */
 class Flags_(enum.IntFlag):
     """Options for plots (see BeginPlot)."""
 
@@ -332,6 +378,7 @@ class Flags_(enum.IntFlag):
         enum.auto()
     )  # (= Flags_NoTitle | Flags_NoLegend | Flags_NoMenus | Flags_NoBoxSelect | Flags_NoMouseText)
 
+# enum ImPlotAxisFlags_    /* original C++ signature */
 class AxisFlags_(enum.IntFlag):
     """Options for plot axes (see SetupAxis)."""
 
@@ -391,6 +438,7 @@ class AxisFlags_(enum.IntFlag):
     # }
     aux_default = enum.auto()  # (= AxisFlags_NoGridLines | AxisFlags_Opposite)
 
+# enum ImPlotSubplotFlags_    /* original C++ signature */
 class SubplotFlags_(enum.IntFlag):
     """Options for subplots (see BeginSubplot)"""
 
@@ -435,6 +483,7 @@ class SubplotFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 10)  # subplots are added in column major order instead of the default row major order
 
+# enum ImPlotLegendFlags_    /* original C++ signature */
 class LegendFlags_(enum.IntFlag):
     """Options for legends (see SetupLegend)"""
 
@@ -461,6 +510,7 @@ class LegendFlags_(enum.IntFlag):
     # ImPlotLegendFlags_Reverse         = 1 << 7,     /* original C++ signature */
     reverse = enum.auto()  # (= 1 << 7)  # legend entries will be displayed in reverse order
 
+# enum ImPlotMouseTextFlags_    /* original C++ signature */
 class MouseTextFlags_(enum.IntFlag):
     """Options for mouse hover text (see SetupMouseText)"""
 
@@ -473,6 +523,7 @@ class MouseTextFlags_(enum.IntFlag):
     # ImPlotMouseTextFlags_ShowAlways  = 1 << 2,     /* original C++ signature */
     show_always = enum.auto()  # (= 1 << 2)  # always display mouse position even if plot not hovered
 
+# enum ImPlotDragToolFlags_    /* original C++ signature */
 class DragToolFlags_(enum.IntFlag):
     """Options for DragPoint, DragLine, DragRect"""
 
@@ -489,6 +540,7 @@ class DragToolFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 3)  # tool rendering will be delayed one frame; useful when applying position-constraints
 
+# enum ImPlotColormapScaleFlags_    /* original C++ signature */
 class ColormapScaleFlags_(enum.IntFlag):
     """Flags for ColormapScale"""
 
@@ -503,6 +555,7 @@ class ColormapScaleFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 2)  # invert the colormap bar and axis scale (this only affects rendering; if you only want to reverse the scale mapping, make scale_min > scale_max)
 
+# enum ImPlotItemFlags_    /* original C++ signature */
 class ItemFlags_(enum.IntFlag):
     """Flags for ANY PlotX function. Used by setting ImPlotSpec::Flags."""
 
@@ -513,6 +566,7 @@ class ItemFlags_(enum.IntFlag):
     # ImPlotItemFlags_NoFit    = 1 << 1,     /* original C++ signature */
     no_fit = enum.auto()  # (= 1 << 1)  # the item won't be considered for plot fits
 
+# enum ImPlotLineFlags_    /* original C++ signature */
 class LineFlags_(enum.IntFlag):
     """Flags for PlotLine. Used by setting ImPlotSpec::Flags."""
 
@@ -531,6 +585,7 @@ class LineFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 14)  # a filled region between the line and horizontal origin will be rendered; use PlotShaded for more advanced cases
 
+# enum ImPlotScatterFlags_    /* original C++ signature */
 class ScatterFlags_(enum.IntFlag):
     """Flags for PlotScatter. Used by setting ImPlotSpec::Flags."""
 
@@ -539,12 +594,14 @@ class ScatterFlags_(enum.IntFlag):
     # ImPlotScatterFlags_NoClip = 1 << 10,     /* original C++ signature */
     no_clip = enum.auto()  # (= 1 << 10)  # markers on the edge of a plot will not be clipped
 
+# enum ImPlotBubblesFlags_    /* original C++ signature */
 class BubblesFlags_(enum.IntFlag):
     """Flags for PlotBubbles. Used by setting ImPlotSpec::Flags."""
 
     # ImPlotBubblesFlags_None = 0,     /* original C++ signature */
     none = enum.auto()  # (= 0)  # default
 
+# enum ImPlotPolygonFlags_    /* original C++ signature */
 class PolygonFlags_(enum.IntFlag):
     """Flags for PlotPolygon. Used by setting ImPlotSpec::Flags."""
 
@@ -553,6 +610,7 @@ class PolygonFlags_(enum.IntFlag):
     # ImPlotPolygonFlags_Concave  = 1 << 10,     /* original C++ signature */
     concave = enum.auto()  # (= 1 << 10)  # use concave polygon filling (slower but supports concave shapes)
 
+# enum ImPlotStairsFlags_    /* original C++ signature */
 class StairsFlags_(enum.IntFlag):
     """Flags for PlotStairs. Used by setting ImPlotSpec::Flags."""
 
@@ -567,12 +625,14 @@ class StairsFlags_(enum.IntFlag):
         enum.auto()
     )  # (= 1 << 11)  # a filled region between the stairs and horizontal origin will be rendered; use PlotShaded for more advanced cases
 
+# enum ImPlotShadedFlags_    /* original C++ signature */
 class ShadedFlags_(enum.IntFlag):
     """Flags for PlotShaded (placeholder). Used by setting ImPlotSpec::Flags."""
 
     # ImPlotShadedFlags_None  = 0     /* original C++ signature */
     none = enum.auto()  # (= 0)  # default
 
+# enum ImPlotBarsFlags_    /* original C++ signature */
 class BarsFlags_(enum.IntFlag):
     """Flags for PlotBars. Used by setting ImPlotSpec::Flags."""
 
@@ -581,6 +641,7 @@ class BarsFlags_(enum.IntFlag):
     # ImPlotBarsFlags_Horizontal   = 1 << 10,     /* original C++ signature */
     horizontal = enum.auto()  # (= 1 << 10)  # bars will be rendered horizontally on the current y-axis
 
+# enum ImPlotBarGroupsFlags_    /* original C++ signature */
 class BarGroupsFlags_(enum.IntFlag):
     """Flags for PlotBarGroups. Used by setting ImPlotSpec::Flags."""
 
@@ -591,6 +652,7 @@ class BarGroupsFlags_(enum.IntFlag):
     # ImPlotBarGroupsFlags_Stacked     = 1 << 11,     /* original C++ signature */
     stacked = enum.auto()  # (= 1 << 11)  # items in a group will be stacked on top of each other
 
+# enum ImPlotErrorBarsFlags_    /* original C++ signature */
 class ErrorBarsFlags_(enum.IntFlag):
     """Flags for PlotErrorBars. Used by setting ImPlotSpec::Flags."""
 
@@ -599,6 +661,7 @@ class ErrorBarsFlags_(enum.IntFlag):
     # ImPlotErrorBarsFlags_Horizontal = 1 << 10,     /* original C++ signature */
     horizontal = enum.auto()  # (= 1 << 10)  # error bars will be rendered horizontally on the current y-axis
 
+# enum ImPlotStemsFlags_    /* original C++ signature */
 class StemsFlags_(enum.IntFlag):
     """Flags for PlotStems. Used by setting ImPlotSpec::Flags."""
 
@@ -607,6 +670,7 @@ class StemsFlags_(enum.IntFlag):
     # ImPlotStemsFlags_Horizontal = 1 << 10,     /* original C++ signature */
     horizontal = enum.auto()  # (= 1 << 10)  # stems will be rendered horizontally on the current y-axis
 
+# enum ImPlotInfLinesFlags_    /* original C++ signature */
 class InfLinesFlags_(enum.IntFlag):
     """Flags for PlotInfLines. Used by setting ImPlotSpec::Flags."""
 
@@ -615,6 +679,7 @@ class InfLinesFlags_(enum.IntFlag):
     # ImPlotInfLinesFlags_Horizontal = 1 << 10     /* original C++ signature */
     horizontal = enum.auto()  # (= 1 << 10)  # lines will be rendered horizontally on the current y-axis
 
+# enum ImPlotPieChartFlags_    /* original C++ signature */
 class PieChartFlags_(enum.IntFlag):
     """Flags for PlotPieChart. Used by setting ImPlotSpec::Flags."""
 
@@ -633,6 +698,7 @@ class PieChartFlags_(enum.IntFlag):
     # ImPlotPieChartFlags_NoSliceBorder = 1 << 13      /* original C++ signature */
     no_slice_border = enum.auto()  # (= 1 << 13)  # do not draw slice borders
 
+# enum ImPlotHeatmapFlags_    /* original C++ signature */
 class HeatmapFlags_(enum.IntFlag):
     """Flags for PlotHeatmap. Used by setting ImPlotSpec::Flags."""
 
@@ -641,6 +707,7 @@ class HeatmapFlags_(enum.IntFlag):
     # ImPlotHeatmapFlags_ColMajor = 1 << 10,     /* original C++ signature */
     col_major = enum.auto()  # (= 1 << 10)  # data will be read in column major order
 
+# enum ImPlotHistogramFlags_    /* original C++ signature */
 class HistogramFlags_(enum.IntFlag):
     """Flags for PlotHistogram and PlotHistogram2D. Used by setting ImPlotSpec::Flags."""
 
@@ -665,18 +732,21 @@ class HistogramFlags_(enum.IntFlag):
     # ImPlotHistogramFlags_ColMajor   = 1 << 14      /* original C++ signature */
     col_major = enum.auto()  # (= 1 << 14)  # data will be read in column major order (not supported by PlotHistogram)
 
+# enum ImPlotDigitalFlags_    /* original C++ signature */
 class DigitalFlags_(enum.IntFlag):
     """Flags for PlotDigital (placeholder). Used by setting ImPlotSpec::Flags."""
 
     # ImPlotDigitalFlags_None = 0     /* original C++ signature */
     none = enum.auto()  # (= 0)  # default
 
+# enum ImPlotImageFlags_    /* original C++ signature */
 class ImageFlags_(enum.IntFlag):
     """Flags for PlotImage (placeholder). Used by setting ImPlotSpec::Flags."""
 
     # ImPlotImageFlags_None = 0     /* original C++ signature */
     none = enum.auto()  # (= 0)  # default
 
+# enum ImPlotTextFlags_    /* original C++ signature */
 class TextFlags_(enum.IntFlag):
     """Flags for PlotText. Used by setting ImPlotSpec::Flags."""
 
@@ -685,12 +755,14 @@ class TextFlags_(enum.IntFlag):
     # ImPlotTextFlags_Vertical = 1 << 10      /* original C++ signature */
     vertical = enum.auto()  # (= 1 << 10)  # text will be rendered vertically
 
+# enum ImPlotDummyFlags_    /* original C++ signature */
 class DummyFlags_(enum.IntFlag):
     """Flags for PlotDummy (placeholder). Used by setting ImPlotSpec::Flags."""
 
     # ImPlotDummyFlags_None = 0     /* original C++ signature */
     none = enum.auto()  # (= 0)  # default
 
+# enum ImPlotCond_    /* original C++ signature */
 class Cond_(enum.IntFlag):
     """Represents a condition for SetupAxisLimits etc. (same as ImGuiCond, but we only support a subset of those enums)"""
 
@@ -701,6 +773,7 @@ class Cond_(enum.IntFlag):
     # ImPlotCond_Once   = ImGuiCond_Once,        /* original C++ signature */
     once = enum.auto()  # (= Cond_Once)  # Set the variable once per runtime session (only the first call will succeed)
 
+# enum ImPlotCol_    /* original C++ signature */
 class Col_(enum.IntFlag):
     """Plot styling colors."""
 
@@ -740,6 +813,7 @@ class Col_(enum.IntFlag):
     # }
     count = enum.auto()  # (= 16)
 
+# enum ImPlotStyleVar_    /* original C++ signature */
 class StyleVar_(enum.IntFlag):
     """Plot styling variables."""
 
@@ -791,6 +865,7 @@ class StyleVar_(enum.IntFlag):
     # }
     count = enum.auto()  # (= 20)
 
+# enum ImPlotScale_    /* original C++ signature */
 class Scale_(enum.IntFlag):
     """Axis scale"""
 
@@ -803,6 +878,7 @@ class Scale_(enum.IntFlag):
     # ImPlotScale_SymLog,         /* original C++ signature */
     sym_log = enum.auto()  # (= 3)  # symmetric log scale
 
+# enum ImPlotMarker_    /* original C++ signature */
 class Marker_(enum.IntFlag):
     """Marker specifications."""
 
@@ -838,6 +914,7 @@ class Marker_(enum.IntFlag):
     # }
     count = enum.auto()  # (= 12)
 
+# enum ImPlotColormap_    /* original C++ signature */
 class Colormap_(enum.IntFlag):
     """Built-in colormaps"""
 
@@ -874,6 +951,7 @@ class Colormap_(enum.IntFlag):
     # ImPlotColormap_Greys    = 15,      /* original C++ signature */
     greys = enum.auto()  # (= 15)  # white/black                     (qual=False, n=2 )
 
+# enum ImPlotLocation_    /* original C++ signature */
 class Location_(enum.IntFlag):
     """Used to position items on a plot (e.g. legends, labels, etc.)"""
 
@@ -896,6 +974,7 @@ class Location_(enum.IntFlag):
     # ImPlotLocation_SouthEast = ImPlotLocation_South | ImPlotLocation_East      /* original C++ signature */
     south_east = enum.auto()  # (= Location_South | Location_East)  # bottom-right
 
+# enum ImPlotBin_    /* original C++ signature */
 class Bin_(enum.IntFlag):
     """Enums for different automatic histogram binning methods (k = bin count or w = bin width)"""
 
@@ -908,6 +987,7 @@ class Bin_(enum.IntFlag):
     # ImPlotBin_Scott   = -4,     /* original C++ signature */
     scott = enum.auto()  # (= -4)  # w = 3.49 * sigma / cbrt(n)
 
+# struct ImPlotSpec    /* original C++ signature */
 class Spec:
     """Plot item styling specification. Provide these to PlotX functions to override styling, specify
     offsetting or stride, or set optional flags. This struct can be used in the following ways:
@@ -966,7 +1046,6 @@ class Spec:
         ItemFlags_None  # optional item flags; can be composed from common ImPlotItemFlags and/or specialized ImPlotXFlags
     )
 
-    # ImPlotSpec(ImVec4 LineColor = IMPLOT_AUTO_COL, float LineWeight = 1.0f, ImVec4 FillColor = IMPLOT_AUTO_COL, float FillAlpha = 1.0f, ImPlotMarker Marker = ImPlotMarker_None, float MarkerSize = 4, ImVec4 MarkerLineColor = IMPLOT_AUTO_COL, ImVec4 MarkerFillColor = IMPLOT_AUTO_COL, float Size = 4, int Offset = 0, int Stride = IMPLOT_AUTO, ImPlotItemFlags Flags = ImPlotItemFlags_None);    /* original C++ signature */
     def __init__(
         self,
         line_color: Optional[ImVec4Like] = None,
@@ -1009,27 +1088,29 @@ class Spec:
         None  # array of sizes (np.float32) for each marker. Must have the same length as the data arrays. If None, use MarkerSize for all markers.
     )
 
+# struct ImPlotPoint    /* original C++ signature */
 class Point:
     # double x,     /* original C++ signature */
     x: float
     # y;    /* original C++ signature */
     y: float
-    # constexpr ImPlotPoint()                     : x(0.0), y(0.0) { }    /* original C++ signature */
+    # constexpr ImPlotPoint()                     : x(0.0), y(0.0);    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # constexpr ImPlotPoint(double _x, double _y) : x(_x), y(_y) { }    /* original C++ signature */
+    # constexpr ImPlotPoint(double _x, double _y) : x(_x), y(_y);    /* original C++ signature */
     @overload
     def __init__(self, _x: float, _y: float) -> None:
         pass
-    # constexpr ImPlotPoint(const ImVec2& p)      : x((double)p.x), y((double)p.y) { }    /* original C++ signature */
+    # constexpr ImPlotPoint(const ImVec2& p)      : x((double)p.x), y((double)p.y);    /* original C++ signature */
     @overload
     def __init__(self, p: ImVec2Like) -> None:
         pass
-    # IMPLOT_API double& operator[] (size_t idx)             { IM_ASSERT(idx == 0 || idx == 1); return ((double*)(void*)(char*)this)[idx]; }    /* original C++ signature */
+    # IMPLOT_API double& operator[] (size_t idx);    /* original C++ signature */
     def __getitem__(self, idx: int) -> float:
         pass
 
+# struct ImPlotRange    /* original C++ signature */
 class Range:
     """Range defined by a min/max value."""
 
@@ -1037,24 +1118,25 @@ class Range:
     min: float
     # Max;    /* original C++ signature */
     max: float
-    # constexpr ImPlotRange()                         : Min(0.0), Max(0.0) { }    /* original C++ signature */
+    # constexpr ImPlotRange()                         : Min(0.0), Max(0.0);    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # constexpr ImPlotRange(double _min, double _max) : Min(_min), Max(_max) { }    /* original C++ signature */
+    # constexpr ImPlotRange(double _min, double _max) : Min(_min), Max(_max);    /* original C++ signature */
     @overload
     def __init__(self, _min: float, _max: float) -> None:
         pass
-    # IMPLOT_API bool Contains(double value) const               { return value >= Min && value <= Max;                      }    /* original C++ signature */
+    # IMPLOT_API bool Contains(double value) const;    /* original C++ signature */
     def contains(self, value: float) -> bool:
         pass
-    # IMPLOT_API double Size() const                             { return Max - Min;                                         }    /* original C++ signature */
+    # IMPLOT_API double Size() const;    /* original C++ signature */
     def size(self) -> float:
         pass
-    # IMPLOT_API double Clamp(double value) const                { return (value < Min) ? Min : (value > Max) ? Max : value; }    /* original C++ signature */
+    # IMPLOT_API double Clamp(double value) const;    /* original C++ signature */
     def clamp(self, value: float) -> float:
         pass
 
+# struct ImPlotRect    /* original C++ signature */
 class Rect:
     """Combination of two range limits for X and Y axes. Also an AABB defined by Min()/Max()."""
 
@@ -1062,40 +1144,41 @@ class Rect:
     x: Range
     # Y;    /* original C++ signature */
     y: Range
-    # constexpr ImPlotRect()                                                       : X(0.0,0.0), Y(0.0,0.0) { }    /* original C++ signature */
+    # constexpr ImPlotRect()                                                       : X(0.0,0.0), Y(0.0,0.0);    /* original C++ signature */
     @overload
     def __init__(self) -> None:
         pass
-    # constexpr ImPlotRect(double x_min, double x_max, double y_min, double y_max) : X(x_min, x_max), Y(y_min, y_max) { }    /* original C++ signature */
+    # constexpr ImPlotRect(double x_min, double x_max, double y_min, double y_max) : X(x_min, x_max), Y(y_min, y_max);    /* original C++ signature */
     @overload
     def __init__(self, x_min: float, x_max: float, y_min: float, y_max: float) -> None:
         pass
-    # IMPLOT_API bool Contains(const ImPlotPoint& p) const                                    { return Contains(p.x, p.y);                 }    /* original C++ signature */
+    # IMPLOT_API bool Contains(const ImPlotPoint& p) const;    /* original C++ signature */
     @overload
     def contains(self, p: Point) -> bool:
         pass
-    # IMPLOT_API bool Contains(double x, double y) const                                      { return X.Contains(x) && Y.Contains(y);     }    /* original C++ signature */
+    # IMPLOT_API bool Contains(double x, double y) const;    /* original C++ signature */
     @overload
     def contains(self, x: float, y: float) -> bool:
         pass
-    # IMPLOT_API ImPlotPoint Size() const                                                     { return ImPlotPoint(X.Size(), Y.Size());    }    /* original C++ signature */
+    # IMPLOT_API ImPlotPoint Size() const;    /* original C++ signature */
     def size(self) -> Point:
         pass
-    # IMPLOT_API ImPlotPoint Clamp(const ImPlotPoint& p) const                                { return Clamp(p.x, p.y);                    }    /* original C++ signature */
+    # IMPLOT_API ImPlotPoint Clamp(const ImPlotPoint& p) const;    /* original C++ signature */
     @overload
     def clamp(self, p: Point) -> Point:
         pass
-    # IMPLOT_API ImPlotPoint Clamp(double x, double y) const                                  { return ImPlotPoint(X.Clamp(x),Y.Clamp(y)); }    /* original C++ signature */
+    # IMPLOT_API ImPlotPoint Clamp(double x, double y) const;    /* original C++ signature */
     @overload
     def clamp(self, x: float, y: float) -> Point:
         pass
-    # IMPLOT_API ImPlotPoint Min() const                                                      { return ImPlotPoint(X.Min, Y.Min);          }    /* original C++ signature */
+    # IMPLOT_API ImPlotPoint Min() const;    /* original C++ signature */
     def min(self) -> Point:
         pass
-    # IMPLOT_API ImPlotPoint Max() const                                                      { return ImPlotPoint(X.Max, Y.Max);          }    /* original C++ signature */
+    # IMPLOT_API ImPlotPoint Max() const;    /* original C++ signature */
     def max(self) -> Point:
         pass
 
+# struct ImPlotStyle    /* original C++ signature */
 class Style:
     """Plot style structure
     (has support for copy.copy)
@@ -1147,20 +1230,20 @@ class Style:
     digital_spacing: float  # = 4,      digital plot spacing gap in pixels
 
     # [ADAPT_IMGUI_BUNDLE]
-    #                             #ifdef IMGUI_BUNDLE_PYTHON_API
+    # #ifdef IMGUI_BUNDLE_PYTHON_API
     #
     # python adapter for ImPlotStyle::Colors[ImPlotCol_COUNT]
     # You can query and modify those values (0 <= idxColor < implot.Col_.count)
 
-    # inline IMPLOT_API  ImVec4& Color_(size_t idxColor) { IM_ASSERT( (idxColor >=0) && (idxColor < ImPlotCol_COUNT)); return Colors[idxColor]; }    /* original C++ signature */
+    # inline IMPLOT_API  ImVec4& Color_(size_t idxColor);    /* original C++ signature */
     def color_(self, idx_color: int) -> ImVec4:
         """Array of styling colors (index from implot.Col_.xxx)"""
         pass
-    # inline IMPLOT_API  void SetColor_(size_t idxColor, ImVec4 color) { IM_ASSERT( (idxColor >=0) && (idxColor < ImPlotCol_COUNT)); Colors[idxColor] = color; }    /* original C++ signature */
+    # inline IMPLOT_API  void SetColor_(size_t idxColor, ImVec4 color);    /* original C++ signature */
     def set_color_(self, idx_color: int, color: ImVec4Like) -> None:
         """Array of styling colors (index from implot.Col_.xxx)"""
         pass
-    #                             #endif
+    # #endif
     #
     # [/ADAPT_IMGUI_BUNDLE]
 
@@ -1182,6 +1265,7 @@ class Style:
 
 # Support for legacy versions
 
+# struct ImPlotInputMap    /* original C++ signature */
 class InputMap:
     """Input mapping structure. Default values listed. See also MapInputDefault, MapInputReverse."""
 
@@ -1339,12 +1423,12 @@ def end_plot() -> None:
 
 # #ifdef IMGUI_BUNDLE_PYTHON_API
 #
+# struct SubplotsRowColRatios    /* original C++ signature */
 class SubplotsRowColRatios:
     # std::vector<float> row_ratios;    /* original C++ signature */
     row_ratios: List[float]
     # std::vector<float> col_ratios;    /* original C++ signature */
     col_ratios: List[float]
-    # SubplotsRowColRatios(std::vector<float> row_ratios = std::vector<float>(), std::vector<float> col_ratios = std::vector<float>());    /* original C++ signature */
     def __init__(self, row_ratios: Optional[List[float]] = None, col_ratios: Optional[List[float]] = None) -> None:
         """Auto-generated default constructor with named params
 
@@ -1360,12 +1444,7 @@ class SubplotsRowColRatios:
 #                               int cols,
 #                               const ImVec2& size,
 #                               ImPlotSubplotFlags flags = 0,
-#                               SubplotsRowColRatios* row_col_ratios = nullptr)
-# {
-#     if (row_col_ratios == nullptr)
-#         return BeginSubplots(title_id, rows, cols, size, flags, nullptr , nullptr);
-#     return BeginSubplots(title_id, rows, cols, size, flags, row_col_ratios->row_ratios.data(), row_col_ratios->col_ratios.data());
-# }
+#                               SubplotsRowColRatios* row_col_ratios = nullptr);
 def begin_subplots(
     title_id: str,
     rows: int,
@@ -1431,7 +1510,7 @@ def setup_axis_limits(axis: ImAxis, v_min: float, v_max: float, cond: Optional[C
 
 # #ifdef IMGUI_BUNDLE_PYTHON_API
 #
-# IMPLOT_API inline void SetupAxisLinks(ImAxis axis, BoxedValue* link_min, BoxedValue* link_max) { SetupAxisLinks(axis, &link_min->value, &link_max->value); }    /* original C++ signature */
+# IMPLOT_API inline void SetupAxisLinks(ImAxis axis, BoxedValue* link_min, BoxedValue* link_max);    /* original C++ signature */
 def setup_axis_links(axis: ImAxis, link_min: BoxedValue, link_max: BoxedValue) -> None:
     """Links an axis range limits to external values. Use BoxedValue to transmit values (which will be updated after EndPlot)."""
     pass
@@ -1523,7 +1602,7 @@ def set_next_axis_limits(axis: ImAxis, v_min: float, v_max: float, cond: Optiona
 
 # #ifdef IMGUI_BUNDLE_PYTHON_API
 #
-# IMPLOT_API inline void SetNextAxisLinks(ImAxis axis, BoxedValue* link_min, BoxedValue* link_max) { SetNextAxisLinks(axis, &link_min->value, &link_max->value); }    /* original C++ signature */
+# IMPLOT_API inline void SetNextAxisLinks(ImAxis axis, BoxedValue* link_min, BoxedValue* link_max);    /* original C++ signature */
 def set_next_axis_links(axis: ImAxis, link_min: BoxedValue, link_max: BoxedValue) -> None:
     """Links an upcoming axis range limits to external values. Use BoxedValue to transmit values (which will be updated after EndPlot)."""
     pass
@@ -2644,7 +2723,7 @@ def show_demo_window_maybe_docked(
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  AUTOGENERATED CODE END !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 ###############################################################################
-# MANUAL BINDINGS BELOW
+# Python helpers (manual bindings)
 ###############################################################################
 
 # Add a new colormap. The color data will be copied. The colormap can be used by pushing either the returned index or the

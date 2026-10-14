@@ -22,6 +22,15 @@ namespace ImGui { extern IMGUI_API void DemoMarker(const char* file, int line, c
 #define IMGUI_DEMO_MARKER(section)
 #endif
 
+// Dear ImGui 1.93 renamed ImDrawFlags_RoundCornersXXX to ImDrawFlags_RoundXXX: the new names, for older versions
+#if IMGUI_VERSION_NUM < 19298
+#define ImDrawFlags_RoundAll    ImDrawFlags_RoundCornersAll
+#define ImDrawFlags_RoundTop    ImDrawFlags_RoundCornersTop
+#define ImDrawFlags_RoundBottom ImDrawFlags_RoundCornersBottom
+#define ImDrawFlags_RoundLeft   ImDrawFlags_RoundCornersLeft
+#define ImDrawFlags_RoundRight  ImDrawFlags_RoundCornersRight
+#endif
+
 // Font compatibility helpers for ImGui 1.92+ API changes
 // Font compatibility helpers for ImGui 1.92+ API changes
 namespace ImAnimCompat
@@ -301,7 +310,7 @@ static void ShowUsecase_ToastNotifications()
 		ImU32 accent_color = ImGui::ColorConvertFloat4ToU32(col);
 
 		dl->AddRectFilled(ImVec2(x, y), ImVec2(x + toast_width, y + toast_height), bg_color, 6.0f);
-		dl->AddRectFilled(ImVec2(x, y), ImVec2(x + 4.0f, y + toast_height), accent_color, 6.0f, ImDrawFlags_RoundCornersLeft);
+		dl->AddRectFilled(ImVec2(x, y), ImVec2(x + 4.0f, y + toast_height), accent_color, 6.0f, ImDrawFlags_RoundLeft);
 
 		// Text
 		ImU32 text_color = IM_COL32(255, 255, 255, (int)(alpha * 255));
@@ -350,7 +359,7 @@ static void ShowUsecase_SidebarNavigation()
 	if (sidebar_width > 1.0f)
 	{
 		dl->AddRectFilled(canvas_pos, ImVec2(canvas_pos.x + sidebar_width, canvas_pos.y + canvas_size.y),
-			IM_COL32(45, 48, 60, 255), 4.0f, ImDrawFlags_RoundCornersLeft);
+			IM_COL32(45, 48, 60, 255), 4.0f, ImDrawFlags_RoundLeft);
 
 		// Menu items with stagger
 		const char* menu_items[5] = { "Dashboard", "Analytics", "Projects", "Settings", "Help" };
@@ -645,7 +654,7 @@ static void ShowUsecase_TabTransitions()
 
 	// Draw tab background
 	dl->AddRectFilled(tabs_pos, ImVec2(tabs_pos.x + total_width, tabs_pos.y + tab_height),
-		IM_COL32(35, 38, 48, 255), 4.0f, ImDrawFlags_RoundCornersTop);
+		IM_COL32(35, 38, 48, 255), 4.0f, ImDrawFlags_RoundTop);
 
 	// Calculate target indicator position
 	float target_x = tabs_pos.x;
@@ -758,7 +767,7 @@ static void ShowUsecase_ProgressBar()
 		ImVec4 fill_color = iam_get_blended_color(start_col, end_col, progress, iam_col_oklab);
 
 		dl->AddRectFilled(bar_pos, ImVec2(bar_pos.x + filled_width, bar_pos.y + bar_size.y),
-			ImGui::ColorConvertFloat4ToU32(fill_color), 6.0f, ImDrawFlags_RoundCornersLeft);
+			ImGui::ColorConvertFloat4ToU32(fill_color), 6.0f, ImDrawFlags_RoundLeft);
 
 		// Glow effect at the edge
 		float glow_x = bar_pos.x + filled_width - 4.0f;
@@ -991,7 +1000,7 @@ static void ShowUsecase_Accordion()
 
 		ImU32 header_color = header_hovered ? IM_COL32(55, 58, 70, 255) : IM_COL32(45, 48, 60, 255);
 		dl->AddRectFilled(header_min, header_max, header_color, 4.0f,
-			animated_height > 1.0f ? ImDrawFlags_RoundCornersTop : ImDrawFlags_RoundCornersAll);
+			animated_height > 1.0f ? ImDrawFlags_RoundTop : ImDrawFlags_RoundAll);
 
 		// Arrow icon
 		ImVec2 arrow_center(header_min.x + 20.0f, header_min.y + header_height * 0.5f);
@@ -1023,7 +1032,7 @@ static void ShowUsecase_Accordion()
 			dl->PushClipRect(content_min, content_max, true);
 
 			dl->AddRectFilled(content_min, ImVec2(content_max.x, content_min.y + content_heights[i]),
-				IM_COL32(35, 38, 48, 255), 4.0f, ImDrawFlags_RoundCornersBottom);
+				IM_COL32(35, 38, 48, 255), 4.0f, ImDrawFlags_RoundBottom);
 
 			// Content text
 			float content_alpha = ImClamp(animated_height / content_heights[i], 0.0f, 1.0f);
@@ -3217,7 +3226,7 @@ static void ShowUsecase_SlideDrawer()
 	// Header bar
 	float header_height = 40.0f * scale;
 	dl->AddRectFilled(pos, ImVec2(pos.x + canvas_size.x, pos.y + header_height),
-		IM_COL32(45, 50, 65, 255), 8.0f, ImDrawFlags_RoundCornersTop);
+		IM_COL32(45, 50, 65, 255), 8.0f, ImDrawFlags_RoundTop);
 
 	// Hamburger menu button
 	ImVec2 menu_pos(pos.x + 12 * scale, pos.y + header_height * 0.5f);
@@ -5895,7 +5904,7 @@ static void ShowUsecase_AlertBanner()
 		dl->AddRectFilled(
 			ImVec2(banner_pos.x, banner_pos.y + banner_size.y - 4 * scale),
 			ImVec2(banner_pos.x + bar_width, banner_pos.y + banner_size.y),
-			IM_COL32(255, 255, 255, 100), 0, ImDrawFlags_RoundCornersBottom);
+			IM_COL32(255, 255, 255, 100), 0, ImDrawFlags_RoundBottom);
 
 		// Auto dismiss
 		if (alert_timer >= alert_duration)
@@ -5990,7 +5999,7 @@ static void ShowUsecase_ExpandableListItem()
 			IM_COL32(255, 152, 0, 255)    // Orange for major releases
 		};
 		dl->AddRectFilled(item_pos, ImVec2(item_pos.x + 4 * scale, item_pos.y + item_size.y),
-			accent_colors[i], 8 * scale, ImDrawFlags_RoundCornersLeft);
+			accent_colors[i], 8 * scale, ImDrawFlags_RoundLeft);
 
 		// Title
 		dl->AddText(ImVec2(item_pos.x + 15 * scale, item_pos.y + 8 * scale),
@@ -7235,7 +7244,7 @@ static void ShowUsecase_BottomSheet()
 	// Sheet
 	ImVec2 sheet_pos(pos.x, pos.y + sheet_y);
 	dl->AddRectFilled(sheet_pos, ImVec2(sheet_pos.x + container_size.x, sheet_pos.y + sheet_height),
-		IM_COL32(50, 55, 65, 255), 12 * scale, ImDrawFlags_RoundCornersTop);
+		IM_COL32(50, 55, 65, 255), 12 * scale, ImDrawFlags_RoundTop);
 
 	// Handle
 	dl->AddRectFilled(
@@ -7322,7 +7331,7 @@ static void ShowUsecase_Snackbar()
 		// Banner background with gradient effect
 		dl->AddRectFilled(banner_pos,
 			ImVec2(banner_pos.x + container_size.x, banner_pos.y + banner_height),
-			IM_COL32(30, 35, 50, 250), 12 * scale, ImDrawFlags_RoundCornersTop);
+			IM_COL32(30, 35, 50, 250), 12 * scale, ImDrawFlags_RoundTop);
 
 		// Cookie icon (animated wobble) - larger
 		float wobble = iam_oscillate(ImGui::GetID("cookie_wobble"), 0.1f, 2.0f, 0, 0.0f, dt);
@@ -7651,7 +7660,7 @@ static void ShowUsecase_InlineConfirmation()
 		if (confirm_hover > 0.01f)
 		{
 			dl->AddRectFilled(pos, ImVec2(pos.x + confirm_btn_width, pos.y + btn_height),
-				IM_COL32(255, 255, 255, (int)(40 * confirm_hover)), 4 * scale, ImDrawFlags_RoundCornersLeft);
+				IM_COL32(255, 255, 255, (int)(40 * confirm_hover)), 4 * scale, ImDrawFlags_RoundLeft);
 		}
 
 		// Cancel button hover highlight
@@ -7659,7 +7668,7 @@ static void ShowUsecase_InlineConfirmation()
 		{
 			dl->AddRectFilled(ImVec2(cancel_start_x, pos.y),
 				ImVec2(cancel_start_x + cancel_btn_width, pos.y + btn_height),
-				IM_COL32(255, 255, 255, (int)(40 * cancel_hover)), 4 * scale, ImDrawFlags_RoundCornersRight);
+				IM_COL32(255, 255, 255, (int)(40 * cancel_hover)), 4 * scale, ImDrawFlags_RoundRight);
 		}
 
 		// Center "Confirm" text in its section
@@ -8884,7 +8893,7 @@ static void ShowUsecase_NotificationCard()
 
 		// Accent bar
 		dl->AddRectFilled(final_pos, ImVec2(final_pos.x + 4 * scale, final_pos.y + card_size.y),
-			IM_COL32(76, 175, 80, 255), 8 * scale, ImDrawFlags_RoundCornersLeft);
+			IM_COL32(76, 175, 80, 255), 8 * scale, ImDrawFlags_RoundLeft);
 
 		// Content
 		dl->AddText(ImVec2(final_pos.x + 15 * scale, final_pos.y + 12 * scale),
