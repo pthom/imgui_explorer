@@ -1,8 +1,8 @@
 // imgui_kit: small, standalone additions to Dear ImGui
 // https://github.com/pthom/imgui_kit (MIT license)
 //
-// One header, imgui_kit.h. Its sources, beside it: imgui_kit.cpp, imgui_kit_layout.cpp, imgui_kit_widgets.cpp,
-// and imgui_kit_demo.cpp (the demo, optional). They need only Dear ImGui (its docking or master branch, 1.93 or later).
+// One header, imgui_kit.h. Its sources, beside it: the imgui_kit*.cpp files, imgui_kit_demo.cpp being the demo
+// (optional). They need only Dear ImGui (its docking or master branch, 1.93 or later).
 // Define IMGUI_KIT_USE_STL to get overloads that take std::string and std::vector.
 
 /*
@@ -13,6 +13,8 @@ Index of this file:
 // [SECTION] Em units
 // [SECTION] Layout
 // [SECTION] Widgets
+// [SECTION] Behaviors: installed once
+// [SECTION] Touch (ImGuiTouch)
 
 */
 
@@ -32,7 +34,9 @@ Index of this file:
 #include <vector>
 #endif
 
-typedef int ImGuiKitIcon;   // -> enum ImGuiKitIcon_
+typedef int ImGuiKitIcon;           // -> enum ImGuiKitIcon_
+typedef int ImGuiTouchScrollMode;   // -> enum ImGuiTouchScrollMode_
+typedef int ImGuiTouchPinchMode;    // -> enum ImGuiTouchPinchMode_
 
 namespace ImGuiKit
 {
@@ -213,7 +217,82 @@ IMGUI_API const char* FitText(const char* text, float wrap_width, int max_lines)
 //     ImGuiKit::ResizeHandle("##plot_size", &size);
 IMGUI_API bool   ResizeHandle(const char* str_id, ImVec2* size, const ImVec2& min_size = ImVec2(0, 0));
 
+//-----------------------------------------------------------------------------
+// [SECTION] Behaviors: installed once
+//-----------------------------------------------------------------------------
+// They change how Dear ImGui behaves, from their setup on: called once, not at each frame.
+
+// The wheel session: the mouse wheel keeps scrolling the window it started on, as in a browser. A page scrolled with
+// the wheel keeps scrolling when a plot or an image passes under the mouse, and the plot does not zoom; a wheel that
+// starts on the plot zooms it. The page lets go of the wheel when the mouse moves, or 0.7 s after its last event.
+// A widget that reads the wheel claims it while hovered, with Dear ImGui's own idiom (as ImPlot does):
+//     if (ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY)) zoom *= powf(1.1f, ImGui::GetIO().MouseWheel);
+// Call it once, after ImGui::CreateContext(); a later call changes `enabled` (false: Dear ImGui's own behavior).
+IMGUI_API void   SetupWheelSession(bool enabled = true);
+
 } // namespace ImGuiKit
+
+//-----------------------------------------------------------------------------
+// [SECTION] Touch (ImGuiTouch)
+//-----------------------------------------------------------------------------
+// A touch screen, as on a phone:
+//   - the swipe: a finger that drags a window's content scrolls it, with inertia and a bounce at the end. A tap still
+//     clicks; a short hold, then a drag, goes to the widget (a slider, a text selection); a long press is a right
+//     click (a context menu);
+//   - the pinch: two fingers that spread or close scale the font; two fingers that move together are a right drag
+//     (the pan of a node editor).
+//
+//     ImGui::CreateContext();
+//     ImGuiTouch::Setup();      // once: the layer then runs at each frame, through Dear ImGui's context hooks
+//
+// The touch input: io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen) tells a finger from a mouse (the Auto mode),
+// and io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen gives thin scroll bars. The pinch needs the fingers, from
+// the platform: ImGuiTouch::AddFingerEvent().
+
+enum ImGuiTouchScrollMode_
+{
+    ImGuiTouchScrollMode_Auto,      // only when the input is a touch screen (io.MouseSource)
+    ImGuiTouchScrollMode_Always,    // also with the mouse (left button): to try the phone's behavior on a desktop
+    ImGuiTouchScrollMode_Disabled,
+};
+
+enum ImGuiTouchPinchMode_
+{
+    ImGuiTouchPinchMode_FontScale,  // the pinch scales the font (style.FontScaleMain); two fingers dragged together are a right drag
+    ImGuiTouchPinchMode_Disabled,
+};
+
+// The settings, read at each frame: change them through ImGuiTouch::GetConfig()
+struct ImGuiTouchConfig
+{
+    ImGuiTouchScrollMode ScrollMode = ImGuiTouchScrollMode_Auto;
+    bool LongPressIsRightClick = true;      // a finger still for half a second, then lifted, is a right click
+    bool ThinScrollbars = true;             // on a touch screen: thin scroll bars (indicators: a swipe scrolls anywhere)
+    ImGuiTouchPinchMode PinchMode = ImGuiTouchPinchMode_FontScale;
+    bool PinchInterruptsWidgets = false;    // a second finger while a widget holds the first: the widget keeps it (false)
+};
+
+namespace ImGuiTouch
+{
+// Installs the touch layer in the current context, once (a second call only changes the config)
+IMGUI_API void   Setup(const ImGuiTouchConfig& config = ImGuiTouchConfig());
+IMGUI_API ImGuiTouchConfig& GetConfig();
+
+// True while the content moves on its own (a fling's inertia, the bounce, an animation): an app that sleeps when
+// nothing happens keeps drawing frames meanwhile. An app that draws every frame can ignore it.
+IMGUI_API bool   IsAnimating();
+
+// Right after a widget that a finger drags (a plot, a knob, a node editor's canvas): a drag that starts on it goes to
+// it, not to the swipe. long_press_is_right_click: a long press on it is still a right click.
+IMGUI_API void   SetItemTakesDrags(bool long_press_is_right_click = true);
+
+// A finger on a touch screen, as the platform reports it (a browser's touch or pointer events, SDL's finger events):
+// its id (any number the platform gives, stable while the finger is down), its position (in the mouse's coordinates),
+// and whether it is down. Dear ImGui sees only the first finger, as the mouse: these events let the kit see the others.
+// With two fingers down: they spread or close, a pinch (the font scales); they move together, a right drag.
+// A desktop app with a mouse never calls it.
+IMGUI_API void   AddFingerEvent(int id, const ImVec2& pos, bool down);
+} // namespace ImGuiTouch
 
 // The symbols of IconButton()
 enum ImGuiKitIcon_
