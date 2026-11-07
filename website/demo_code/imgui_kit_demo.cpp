@@ -216,6 +216,33 @@ void DemoLabelColumn()
     ImGui::TreePop();
 }
 
+void DemoGroupPanel()
+{
+    IMGUI_DEMO_MARKER("Layout/Group panel");
+    if (!ImGui::TreeNode("Group panel"))
+        return;
+    ImGui::TextWrapped("A group in a frame, its label in the frame's top border. The look of thedmd's group panel "
+                       "(Dear ImGui issue #1496).");
+    ImGuiKit::BeginGroupPanel("Image info");
+    ImGui::Text("Size: 640 x 480");
+    ImGui::Text("Channels: 3");
+    ImGui::Text("Depth: 8 bits");
+    ImGuiKit::EndGroupPanel();
+    ImGui::SameLine();
+    static float gamma = 1.0f;
+    static bool flip = false;
+    ImGuiKit::BeginGroupPanel("Display");
+    ImGuiKit::BeginLabelColumn("display");
+    ImGuiKit::Label("Gamma");
+    ImGui::SetNextItemWidth(ImGuiKit::EmSize(8.f));
+    ImGui::SliderFloat("##gamma", &gamma, 0.2f, 3.0f);
+    ImGuiKit::Label("Flip");
+    ImGui::Checkbox("##flip", &flip);
+    ImGuiKit::EndLabelColumn();
+    ImGuiKit::EndGroupPanel();
+    ImGui::TreePop();
+}
+
 void DemoFlow()
 {
     IMGUI_DEMO_MARKER("Layout/Flow");
@@ -251,6 +278,7 @@ void DemoLayout()
     DemoAlignedGroup();
     DemoColumn();
     DemoLabelColumn();
+    DemoGroupPanel();
     DemoFlow();
 }
 
@@ -362,6 +390,26 @@ void DemoFitText()
     ImGui::TreePop();
 }
 
+void DemoResizeHandle()
+{
+    IMGUI_DEMO_MARKER("Widgets/Resize handle");
+    if (!ImGui::TreeNode("Resize handle"))
+        return;
+    ImGui::TextWrapped("Drag the grip at the bottom-right corner: the widget before it takes the new size. "
+                       "Any widget that takes a size: a text field, a child window, a plot.");
+    static char text[512] = "A text field that the reader can make larger.\nDrag its corner.";
+    static ImVec2 text_size = ImGuiKit::EmToVec2(20.f, 4.f);
+    ImGui::InputTextMultiline("##text", text, IM_ARRAYSIZE(text), text_size);
+    ImGuiKit::ResizeHandle("##text_size", &text_size, ImGuiKit::EmToVec2(6.f, 2.f));
+
+    static ImVec2 child_size = ImGuiKit::EmToVec2(20.f, 6.f);
+    ImGui::BeginChild("##child", child_size, ImGuiChildFlags_Borders);
+    ImGui::Text("A child window, %.0f x %.0f px", child_size.x, child_size.y);
+    ImGui::EndChild();
+    ImGuiKit::ResizeHandle("##child_size", &child_size, ImGuiKit::EmToVec2(10.f, 3.f));
+    ImGui::TreePop();
+}
+
 void DemoWidgets()
 {
     IMGUI_DEMO_MARKER("Widgets");
@@ -371,6 +419,7 @@ void DemoWidgets()
     DemoIconButton();
     DemoSegmentedSwitch();
     DemoFitText();
+    DemoResizeHandle();
 }
 
 } // namespace

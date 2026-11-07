@@ -125,6 +125,16 @@ IMGUI_API void   BeginLabelColumn(const char* str_id, float labels_align_x = 0.0
 IMGUI_API void   Label(const char* text);
 IMGUI_API void   EndLabelColumn();
 
+// Group panel: a group in a frame, its label set in the frame's top border (as an HTML fieldset). The look of
+// thedmd's group panel: https://github.com/ocornut/imgui/issues/1496#issuecomment-655048353
+// size: (0, 0) = the content's size; else at least that size.
+//
+//     +- Image info ----------+
+//     | Size: 640 x 480       |
+//     +-----------------------+
+IMGUI_API void   BeginGroupPanel(const char* label, const ImVec2& size = ImVec2(0, 0));
+IMGUI_API void   EndGroupPanel();
+
 // Flow: items on the same line while they fit, then on the next one, as words in a paragraph.
 // Call FlowNext() before each item (the first one too). An item wider than the line takes a line of its own.
 //
@@ -194,6 +204,14 @@ IMGUI_API bool   SegmentedSwitch(const char* str_id, int* current, const std::ve
 //     ImGui::TextUnformatted(ImGuiKit::FitText(summary, width, 2));   // two lines at most, then "..."
 //     ImGui::PopTextWrapPos();
 IMGUI_API const char* FitText(const char* text, float wrap_width, int max_lines);
+
+// Resize handle: a grip at the bottom-right corner of the last item, which resizes it. Call it right after the item,
+// which takes *size; dragging the grip changes *size (at least min_size). Returns true when *size changed.
+//
+//     static ImVec2 size = ImGuiKit::EmToVec2(24, 12);
+//     if (ImPlot::BeginPlot("Plot", size)) { ...; ImPlot::EndPlot(); }
+//     ImGuiKit::ResizeHandle("##plot_size", &size);
+IMGUI_API bool   ResizeHandle(const char* str_id, ImVec2* size, const ImVec2& min_size = ImVec2(0, 0));
 
 } // namespace ImGuiKit
 
