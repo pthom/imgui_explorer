@@ -331,6 +331,37 @@ void DemoSegmentedSwitch()
     ImGui::TreePop();
 }
 
+void DemoFitText()
+{
+    IMGUI_DEMO_MARKER("Widgets/Fit text");
+    if (!ImGui::TreeNode("Fit text"))
+        return;
+    ImGui::TextWrapped("A text cut at a word, with an ellipsis, to fit a number of lines: a card's title or summary.");
+    static float width_em = 16.0f;
+    static int max_lines = 2;
+    ImGuiKit::BeginLabelColumn("fit_text");
+    ImGuiKit::Label("Width");
+    ImGui::SetNextItemWidth(ImGuiKit::EmSize(10.f));
+    ImGui::SliderFloat("##width", &width_em, 4.0f, 40.0f, "%.0f em");
+    ImGuiKit::Label("Lines");
+    ImGui::SetNextItemWidth(ImGuiKit::EmSize(10.f));
+    ImGui::SliderInt("##lines", &max_lines, 1, 5);
+    ImGuiKit::EndLabelColumn();
+
+    const char* text = "Napoleon's army crossed the Niemen in June 1812 with more than four hundred thousand men; "
+                       "Minard drew its march to Moscow and its retreat as a band whose width follows the number of "
+                       "soldiers, and the temperature below it.";
+    float width = ImGuiKit::EmSize(width_em);
+    ImVec2 p = ImGui::GetCursorScreenPos();
+    ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + width);
+    ImGui::TextUnformatted(ImGuiKit::FitText(text, width, max_lines));
+    ImGui::PopTextWrapPos();
+    float height = ImGui::GetTextLineHeight() * (float)max_lines;  // the room the text may take, framed
+    ImGui::GetWindowDrawList()->AddRect(p, ImVec2(p.x + width, p.y + height), ImGui::GetColorU32(ImGuiCol_Border));
+    ImGui::Dummy(ImVec2(0.0f, ImMax(0.0f, p.y + height - ImGui::GetCursorScreenPos().y)));
+    ImGui::TreePop();
+}
+
 void DemoWidgets()
 {
     IMGUI_DEMO_MARKER("Widgets");
@@ -339,6 +370,7 @@ void DemoWidgets()
     DemoHelpMarker();
     DemoIconButton();
     DemoSegmentedSwitch();
+    DemoFitText();
 }
 
 } // namespace

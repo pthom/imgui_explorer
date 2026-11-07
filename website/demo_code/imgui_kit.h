@@ -186,6 +186,15 @@ IMGUI_API bool   SegmentedSwitch(const char* str_id, int* current, const char* c
 IMGUI_API bool   SegmentedSwitch(const char* str_id, int* current, const std::vector<std::string>& labels);
 #endif
 
+// Fit text: the text, cut at a word and ended with an ellipsis, so that it takes at most max_lines once wrapped at
+// wrap_width (in the current font). Returns the text itself when it fits; else a buffer of the kit, valid until the
+// next call (copy it to keep two results).
+//
+//     ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + width);
+//     ImGui::TextUnformatted(ImGuiKit::FitText(summary, width, 2));   // two lines at most, then "..."
+//     ImGui::PopTextWrapPos();
+IMGUI_API const char* FitText(const char* text, float wrap_width, int max_lines);
+
 } // namespace ImGuiKit
 
 // The symbols of IconButton()
