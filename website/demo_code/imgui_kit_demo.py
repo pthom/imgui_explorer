@@ -45,6 +45,9 @@ class _State:
     muted = False
     touch_value = 0.5
     taps = [0] * 8  # the taps of the sideways row's cards
+    keyboard_line = ""
+    keyboard_lines = "Several lines:\nmove the caret from the keyboard's space bar."
+    keyboard_deep = ""
     canvas_zoom = 1.0
     canvas_offset = ImVec2(0.0, 0.0)  # where the canvas's content origin is, from its corner, in pixels
 
@@ -232,7 +235,9 @@ def demo_flow() -> None:
         return
     imgui.text_wrapped("The buttons stay on a line while they fit. Resize the window: they flow to the next line.")
     presets = ["Coral", "Lavender", "Mint", "Sunflower yellow", "Sky", "Peach", "Forest green",
-               "Sand", "Honey", "Midnight blue", "Rose", "Turquoise", "Custom"]
+               "Sand", "Honey", "Midnight blue", "Rose", "Turquoise", "Olive", "Salmon",
+               "Steel blue", "Plum", "Ivory", "Terracotta", "Sea green", "Mustard", "Slate gray",
+               "Cherry red", "Teal", "Custom"]  # enough to flow onto several lines in a wide window
     with imgui_kit.flow("presets"):
         for i, preset in enumerate(presets):
             imgui_kit.flow_next()
@@ -484,11 +489,16 @@ def demo_touch() -> None:
         _, config.thin_scrollbars = imgui.checkbox("thin on a touch screen", config.thin_scrollbars)
 
     imgui.begin_child("##touch_zone", ImVec2(0.0, imgui_kit.em_size(16)), imgui.ChildFlags_.borders)
-    imgui.bullet_text("Swipe: a finger that drags this zone scrolls it, with inertia, and a bounce at the end.")
-    imgui.bullet_text("Tap: a click, when the finger lifts.")
-    imgui.bullet_text("Hold, then drag: the widget under the finger takes it (the slider below).")
-    imgui.bullet_text("Long press, then lift: a right click (this zone's context menu).")
-    imgui.bullet_text("Two fingers: a pinch scales the font; moved together, a right drag.")
+    imgui.bullet()
+    imgui.text_wrapped("Swipe: a finger that drags this zone scrolls it, with inertia, and a bounce at the end.")
+    imgui.bullet()
+    imgui.text_wrapped("Tap: a click, when the finger lifts.")
+    imgui.bullet()
+    imgui.text_wrapped("Hold, then drag: the widget under the finger takes it (the slider below).")
+    imgui.bullet()
+    imgui.text_wrapped("Long press, then lift: a right click (this zone's context menu).")
+    imgui.bullet()
+    imgui.text_wrapped("Two fingers: a pinch scales the font; moved together, a right drag.")
     imgui.set_next_item_width(imgui_kit.em_size(12))
     _, state.touch_value = imgui.slider_float("a short hold, then a drag", state.touch_value, 0.0, 1.0)
     imgui.same_line()
@@ -512,10 +522,11 @@ def demo_touch() -> None:
     imgui.text_unformatted("A sideways swipe scrolls this row; a tap clicks a button:")
     imgui.begin_child("##sideways", ImVec2(0.0, imgui_kit.em_size(5)), imgui.ChildFlags_.borders,
                       imgui.WindowFlags_.horizontal_scrollbar)
+    card_width = max(imgui_kit.em_size(6), imgui.get_content_region_avail().x * 0.3)  # 3 per screen: it scrolls
     for i in range(len(state.taps)):
         if i > 0:
             imgui.same_line()
-        if imgui.button(f"Card {i + 1}\n{state.taps[i]} taps###card{i}", imgui_kit.em_to_vec2(6, 3)):
+        if imgui.button(f"Card {i + 1}\n{state.taps[i]} taps###card{i}", ImVec2(card_width, imgui_kit.em_size(3))):
             state.taps[i] += 1
     imgui.end_child()
     for i in range(1, 9):
@@ -523,6 +534,29 @@ def demo_touch() -> None:
     imgui.end_child()
     # is_animating(): an application that sleeps when nothing happens keeps drawing frames meanwhile
     imgui.text(f"Moving on its own: {'yes' if imgui_kit.touch.is_animating() else 'no'}")
+
+
+def demo_touch_keyboard() -> None:
+    """The phone's keyboard, in a browser: the fields of all kinds, one of them in a child that scrolls."""
+    IMGUI_DEMO_MARKER("Touch keyboard")
+    if not imgui.collapsing_header("Touch keyboard"):
+        return
+    imgui.text_wrapped("In a browser on a phone: tap a field, then the keyboard button that shows next to it (or the "
+                       "field again). The phone's keyboard opens, and a full-screen window keeps out of it "
+                       "(imgui_kit.touch.get_keyboard_insets()). Hello ImGui sets it up (in C++: "
+                       "ImGuiTouch::SetupEmscriptenKeyboard()).")
+    _, state.keyboard_line = imgui.input_text_with_hint("text", "type here", state.keyboard_line)
+    _, state.keyboard_lines = imgui.input_text_multiline("lines", state.keyboard_lines,
+                                                         ImVec2(0.0, imgui_kit.em_size(5)))
+
+    imgui.text_wrapped("A field in a child that scrolls: it stays above the keyboard.")
+    imgui.begin_child("##keyboard_child", ImVec2(0.0, imgui_kit.em_size(10)), imgui.ChildFlags_.borders)
+    for i in range(1, 13):
+        imgui.text(f"Content above the field ({i})")
+    _, state.keyboard_deep = imgui.input_text_with_hint("field", "type here", state.keyboard_deep)
+    for i in range(1, 13):
+        imgui.text(f"Content below the field ({i})")
+    imgui.end_child()
 
 
 # =============================================================================
@@ -539,6 +573,7 @@ def show_demo_contents() -> None:
     demo_layout()
     demo_widgets()
     demo_touch()
+    demo_touch_keyboard()
     imgui.pop_font()
 
 
