@@ -43,8 +43,8 @@ class _State:
     text_size = ImVec2(0, 0)  # set at the first frame, in em (the font must exist)
     child_size = ImVec2(0, 0)
     muted = False
-    touch_value = 0.5
     taps = [0] * 8  # the taps of the sideways row's cards
+    row_value = 0.5  # the sideways row's slider
     keyboard_line = ""
     keyboard_lines = "Several lines:\nmove the caret from the keyboard's space bar."
     keyboard_deep = ""
@@ -58,6 +58,13 @@ state = _State()
 # =============================================================================
 # Toolbar: theme, font size, frame rounding
 # =============================================================================
+def next_line_if_too_wide(widget_width: float) -> None:
+    """After a label, a widget too wide for the rest of the line goes under it: a narrow window (a phone) keeps its
+    rows on screen"""
+    if widget_width > imgui.get_content_region_avail().x:
+        imgui.new_line()
+
+
 def demo_toolbar() -> None:
     """The theme and the frame rounding apply to the whole application; "App" restores the colors it had.
     The font size applies to the demo."""
@@ -72,7 +79,9 @@ def demo_toolbar() -> None:
     # Each row: a label, then its widgets, aligned at the widest label
     with imgui_kit.label_column("toolbar"):
         imgui_kit.label("Theme")
-        changed, state.theme = imgui_kit.segmented_switch("##theme", state.theme, ["App", "Dark", "Light", "Classic"])
+        themes = ["App", "Dark", "Light", "Classic"]
+        next_line_if_too_wide(imgui_kit.segmented_switch_width(themes))
+        changed, state.theme = imgui_kit.segmented_switch("##theme", state.theme, themes)
         if changed:
             if state.theme == 0:
                 for i, c in enumerate(state.app_colors):
@@ -84,21 +93,22 @@ def demo_toolbar() -> None:
             else:
                 imgui.style_colors_classic()
 
+        # The sliders fill their rows (fill rows): the rows fit a phone's width
         imgui_kit.label("Font size")
-        imgui.set_next_item_width(imgui_kit.em_size(8))
-        _, state.font_size = imgui.slider_float("##font_size", state.font_size, 8.0, 40.0, "%.0f px")
+        with imgui_kit.fill_row("font_size"):
+            _, state.font_size = imgui.slider_float("##font_size", state.font_size, 8.0, 40.0, "%.0f px")
 
         imgui_kit.label("Frame rounding")
-        imgui.set_next_item_width(imgui_kit.em_size(8))
-        _, style.frame_rounding = imgui.slider_float("##rounding", style.frame_rounding, 0.0, 12.0, "%.0f px")
-        imgui.same_line()
-        imgui_kit.help_marker("The style's frame_rounding: imgui.get_style().frame_rounding. Buttons, sliders, input "
-                              "fields and the segmented switch round their corners with it. 0 gives square frames; "
-                              "half the frame's height gives a pill.")
-        imgui.same_line()
-        if imgui.button("Reset"):  # the application's font size and frame rounding
-            state.font_size = style.font_size_base
-            style.frame_rounding = state.app_rounding
+        with imgui_kit.fill_row("rounding") as row:
+            _, style.frame_rounding = imgui.slider_float("##rounding", style.frame_rounding, 0.0, 12.0, "%.0f px")
+            row.tail()
+            imgui_kit.help_marker("The style's frame_rounding: imgui.get_style().frame_rounding. Buttons, sliders, "
+                                  "input fields and the segmented switch round their corners with it. 0 gives square "
+                                  "frames; half the frame's height gives a pill.")
+            imgui.same_line()
+            if imgui.button("Reset"):  # the application's font size and frame rounding
+                state.font_size = style.font_size_base
+                style.frame_rounding = state.app_rounding
 
 # =============================================================================
 # Em units
@@ -398,9 +408,9 @@ def demo_widgets() -> None:
 # =============================================================================
 def zoomable_canvas(str_id: str, size: ImVec2) -> None:
     """A canvas that zooms with the wheel and pans with a drag, as a plot or an image viewer does. It claims the wheel
-    while hovered (imgui.set_item_key_owner), takes a finger's drag at once (imgui_kit.touch.set_item_takes_drags), and a
-    pinch (imgui_kit.touch.set_item_takes_pinch: its zoom per notch is 10%, and it uses the wheel's exact value; two
-    fingers pan it, with the left button)."""
+    while hovered (imgui.set_item_key_owner), takes a finger's drag at once (imgui_kit.touch.set_item_takes_drags),
+    and a pinch (imgui_kit.touch.set_item_takes_pinch: its zoom per notch is 10%, and it uses the wheel's exact value;
+    two fingers pan it, with the left button)."""
     io = imgui.get_io()
     p0 = imgui.get_cursor_screen_pos()
     p1 = ImVec2(p0.x + size.x, p0.y + size.y)
@@ -442,6 +452,11 @@ def zoomable_canvas(str_id: str, size: ImVec2) -> None:
                        imgui.get_color_u32(imgui.Col_.text), f"zoom x{state.canvas_zoom:.2f}")
 
 
+# The text to select in the touch zone (read-only)
+SELECTABLE_TEXT = ("Napoleon's army crossed the Niemen in June 1812, with more than four hundred thousand men. "
+                   "Six months later, fewer than ten thousand came back.")
+
+
 TOUCH_SETUP_CODE = """imgui.create_context()
 imgui_kit.touch.setup()            # the touch layer: swipe, long press, pinch
 imgui_kit.setup_wheel_session()    # the wheel stays with the window it scrolls
@@ -480,17 +495,20 @@ def demo_touch() -> None:
                                   "- Press and hold, then release: a long press, which opens the zone's context menu "
                                   "(a right click).")
         imgui_kit.label("Swipe")
-        _, config.scroll_mode = imgui_kit.segmented_switch(
-            "##scroll_mode", config.scroll_mode, ["Touch screens", "Always", "Off"])
+        scroll_modes = ["Touch", "Always", "Off"]
+        next_line_if_too_wide(imgui_kit.segmented_switch_width(scroll_modes))
+        _, config.scroll_mode = imgui_kit.segmented_switch("##scroll_mode", config.scroll_mode, scroll_modes)
         imgui.same_line()
-        imgui_kit.help_marker("Touch screens: the swipe follows a finger only. Always: the mouse's left button drags the "
+        imgui_kit.help_marker("Touch: the swipe follows a finger only. Always: the mouse's left button drags the "
                               "content too, while the mouse stays a mouse.")
         imgui_kit.label("Pinch")
-        _, config.pinch_mode = imgui_kit.segmented_switch("##pinch_mode", config.pinch_mode, ["Font scale", "Off"])
+        pinch_modes = ["Font scale", "Off"]
+        next_line_if_too_wide(imgui_kit.segmented_switch_width(pinch_modes))
+        _, config.pinch_mode = imgui_kit.segmented_switch("##pinch_mode", config.pinch_mode, pinch_modes)
         imgui_kit.label("Long press")
         _, config.long_press_is_right_click = imgui.checkbox("is a right click", config.long_press_is_right_click)
         imgui_kit.label("Scroll bars")
-        _, config.thin_scrollbars = imgui.checkbox("thin on a touch screen", config.thin_scrollbars)
+        _, config.thin_scrollbars = imgui.checkbox("thin", config.thin_scrollbars)
 
     imgui.begin_child("##touch_zone", ImVec2(0.0, imgui_kit.em_size(16)), imgui.ChildFlags_.borders)
     imgui.bullet()
@@ -498,18 +516,17 @@ def demo_touch() -> None:
     imgui.bullet()
     imgui.text_wrapped("Tap: a click, when the finger lifts.")
     imgui.bullet()
-    imgui.text_wrapped("Hold, then drag: the widget under the finger takes it (the slider below).")
+    imgui.text_wrapped("Hold, then drag: the widget under the finger takes it (the text below: it selects).")
     imgui.bullet()
     imgui.text_wrapped("Long press, then lift: a right click (this zone's context menu).")
     imgui.bullet()
     imgui.text_wrapped("Two fingers: a pinch scales the font (on the canvas, it zooms the canvas); moved together, a "
                        "right drag.")
-    imgui.set_next_item_width(imgui_kit.em_size(12))
-    _, state.touch_value = imgui.slider_float("a short hold, then a drag", state.touch_value, 0.0, 1.0)
-    imgui.same_line()
-    imgui_kit.help_marker("This slider does not call imgui_kit.touch.set_item_takes_drags(): to drag it with a finger, "
-                          "hold it a moment first (a ring shows when the hold took effect). A drag that starts at once "
-                          "scrolls the zone. The canvas below reacts at once.")
+    # A text to select: a drag that starts on it scrolls the zone; a short hold, then a drag, selects (as on a
+    # phone). A ring shows when the hold took effect.
+    imgui.text_wrapped("Select a few words: a short hold, then a drag.")
+    imgui.input_text_multiline("##select", SELECTABLE_TEXT, ImVec2(-imgui.FLT_MIN, imgui_kit.em_size(4)),
+                               imgui.InputTextFlags_.read_only | imgui.InputTextFlags_.word_wrap)
 
     zoomable_canvas("##canvas", imgui_kit.em_to_vec2(16, 8))
     imgui.same_line()
@@ -525,14 +542,17 @@ def demo_touch() -> None:
         imgui.text_unformatted("The zone's context menu: a right click, or a long press")
         imgui.end_popup()
 
-    # A child that scrolls sideways: a swipe inside scrolls it, not the zone. Its buttons count their taps.
-    imgui.text_unformatted("A sideways swipe scrolls this row; a tap clicks a button:")
+    # A child that scrolls sideways: a swipe inside scrolls it, not the zone. Its buttons count their taps. Its slider
+    # takes the sideways drags (imgui_kit.touch.set_item_takes_drags_along): a sideways drag on it moves it at once
+    imgui.text_wrapped("A sideways swipe scrolls this row; a tap clicks a button; a sideways drag moves the slider:")
     imgui.begin_child("##sideways", ImVec2(0.0, imgui_kit.em_size(5)), imgui.ChildFlags_.borders,
                       imgui.WindowFlags_.horizontal_scrollbar)
     card_width = max(imgui_kit.em_size(6), imgui.get_content_region_avail().x * 0.3)  # 3 per screen: it scrolls
+    imgui.set_next_item_width(card_width)
+    _, state.row_value = imgui.slider_float("##row_slider", state.row_value, 0.0, 1.0)
+    imgui_kit.touch.set_item_takes_drags_along(imgui_kit.TouchAxis_.x)
     for i in range(len(state.taps)):
-        if i > 0:
-            imgui.same_line()
+        imgui.same_line()
         if imgui.button(f"Card {i + 1}\n{state.taps[i]} taps###card{i}", ImVec2(card_width, imgui_kit.em_size(3))):
             state.taps[i] += 1
     imgui.end_child()
@@ -570,7 +590,7 @@ def demo_touch_keyboard() -> None:
 # Demo window
 # =============================================================================
 def show_demo_contents() -> None:
-    imgui.text("ImGuiKit: small, standalone additions to Dear ImGui")
+    imgui.text_wrapped("ImGuiKit: small, standalone additions to Dear ImGui")
     if state.font_size == 0.0:
         state.font_size = imgui.get_style().font_size_base
     demo_toolbar()

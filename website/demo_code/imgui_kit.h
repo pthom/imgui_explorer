@@ -39,6 +39,7 @@ typedef int ImGuiKitIcon;           // -> enum ImGuiKitIcon_
 typedef int ImGuiTouchScrollMode;   // -> enum ImGuiTouchScrollMode_
 typedef int ImGuiTouchPinchMode;    // -> enum ImGuiTouchPinchMode_
 typedef int ImGuiTouchPinchDelivery;  // -> enum ImGuiTouchPinchDelivery_
+typedef int ImGuiTouchAxis;          // -> enum ImGuiTouchAxis_
 
 namespace ImGuiKit
 {
@@ -198,6 +199,8 @@ IMGUI_API bool   IconButton(const char* str_id, ImGuiKitIcon icon, const ImVec2&
 //
 // It reacts at the press, not the release, which suits touch screens. Returns true when *current changed.
 IMGUI_API bool   SegmentedSwitch(const char* str_id, int* current, const char* const labels[], int labels_count);
+// The width a segmented switch takes, to place it: e.g. on the next line when the current one is too short
+IMGUI_API float  SegmentedSwitchWidth(const char* const labels[], int labels_count);
 #ifdef IMGUI_KIT_USE_STL
 IMGUI_API bool   SegmentedSwitch(const char* str_id, int* current, const std::vector<std::string>& labels);
 #endif
@@ -280,6 +283,14 @@ enum ImGuiTouchPinchMode_
     ImGuiTouchPinchMode_Disabled,
 };
 
+// The axis along which a widget takes a finger's drags (ImGuiTouch::SetItemTakesDragsAlong); the values of Dear
+// ImGui's internal ImGuiAxis
+enum ImGuiTouchAxis_
+{
+    ImGuiTouchAxis_X = 0,  // a slider
+    ImGuiTouchAxis_Y = 1,  // a vertical slider
+};
+
 // How a pinch reaches a widget that takes it (ImGuiTouch::SetItemTakesPinch)
 enum ImGuiTouchPinchDelivery_
 {
@@ -339,6 +350,10 @@ IMGUI_API bool   IsAnimating();
 // Right after a widget that a finger drags (a plot, a knob, a node editor's canvas): a drag that starts on it goes to
 // it, not to the swipe. long_press_is_right_click: a long press on it is still a right click.
 IMGUI_API void   SetItemTakesDrags(bool long_press_is_right_click = true);
+// Right after a widget that a finger drags along one axis (a slider: ImGuiTouchAxis_X; a vertical one: _Y): a
+// drag that starts on it along that axis goes to it, once the finger moved a little; along the other axis, it scrolls
+// the window. long_press_is_right_click: a long press on it is still a right click.
+IMGUI_API void   SetItemTakesDragsAlong(ImGuiTouchAxis axis, bool long_press_is_right_click = true);
 
 // Right after a widget that zooms with the wheel (a plot, an image): two fingers that pinch on it zoom it, instead of
 // scaling the font. The pinch reaches it as wheel events at the fingers' center: zoom_per_notch is the widget's own

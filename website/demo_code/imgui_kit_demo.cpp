@@ -27,6 +27,14 @@ Index of this file:
 namespace
 {
 
+// After a label, a widget too wide for the rest of the line goes under it: a narrow window (a phone) keeps its rows
+// on screen
+void NextLineIfTooWide(float widget_width)
+{
+    if (widget_width > ImGui::GetContentRegionAvail().x)
+        ImGui::NewLine();
+}
+
 //-----------------------------------------------------------------------------
 // [SECTION] Toolbar: theme, font size, frame rounding
 //-----------------------------------------------------------------------------
@@ -51,6 +59,7 @@ void DemoToolbar(float* font_size)
     ImGuiKit::Label("Theme");
     static int theme = 0;
     const char* themes[] = { "App", "Dark", "Light", "Classic" };
+    NextLineIfTooWide(ImGuiKit::SegmentedSwitchWidth(themes, IM_ARRAYSIZE(themes)));
     if (ImGuiKit::SegmentedSwitch("##theme", &theme, themes, IM_ARRAYSIZE(themes)))
     {
         if (theme == 0)
@@ -64,14 +73,16 @@ void DemoToolbar(float* font_size)
             ImGui::StyleColorsClassic();
     }
 
+    // The sliders fill their rows (fill rows): the rows fit a phone's width
     ImGuiKit::Label("Font size");
-    ImGui::SetNextItemWidth(ImGuiKit::EmSize(8.f));
+    ImGuiKit::BeginFillRow("font_size");
     ImGui::SliderFloat("##font_size", font_size, 8.0f, 40.0f, "%.0f px");
+    ImGuiKit::EndFillRow();
 
     ImGuiKit::Label("Frame rounding");
-    ImGui::SetNextItemWidth(ImGuiKit::EmSize(8.f));
+    ImGuiKit::BeginFillRow("rounding");
     ImGui::SliderFloat("##rounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f px");
-    ImGui::SameLine();
+    ImGuiKit::FillRowTail();
     ImGuiKit::HelpMarker("The style's FrameRounding: ImGui::GetStyle().FrameRounding. Buttons, sliders, input "
                          "fields and the segmented switch round their corners with it. 0 gives square frames; half "
                          "the frame's height gives a pill.");
@@ -81,6 +92,7 @@ void DemoToolbar(float* font_size)
         *font_size = style.FontSizeBase;
         style.FrameRounding = app_rounding;
     }
+    ImGuiKit::EndFillRow();
     ImGuiKit::EndLabelColumn();
 }
 
@@ -537,18 +549,20 @@ void DemoTouch()
                              "right click).");
     }
     ImGuiKit::Label("Swipe");
-    const char* scroll_modes[] = { "Touch screens", "Always", "Off" };
+    const char* scroll_modes[] = { "Touch", "Always", "Off" };
+    NextLineIfTooWide(ImGuiKit::SegmentedSwitchWidth(scroll_modes, IM_ARRAYSIZE(scroll_modes)));
     ImGuiKit::SegmentedSwitch("##scroll_mode", &config.ScrollMode, scroll_modes, IM_ARRAYSIZE(scroll_modes));
     ImGui::SameLine();
-    ImGuiKit::HelpMarker("Touch screens: the swipe follows a finger only. Always: the mouse's left button drags the "
+    ImGuiKit::HelpMarker("Touch: the swipe follows a finger only. Always: the mouse's left button drags the "
                          "content too, while the mouse stays a mouse.");
     ImGuiKit::Label("Pinch");
     const char* pinch_modes[] = { "Font scale", "Off" };
+    NextLineIfTooWide(ImGuiKit::SegmentedSwitchWidth(pinch_modes, IM_ARRAYSIZE(pinch_modes)));
     ImGuiKit::SegmentedSwitch("##pinch_mode", &config.PinchMode, pinch_modes, IM_ARRAYSIZE(pinch_modes));
     ImGuiKit::Label("Long press");
     ImGui::Checkbox("is a right click", &config.LongPressIsRightClick);
     ImGuiKit::Label("Scroll bars");
-    ImGui::Checkbox("thin on a touch screen", &config.ThinScrollbars);
+    ImGui::Checkbox("thin", &config.ThinScrollbars);
     ImGuiKit::EndLabelColumn();
 
     ImGui::BeginChild("##touch_zone", ImVec2(0.0f, ImGuiKit::EmSize(16.f)), ImGuiChildFlags_Borders);
@@ -557,19 +571,19 @@ void DemoTouch()
     ImGui::Bullet();
     ImGui::TextWrapped("Tap: a click, when the finger lifts.");
     ImGui::Bullet();
-    ImGui::TextWrapped("Hold, then drag: the widget under the finger takes it (the slider below).");
+    ImGui::TextWrapped("Hold, then drag: the widget under the finger takes it (the text below: it selects).");
     ImGui::Bullet();
     ImGui::TextWrapped("Long press, then lift: a right click (this zone's context menu).");
     ImGui::Bullet();
     ImGui::TextWrapped("Two fingers: a pinch scales the font (on the canvas, it zooms the canvas); moved together, a "
                        "right drag.");
-    static float value = 0.5f;
-    ImGui::SetNextItemWidth(ImGuiKit::EmSize(12.f));
-    ImGui::SliderFloat("a short hold, then a drag", &value, 0.0f, 1.0f);
-    ImGui::SameLine();
-    ImGuiKit::HelpMarker("This slider does not call ImGuiTouch::SetItemTakesDrags(): to drag it with a finger, hold "
-                         "it a moment first (a ring shows when the hold took effect). A drag that starts at once "
-                         "scrolls the zone. The canvas below reacts at once.");
+    // A text to select: a drag that starts on it scrolls the zone; a short hold, then a drag, selects (as on a
+    // phone). A ring shows when the hold took effect.
+    static char text[] = "Napoleon's army crossed the Niemen in June 1812, with more than four hundred thousand men. "
+                         "Six months later, fewer than ten thousand came back.";
+    ImGui::TextWrapped("Select a few words: a short hold, then a drag.");
+    ImGui::InputTextMultiline("##select", text, IM_ARRAYSIZE(text), ImVec2(-FLT_MIN, ImGuiKit::EmSize(4.f)),
+                              ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_WordWrap);
 
     ZoomableCanvas("##canvas", ImGuiKit::EmToVec2(16.f, 8.f));
     ImGui::SameLine();
@@ -587,16 +601,20 @@ void DemoTouch()
         ImGui::EndPopup();
     }
 
-    // A child that scrolls sideways: a swipe inside scrolls it, not the zone. Its buttons count their taps.
-    ImGui::TextUnformatted("A sideways swipe scrolls this row; a tap clicks a button:");
+    // A child that scrolls sideways: a swipe inside scrolls it, not the zone. Its buttons count their taps. Its slider
+    // takes the sideways drags (ImGuiTouch::SetItemTakesDragsAlong): a sideways drag on it moves it at once
+    ImGui::TextWrapped("A sideways swipe scrolls this row; a tap clicks a button; a sideways drag moves the slider:");
     ImGui::BeginChild("##sideways", ImVec2(0.0f, ImGuiKit::EmSize(5.f)), ImGuiChildFlags_Borders,
                       ImGuiWindowFlags_HorizontalScrollbar);
     static int taps[8] = {};
     float card_width = ImMax(ImGuiKit::EmSize(6.f), ImGui::GetContentRegionAvail().x * 0.3f);  // 3 per screen: it scrolls
+    static float row_value = 0.5f;
+    ImGui::SetNextItemWidth(card_width);
+    ImGui::SliderFloat("##row_slider", &row_value, 0.0f, 1.0f);
+    ImGuiTouch::SetItemTakesDragsAlong(ImGuiTouchAxis_X);
     for (int i = 0; i < IM_ARRAYSIZE(taps); i++)
     {
-        if (i > 0)
-            ImGui::SameLine();
+        ImGui::SameLine();
         char label[32];
         ImFormatString(label, IM_ARRAYSIZE(label), "Card %d\n%d taps###card%d", i + 1, taps[i], i);
         if (ImGui::Button(label, ImVec2(card_width, ImGuiKit::EmSize(3.f))))
@@ -658,7 +676,7 @@ void ImGuiKit::ShowDemoWindow(bool* p_open)
 
 void ImGuiKit::ShowDemoContents()
 {
-    ImGui::Text("ImGuiKit %s: small, standalone additions to Dear ImGui", IMGUI_KIT_VERSION);
+    ImGui::TextWrapped("ImGuiKit %s: small, standalone additions to Dear ImGui", IMGUI_KIT_VERSION);
     static float font_size = 0.0f;  // 0: the application's size, read at the first frame
     if (font_size == 0.0f)
         font_size = ImGui::GetStyle().FontSizeBase;
