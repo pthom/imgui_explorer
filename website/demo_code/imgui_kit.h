@@ -1,8 +1,6 @@
 // imgui_kit: small, standalone additions to Dear ImGui
 // https://github.com/pthom/imgui_kit (MIT license)
 //
-// One header, imgui_kit.h. Its sources, beside it: the imgui_kit*.cpp files, imgui_kit_demo.cpp being the demo
-// (optional). They need only Dear ImGui (its docking or master branch, 1.93 or later).
 // Define IMGUI_KIT_USE_STL to get overloads that take std::string and std::vector.
 
 /*
@@ -14,6 +12,7 @@ Index of this file:
 // [SECTION] Layout
 // [SECTION] Widgets
 // [SECTION] Wheel session
+// [SECTION] Idling
 // [SECTION] Enums
 // [SECTION] Touch (ImGuiTouch)
 
@@ -25,8 +24,8 @@ Index of this file:
 // [SECTION] Header mess
 //-----------------------------------------------------------------------------
 
-#define IMGUI_KIT_VERSION       "0.1.0"
-#define IMGUI_KIT_VERSION_NUM   100     // major * 10000 + minor * 100 + patch
+#define IMGUI_KIT_VERSION       "0.5.0"
+#define IMGUI_KIT_VERSION_NUM   500     // major * 10000 + minor * 100 + patch
 
 #include "imgui.h"
 
@@ -37,9 +36,10 @@ Index of this file:
 
 typedef int ImGuiKitIcon;           // -> enum ImGuiKitIcon_
 typedef int ImGuiTouchScrollMode;   // -> enum ImGuiTouchScrollMode_
-typedef int ImGuiTouchPinchMode;    // -> enum ImGuiTouchPinchMode_
 typedef int ImGuiTouchPinchDelivery;  // -> enum ImGuiTouchPinchDelivery_
 typedef int ImGuiTouchAxis;          // -> enum ImGuiTouchAxis_
+typedef int ImGuiTouchPhase;         // -> enum ImGuiTouchPhase_
+typedef int ImGuiTouchPinchKind;     // -> enum ImGuiTouchPinchKind_
 
 namespace ImGuiKit
 {
@@ -69,9 +69,10 @@ IMGUI_API float  PixelSizeToEm(float pixel_size);
 //-----------------------------------------------------------------------------
 // [SECTION] Layout
 //-----------------------------------------------------------------------------
-// Dear ImGui sizes an item when it is called, before the items that follow it exist. The helpers below measure
-// what they need on the previous frame (kept in the window's state storage), so a row can know the width of its
-// end, or a group its own width, before drawing them. The first frame draws them hidden while they are measured.
+// Dear ImGui sizes an item when it is called, before the items that follow it exist. Most helpers below measure
+// what they need on the previous frame (kept in the window's state storage, under their str_id: keep it stable), so
+// a row can know the width of its end, or a group its own width, before drawing them. Each helper says what its
+// first frame does; what is hidden then takes no input either.
 
 // Fill row: the next item takes the line's width, minus the items after FillRowTail().
 //
@@ -88,6 +89,8 @@ IMGUI_API float  PixelSizeToEm(float pixel_size);
 //     ImGuiKit::FillRowTail();                        // the items after this call stay on the right
 //     ImGui::ArrowButton("##next", ImGuiDir_Right);
 //     ImGuiKit::EndFillRow();
+//
+// First frame: the fill item takes the whole line, and the tail is hidden while it is measured.
 IMGUI_API float  BeginFillRow(const char* str_id);   // Sets the next item's width, and returns it
 IMGUI_API void   FillRowTail();
 IMGUI_API void   EndFillRow();
@@ -97,6 +100,8 @@ IMGUI_API void   EndFillRow();
 // Inside a column (below), it aligns within the column's width instead of the line's.
 //
 //     |                         [Cancel] [Apply] |    <- BeginAlignedGroup("buttons", 1.0f)
+//
+// First frame: the group is hidden while its width is measured (and while its column's width is unknown).
 IMGUI_API void   BeginAlignedGroup(const char* str_id, float align_x);
 IMGUI_API void   EndAlignedGroup();
 
@@ -110,6 +115,8 @@ IMGUI_API void   EndAlignedGroup();
 //     ImGuiKit::EndAlignedGroup();
 //     ImGuiKit::EndColumn();
 //     ImGui::SameLine();                             // the next column
+//
+// First frame: drawn as a plain group; it only measures its width.
 IMGUI_API void   BeginColumn(const char* str_id);
 IMGUI_API void   EndColumn();
 
@@ -128,6 +135,8 @@ IMGUI_API void   EndColumn();
 //     ImGui::SameLine();
 //     ImGui::Button("Test sound");
 //     ImGuiKit::EndLabelColumn();
+//
+// First frame: the whole label column is hidden while its labels are measured.
 IMGUI_API void   BeginLabelColumn(const char* str_id, float labels_align_x = 0.0f);
 IMGUI_API void   Label(const char* text);
 IMGUI_API void   EndLabelColumn();
@@ -139,6 +148,9 @@ IMGUI_API void   EndLabelColumn();
 //     +- Image info ----------+
 //     | Size: 640 x 480       |
 //     +-----------------------+
+//
+// No measurement: it draws its frame around its content in the same frame. The label is an ID scope: two panels may
+// hold items with the same labels.
 IMGUI_API void   BeginGroupPanel(const char* label, const ImVec2& size = ImVec2(0, 0));
 IMGUI_API void   EndGroupPanel();
 
@@ -155,6 +167,8 @@ IMGUI_API void   EndGroupPanel();
 //         if (ImGui::Button(labels[i])) ...
 //     }
 //     ImGuiKit::EndFlow();
+//
+// First frame: the whole flow is hidden while its items are measured.
 IMGUI_API void   BeginFlow(const char* str_id);
 IMGUI_API void   FlowNext();
 IMGUI_API void   EndFlow();
@@ -184,7 +198,8 @@ IMGUI_API void   EndHelpMarker();
 // The width a help marker takes at the end of a line, with the spacing before it
 IMGUI_API float  HelpMarkerWidth();
 // How HelpMarker() draws its text. By default: wrapped plain text. An app can install a richer renderer
-// (Dear ImGui Bundle installs one that renders Markdown). nullptr restores the default.
+// (Dear ImGui Bundle installs one that renders Markdown). nullptr restores the default. Per Dear ImGui context (as
+// its PlatformIO callbacks): call it after ImGui::CreateContext().
 typedef void (*HelpMarkerTextRenderer)(const char* text);
 IMGUI_API void   SetHelpMarkerTextRenderer(HelpMarkerTextRenderer renderer);
 
@@ -197,7 +212,8 @@ IMGUI_API bool   IconButton(const char* str_id, ImGuiKitIcon icon, const ImVec2&
 //
 //     ( Demo | Code )        <- current = 1: "Code" is filled
 //
-// It reacts at the press, not the release, which suits touch screens. Returns true when *current changed.
+// It reacts at the press, not the release, which suits touch screens. With the keyboard or a gamepad: activated
+// (Space, Enter), Left and Right move the choice, and the same key leaves it. Returns true when *current changed.
 IMGUI_API bool   SegmentedSwitch(const char* str_id, int* current, const char* const labels[], int labels_count);
 // The width a segmented switch takes, to place it: e.g. on the next line when the current one is too short
 IMGUI_API float  SegmentedSwitchWidth(const char* const labels[], int labels_count);
@@ -216,6 +232,8 @@ IMGUI_API const char* FitText(const char* text, float wrap_width, int max_lines)
 
 // Resize handle: a grip at the bottom-right corner of the last item, which resizes it. Call it right after the item,
 // which takes *size; dragging the grip changes *size (at least min_size). Returns true when *size changed.
+// The grip lies over the item's corner: an item that acts on a bare press (a button) also sees the press that starts
+// a resize, unless ImGui::SetNextItemAllowOverlap() is called before it. Plots, fields and child windows need nothing.
 //
 //     static ImVec2 size = ImGuiKit::EmToVec2(24, 12);
 //     if (ImPlot::BeginPlot("Plot", size)) { ...; ImPlot::EndPlot(); }
@@ -234,6 +252,20 @@ IMGUI_API bool   ResizeHandle(const char* str_id, ImVec2* size, const ImVec2& mi
 // Call it once, after ImGui::CreateContext(); a later call changes `enabled` (false: Dear ImGui's own behavior).
 IMGUI_API void   SetupWheelSession(bool enabled = true);
 
+} // namespace ImGuiKit
+
+//-----------------------------------------------------------------------------
+// [SECTION] Idling
+//-----------------------------------------------------------------------------
+
+namespace ImGuiKit
+{
+// True while something of the kit moves on its own: a widget's animation (a segmented switch that slides), or the
+// touch layer's (ImGuiTouch::IsAnimating(): a fling, a bounce, a long press's ring). An app that sleeps when nothing
+// happens keeps drawing frames meanwhile; one that draws every frame can ignore it. With or without the touch layer.
+IMGUI_API bool   IsAnimating();
+// A widget that animates calls it at each frame of its animation, so that IsAnimating() is true
+IMGUI_API void   RequestAnimation();
 } // namespace ImGuiKit
 
 //-----------------------------------------------------------------------------
@@ -276,29 +308,69 @@ enum ImGuiTouchScrollMode_
     ImGuiTouchScrollMode_Disabled,
 };
 
-// What two fingers do (in a browser; a desktop touch screen reports no second finger)
-enum ImGuiTouchPinchMode_
-{
-    ImGuiTouchPinchMode_FontScale,  // the pinch scales the font (style.FontScaleMain); two fingers dragged together are a right drag
-    ImGuiTouchPinchMode_Disabled,
-};
-
-// The axis along which a widget takes a finger's drags (ImGuiTouch::SetItemTakesDragsAlong); the values of Dear
-// ImGui's internal ImGuiAxis
+// The direction in which a widget takes a finger's drags (ImGuiTouch::SetItemTakesDrags); the values of Dear ImGui's
+// internal ImGuiAxis
 enum ImGuiTouchAxis_
 {
-    ImGuiTouchAxis_X = 0,  // a slider
-    ImGuiTouchAxis_Y = 1,  // a vertical slider
+    ImGuiTouchAxis_Any = -1,  // every direction, at once: a canvas, a knob, a plot
+    ImGuiTouchAxis_X = 0,     // a slider
+    ImGuiTouchAxis_Y = 1,     // a vertical slider
 };
 
-// How a pinch reaches a widget that takes it (ImGuiTouch::SetItemTakesPinch)
+// How a pinch reaches a widget as wheel events (ImGuiTouch::SetItemPinchAsWheel)
 enum ImGuiTouchPinchDelivery_
 {
-    ImGuiTouchPinchDelivery_WheelNotches,     // whole notches (+1, -1): a widget that reads only the wheel's sign (ImPlot)
-    ImGuiTouchPinchDelivery_WheelContinuous,  // the exact amount at each frame: a widget that zooms by the wheel's value
+    ImGuiTouchPinchDelivery_WheelContinuous,  // the exact amount at each frame: a widget that zooms by the wheel's
+                                              // value
+    ImGuiTouchPinchDelivery_WheelNotches,     // whole notches (+1, -1): a widget that reads only the wheel's sign
+                                              // (ImPlot)
 };
 
-// The parts of the screen hidden by a phone's keyboard: see ImGuiTouch::GetKeyboardInsets()
+// What two fingers do, as the layer decides it once per gesture (ImGuiTouchPinch::Kind)
+enum ImGuiTouchPinchKind_
+{
+    ImGuiTouchPinchKind_Undecided,  // until their distance changed a little, or their middle moved a little
+    ImGuiTouchPinchKind_Pinch,      // they spread or close
+    ImGuiTouchPinchKind_Pan,        // they move together
+};
+
+// Two fingers on a widget, at this frame (ImGuiTouch::ItemPinch). A widget applies both the zoom and the pan at each
+// frame: the content stays under the fingers, as on a map.
+//     ImGuiTouchPinch p = ImGuiTouch::ItemPinch();
+//     if (p.Active)
+//     {
+//         offset = p.Center - (p.Center - offset) * p.ScaleDelta;  // zoom around the fingers
+//         zoom *= p.ScaleDelta;
+//         offset += p.CenterDelta;                                 // follow their middle
+//     }
+struct ImGuiTouchPinch
+{
+    bool   Active;       // two fingers are on this widget's gesture (false: the deltas are neutral)
+    bool   Started;      // the gesture's first frame
+    bool   Ended;        // the fingers lifted (or were cancelled) since the last frame: Active is false then
+    ImVec2 Center;       // the fingers' middle, in screen coordinates
+    ImVec2 CenterDelta;  // its move since the last frame: the pan
+    float  ScaleDelta;   // the fingers' distance over the last frame's: 1 when unchanged
+    float  Scale;        // their distance over the distance at the start: 1 at the start
+    ImGuiTouchPinchKind Kind;  // pinch or pan, for a widget that wants one at a time
+
+    ImGuiTouchPinch() : Active(false), Started(false), Ended(false), ScaleDelta(1.0f), Scale(1.0f),
+                        Kind(ImGuiTouchPinchKind_Undecided) {}
+};
+
+// The phase of a finger, as the platforms report it (ImGuiTouch::AddFingerEvent)
+enum ImGuiTouchPhase_
+{
+    ImGuiTouchPhase_Began,      // the finger landed
+    ImGuiTouchPhase_Moved,      // it is still down (moved or not)
+    ImGuiTouchPhase_Ended,      // it lifted
+    ImGuiTouchPhase_Cancelled,  // the system took the touch over (a system gesture, a call): it lifted, and its press
+                                // ends with no click
+};
+
+// The parts of the screen hidden by a phone's keyboard: see ImGuiTouch::GetKeyboardInsets(). Top and Bottom are
+// distances inward from the display's top and bottom edges, in Dear ImGui's coordinates: the visible part is
+// [Top, io.DisplaySize.y - Bottom]. Zero when no keyboard shows.
 struct ImGuiTouchKeyboardInsets
 {
     float Top;
@@ -309,85 +381,142 @@ struct ImGuiTouchKeyboardInsets
 // The settings, read at each frame: change them through ImGuiTouch::GetConfig()
 struct ImGuiTouchConfig
 {
+    //
+    // One finger: the swipe, the long press, the scroll bars
+    //
+
     // The swipe: a finger that drags a window's content scrolls it, with inertia, even from a button: a tap still
     // clicks it (when the finger lifts), and a short hold then a drag goes to the widget (a slider, a text selection).
     ImGuiTouchScrollMode ScrollMode = ImGuiTouchScrollMode_Auto;
-    // On a touch screen (never with a mouse): a finger still for half a second, then lifted, is a right click (the
+    // A finger still for this long hands its press to the widget under it, which then gets the drag (iOS: 150 ms).
+    // Zero: the widget gets the press at once, and a swipe scrolls only from where no widget is.
+    float HoldSeconds = 0.15f;
+    // On a touch screen (never with a mouse): a finger still for LongPressSeconds, then lifted, is a right click (the
     // context menus); a ring around the finger shows when the lift will right click. The release reaches no widget:
     // a long press on a button is not a click. A move after the ring cancels it: the widget keeps its press.
     bool LongPressIsRightClick = true;
+    float LongPressSeconds = 0.5f;  // iOS: about 500 ms
     // On a touch screen (ImGuiConfigFlags_IsTouchScreen): thin scroll bars (0.3 em, rounded), indicators rather than
     // controls, since a swipe scrolls anywhere. Applied at each frame (after a theme, a pinch). A hold on a bar hands
-    // its thumb over, drawn wider while held (as on iOS). False keeps the theme's bars.
+    // its thumb over, drawn wider while held (as on iOS). While the pointer in use is a mouse (io.MouseSource: a touch
+    // laptop driven by its mouse), the theme's bars; thin again at the next finger. False keeps the theme's bars:
+    // turned off (or when the input stops being a touch screen), the layer puts back the style's ScrollbarSize and
+    // ScrollbarRounding.
     bool ThinScrollbars = true;
-    // Two fingers that pinch scale the font while they stay on the screen; two fingers that move together are a
-    // right drag (the pan of a node editor, the box of a plot)
-    ImGuiTouchPinchMode PinchMode = ImGuiTouchPinchMode_FontScale;
+
+    //
+    // Two fingers: the pinch, and a drag with two fingers
+    //
+
+    // Two fingers that pinch outside the widgets that claim them (ImGuiTouch::ItemPinch and its kin) scale the font
+    // (style.FontScaleMain) while they stay on the screen. False: such a pinch does nothing, and the font keeps its
+    // size. Either way, a widget that takes the pinch zooms, and two fingers that move together are a right drag (the
+    // pan of a node editor, the box of a plot). A second finger that lands while a widget holds the first one (a slider
+    // dragged after a hold, a text selection) leaves the widget its drag. A desktop touch screen reports no second
+    // finger.
+    bool PinchScalesFont = true;
     // The pinch's range of style.FontScaleMain
     float PinchFontScaleMin = 0.5f;
     float PinchFontScaleMax = 5.0f;
-    // When the second finger lands while a widget holds the first one (a slider dragged after a hold, a text
-    // selection): the widget keeps its drag and the pinch is ignored (false), or the pinch takes over (true)
-    bool PinchInterruptsWidgets = false;
+
+    //
+    // Testing
+    //
+
     // The mouse plays a finger, to try the phone's behavior on a desktop: the layer tags the mouse's events as a
-    // touch screen's (io.MouseSource), with any backend, before Dear ImGui reads them
+    // touch screen's (io.MouseSource), with any backend, before Dear ImGui reads them. Everything that depends on a
+    // touch screen follows: no hover tooltips, the long press, the hold before a widget's drag. (ScrollMode_Always
+    // differs: the mouse's drag scrolls, but the mouse stays a mouse.)
     bool SimulateTouch = false;
 };
 
 namespace ImGuiTouch
 {
-// Installs the touch layer in the current Dear ImGui context, once (a second call only changes the config); it creates
-// the layer's state, freed with the context. Call it first: the other ImGuiTouch functions assert without it, except
-// IsAnimating(), SetItemTakesDrags(), SetItemTakesPinch(), SetRectTakesPinch() and GetKeyboardInsets(), which do
-// nothing (or return zero) then.
+// Installs the touch layer in the current Dear ImGui context. Call once, after ImGui::CreateContext(); a later call
+// replaces the config. Its state is freed with the context. The functions a reusable widget calls (they say so) do
+// nothing without it; the others assert.
 IMGUI_API void   Setup(const ImGuiTouchConfig& config = ImGuiTouchConfig());
+IMGUI_API bool   IsInstalled();  // true once a setup was called in the current context
 IMGUI_API ImGuiTouchConfig& GetConfig();
 
-// True while the content moves on its own (a fling's inertia, the bounce, an animation): an app that sleeps when
-// nothing happens keeps drawing frames meanwhile. An app that draws every frame can ignore it.
+// True while the touch layer moves something on its own (a fling's inertia, the bounce, a long press's ring): an app
+// that sleeps when nothing happens keeps drawing frames meanwhile. False without the touch layer. An app uses
+// ImGuiKit::IsAnimating() instead, which adds the kit's widgets.
 IMGUI_API bool   IsAnimating();
 
-// Right after a widget that a finger drags (a plot, a knob, a node editor's canvas): a drag that starts on it goes to
-// it, not to the swipe. long_press_is_right_click: a long press on it is still a right click.
-IMGUI_API void   SetItemTakesDrags(bool long_press_is_right_click = true);
-// Right after a widget that a finger drags along one axis (a slider: ImGuiTouchAxis_X; a vertical one: _Y): a
-// drag that starts on it along that axis goes to it, once the finger moved a little; along the other axis, it scrolls
-// the window. long_press_is_right_click: a long press on it is still a right click.
-IMGUI_API void   SetItemTakesDragsAlong(ImGuiTouchAxis axis, bool long_press_is_right_click = true);
+// Right after a widget that a finger drags: a drag that starts on it goes to it, not to the swipe.
+//   - ImGuiTouchAxis_Any (a canvas, a knob, a plot): the widget gets the press at once, in every direction.
+//   - ImGuiTouchAxis_X or _Y (a slider, a vertical slider): the layer waits until the finger moved a little, then gives
+//     the drag to the widget if it goes along that axis, or scrolls the window if it goes across.
+// long_press_is_right_click: a long press on it is still a right click. Nothing without the touch layer.
+// Dear ImGui's own sliders and drags call it themselves when the build has IMGUI_HAS_ITEM_DRAG_AXIS_CALLBACK.
+IMGUI_API void   SetItemTakesDrags(ImGuiTouchAxis axis = ImGuiTouchAxis_Any, bool long_press_is_right_click = true);
 
-// Right after a widget that zooms with the wheel (a plot, an image): two fingers that pinch on it zoom it, instead of
-// scaling the font. The pinch reaches it as wheel events at the fingers' center: zoom_per_notch is the widget's own
-// zoom per notch (ImPlot's is 0.1), delivery says whether it reads whole notches or the wheel's exact value. Two
-// fingers that move together on it drag it with pan_button (a plot pans with the left button). Nothing without the
-// touch layer.
-IMGUI_API void   SetItemTakesPinch(float zoom_per_notch = 0.1f, ImGuiMouseButton pan_button = ImGuiMouseButton_Right,
-                                   ImGuiTouchPinchDelivery delivery = ImGuiTouchPinchDelivery_WheelNotches);
-// The same, for a rectangle in screen coordinates: a widget that is not one item (an ImPlot plot)
-IMGUI_API void   SetRectTakesPinch(const ImVec2& min, const ImVec2& max, float zoom_per_notch = 0.1f,
-                                   ImGuiMouseButton pan_button = ImGuiMouseButton_Right,
-                                   ImGuiTouchPinchDelivery delivery = ImGuiTouchPinchDelivery_WheelNotches);
+// Two fingers on a widget: by default they scale the font (a pinch) or are a right drag (moved together). A widget
+// changes that with one of these calls, right after it, at each frame (the claims of the last frame decide where the
+// fingers land). When claims nest, the smallest holding both fingers wins; the gesture stays with it until they lift.
+// Nothing without the touch layer.
+//
+// 1. The gesture itself (a canvas, a map): returns its data at this frame. The widget gets nothing else: no font
+//    scale, no wheel, no mouse drag. The item needs an id (an InvisibleButton, not an Image). Not with 2 or 3.
+IMGUI_API ImGuiTouchPinch ItemPinch();
+// The same, for a rectangle in screen coordinates and an id of the caller's: a widget that is not one item
+IMGUI_API ImGuiTouchPinch RectPinch(ImGuiID id, const ImVec2& min, const ImVec2& max);
+//
+// 2. A widget that zooms with the wheel (a plot, an image): a pinch on it becomes wheel events, at the fingers' center.
+//    wheel_zoom_factor: the widget's zoom for one wheel unit (1.1: +10%). delivery: WheelNotches for a widget that
+//    reads only the wheel's sign (ImPlot).
+IMGUI_API void   SetItemPinchAsWheel(float wheel_zoom_factor,
+                                     ImGuiTouchPinchDelivery delivery = ImGuiTouchPinchDelivery_WheelContinuous);
+IMGUI_API void   SetRectPinchAsWheel(const ImVec2& min, const ImVec2& max, float wheel_zoom_factor,
+                                     ImGuiTouchPinchDelivery delivery = ImGuiTouchPinchDelivery_WheelContinuous);
+//
+// 3. A widget that pans with a mouse button (a plot: left; a node editor: right): two fingers moved together on it
+//    become a drag with that button. Combines with 2. Alone, a pinch on the widget does nothing (the font keeps its
+//    size); with 2 alone, two fingers moved together are a right drag.
+IMGUI_API void   SetItemTwoFingerPanAsMouseDrag(ImGuiMouseButton button);
+IMGUI_API void   SetRectTwoFingerPanAsMouseDrag(const ImVec2& min, const ImVec2& max, ImGuiMouseButton button);
 
-// A finger on a touch screen, as the platform reports it (a browser's touch or pointer events, SDL's finger events):
-// its id (any number the platform gives, stable while the finger is down), its position (in the mouse's coordinates),
-// and whether it is down. Dear ImGui sees only the first finger, as the mouse: these events let the kit see the others.
-// With two fingers down: they spread or close, a pinch (the font scales); they move together, a right drag.
-// A desktop app with a mouse never calls it.
-IMGUI_API void   AddFingerEvent(int id, const ImVec2& pos, bool down);
+// A finger on a touch screen, as the platform reports it: its id (any number the platform gives, stable while the
+// finger is down), its position (in the mouse's coordinates), and its phase. Report every finger, the first one
+// included: Dear ImGui sees only the first finger, as the mouse; these events let the kit see the others. With two
+// fingers down: they spread or close, a pinch; they move together, a right drag. A desktop app with a mouse never
+// calls it. The platforms' phases: iOS (UITouchPhase), Android (ACTION_DOWN, _MOVE, _UP, _CANCEL), SDL (finger down,
+// motion, up, and canceled in SDL3), Windows (WM_POINTER, its canceled flag). GLFW reports no fingers.
+// Cancelled: the system took the touch over. The finger lifts, and the press it made ends with no click (a widget
+// under it is not clicked, a swipe does not fling).
+IMGUI_API void   AddFingerEvent(int id, const ImVec2& pos, ImGuiTouchPhase phase);
 
 // The parts of the screen hidden by a phone's keyboard (in Dear ImGui's coordinates): a full-screen window keeps out
-// of them. Zero when no keyboard shows.
+// of them. Zero when no keyboard shows, and without the touch layer.
 IMGUI_API ImGuiTouchKeyboardInsets GetKeyboardInsets();
-// A native app tells where its keyboard is (iOS: UIKeyboardWillChangeFrameNotification), and zero when it hides.
-// While a keyboard shows, the windows that hold the text field scroll its caret into view, above the keyboard.
-// In a browser, SetupEmscriptenKeyboard() sets them.
+// A native app tells where its keyboard is (iOS: UIKeyboardWillChangeFrameNotification), and zero when it hides: the
+// values stay until the next call. While a keyboard shows, the windows that hold the text field scroll its caret
+// into view, above the keyboard. In a browser, SetupEmscriptenKeyboard() sets them (zero included). It works before
+// Setup() too: a native app may report its keyboard first.
 IMGUI_API void   SetKeyboardInsets(const ImGuiTouchKeyboardInsets& insets);
+
+// A link that opens in a new tab, in a browser, whatever the browser and the pointer. Right after the link's item, at
+// each frame. The page opens the url from inside the tap's or the click's own handler, where every browser allows a
+// new tab (WebKit allows none from the frame loop, where Dear ImGui sees the click). A finger: a tap (lifted within
+// half a second, not moved); a mouse: a press and its release on the link.
+// Returns true when the page takes the link: the caller then does nothing on the click. False outside a browser,
+// without SetupEmscripten(), or for a scheme other than http, https and mailto: the caller opens the url itself.
+//     ImGui::TextLink("Read the docs");
+//     if (!ImGuiTouch::SetItemOpensUrl(url) && ImGui::IsItemClicked())
+//         OpenInBrowser(url);
+// The same, for a rectangle in screen coordinates (a link that is not one item).
+IMGUI_API bool   SetItemOpensUrl(const char* url);
+IMGUI_API bool   SetRectOpensUrl(const ImVec2& min, const ImVec2& max, const char* url);
 
 #ifdef __EMSCRIPTEN__
 // In a browser, with any of Dear ImGui's Emscripten backends: tells Dear ImGui which pointer is a finger (the
-// browser's pointer events), relays the fingers to AddFingerEvent() (the pinch), and sets ImGuiConfigFlags_IsTouchScreen
-// on a touch screen. Call once, after the backend's init and ImGuiTouch::Setup(). The canvas must have the id "canvas".
-// Also: Dear ImGui's links (TextLinkOpenURL) open on a phone (in the same tab: a phone's browser refuses new tabs
-// there), and the phone's own long press (text selection, its menu) is turned off on the canvas.
+// browser's pointer events), relays the fingers to AddFingerEvent() (the pinch), and sets
+// ImGuiConfigFlags_IsTouchScreen on a touch screen. Call once, after the backend's init and ImGuiTouch::Setup(). The
+// canvas must have the id "canvas".
+// Also: the url zones (SetItemOpensUrl); Dear ImGui's own links (TextLinkOpenURL) open in a new tab where the browser
+// allows it from the frame loop (Chrome, Firefox), else in the same tab (WebKit: Safari, every browser on iOS); and
+// the phone's own long press (text selection, its menu) is turned off on the canvas.
 IMGUI_API void   SetupEmscripten();
 // The phone's keyboard, for Dear ImGui's text widgets (and any widget that wants text: io.WantTextInput). A phone's
 // browser shows its keyboard only for a field focused inside a touch handler: a small keyboard button shows next to

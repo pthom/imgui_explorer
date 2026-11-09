@@ -12,13 +12,13 @@ Index of this file:
 // [SECTION] Layout
 // [SECTION] Widgets
 // [SECTION] Touch
+// [SECTION] Touch keyboard
 // [SECTION] Demo window
 
 */
 
 #include "imgui_kit.h"
 #include "imgui_internal.h"     // ImGui::DemoMarker()
-#include "imgui_kit_internal.h"  // ImGuiTouch::FindCurrentContext()
 
 #ifndef IMGUI_KIT_DISABLE_DEMO
 
@@ -442,10 +442,9 @@ void DemoWidgets()
 // [SECTION] Touch
 //-----------------------------------------------------------------------------
 
-// A canvas that zooms with the wheel and pans with a drag, as a plot or an image viewer does. It claims the wheel while
-// hovered (ImGui::SetItemKeyOwner), takes a finger's drag at once (ImGuiTouch::SetItemTakesDrags), and a pinch
-// (ImGuiTouch::SetItemTakesPinch: its zoom per notch is 10%, and it uses the wheel's exact value; two fingers pan it,
-// with the left button)
+// A canvas that zooms and pans, as a map or an image viewer does. With a mouse: the wheel zooms (it claims the wheel
+// while hovered: ImGui::SetItemKeyOwner), a drag pans. With fingers: one finger pans at once
+// (ImGuiTouch::SetItemTakesDrags), two fingers zoom and pan at once (ImGuiTouch::ItemPinch: the gesture's data)
 void ZoomableCanvas(const char* str_id, ImVec2 size)
 {
     static float zoom = 1.0f;
@@ -453,22 +452,57 @@ void ZoomableCanvas(const char* str_id, ImVec2 size)
     ImGuiIO& io = ImGui::GetIO();
     ImVec2 p0 = ImGui::GetCursorScreenPos();
     ImVec2 p1(p0.x + size.x, p0.y + size.y);
+    // Zoom by `factor` around a point of the screen: the content under it stays there
+    auto zoom_around = [&](ImVec2 point, float factor) {
+        float new_zoom = ImClamp(zoom * factor, 0.25f, 8.0f);
+        float px = point.x - p0.x, py = point.y - p0.y;
+        offset.x = px - (px - offset.x) * new_zoom / zoom;
+        offset.y = py - (py - offset.y) * new_zoom / zoom;
+        zoom = new_zoom;
+    };
+
     ImGui::InvisibleButton(str_id, size);
     ImGuiTouch::SetItemTakesDrags();
-    ImGuiTouch::SetItemTakesPinch(0.1f, ImGuiMouseButton_Left, ImGuiTouchPinchDelivery_WheelContinuous);
-    if (ImGui::IsItemActive())
+    ImGuiTouchPinch pinch = ImGuiTouch::ItemPinch();
+    if (pinch.Active)
+    {
+        zoom_around(pinch.Center, pinch.ScaleDelta);
+        offset.x += pinch.CenterDelta.x;
+        offset.y += pinch.CenterDelta.y;
+    }
+    else if (ImGui::IsItemActive())
     {
         offset.x += io.MouseDelta.x;
         offset.y += io.MouseDelta.y;
     }
     if (ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY) && io.MouseWheel != 0.0f)
+        zoom_around(io.MousePos, ImPow(1.1f, io.MouseWheel));
+
+    // The gesture, as the canvas sees it: a dot under one finger (or the mouse); for two fingers, a ring at their
+    // middle that follows their spread, and the layer's decision (pinch or pan). It fades once they lift.
+    static float gesture_alpha = 0.0f;
+    static bool gesture_two = false;
+    static ImVec2 gesture_pos;
+    static float gesture_scale = 1.0f;
+    static ImGuiTouchPinchKind gesture_kind = ImGuiTouchPinchKind_Undecided;
+    if (pinch.Active)
     {
-        // Zoom around the mouse: the point under it stays there
-        float new_zoom = ImClamp(zoom * ImPow(1.1f, io.MouseWheel), 0.25f, 8.0f);
-        float mx = io.MousePos.x - p0.x, my = io.MousePos.y - p0.y;
-        offset.x = mx - (mx - offset.x) * new_zoom / zoom;
-        offset.y = my - (my - offset.y) * new_zoom / zoom;
-        zoom = new_zoom;
+        gesture_two = true;
+        gesture_pos = pinch.Center;
+        gesture_scale = pinch.Scale;
+        gesture_kind = pinch.Kind;
+        gesture_alpha = 1.0f;
+    }
+    else if (ImGui::IsItemActive())
+    {
+        gesture_two = false;
+        gesture_pos = io.MousePos;
+        gesture_alpha = 1.0f;
+    }
+    else if (gesture_alpha > 0.0f)
+    {
+        gesture_alpha = ImMax(0.0f, gesture_alpha - io.DeltaTime * 3.0f);
+        ImGuiKit::RequestAnimation();  // an app that idles still draws the fade
     }
 
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -483,8 +517,25 @@ void ZoomableCanvas(const char* str_id, ImVec2 size)
         draw_list->AddLine(ImVec2(p0.x, y), ImVec2(p1.x, y), grid_color);
     ImVec2 center(p0.x + offset.x + 4.0f * step, p0.y + offset.y + 3.0f * step);
     draw_list->AddCircleFilled(center, 1.5f * step, ImGui::GetColorU32(ImGuiCol_SliderGrabActive));
-    draw_list->AddRectFilled(ImVec2(center.x + 3.0f * step, center.y - step), ImVec2(center.x + 6.0f * step, center.y + step),
+    draw_list->AddRectFilled(ImVec2(center.x + 3.0f * step, center.y - step),
+                             ImVec2(center.x + 6.0f * step, center.y + step),
                              ImGui::GetColorU32(ImGuiCol_ButtonActive));
+    if (gesture_alpha > 0.0f)
+    {
+        ImU32 color = ImGui::GetColorU32(ImGuiCol_Text, gesture_alpha);
+        float em = ImGuiKit::EmSize();
+        if (!gesture_two)
+            draw_list->AddCircleFilled(gesture_pos, 0.4f * em, color);
+        else
+        {
+            float radius = 1.5f * em * gesture_scale;
+            draw_list->AddCircle(gesture_pos, radius, color, 0, 2.0f);
+            draw_list->AddCircleFilled(gesture_pos, 0.15f * em, color);
+            const char* kind = (gesture_kind == ImGuiTouchPinchKind_Pinch) ? "pinch"
+                             : (gesture_kind == ImGuiTouchPinchKind_Pan) ? "pan" : "two fingers";
+            draw_list->AddText(ImVec2(gesture_pos.x + radius + 0.3f * em, gesture_pos.y - 0.5f * em), color, kind);
+        }
+    }
     draw_list->PopClipRect();
     draw_list->AddRect(p0, p1, ImGui::GetColorU32(ImGuiCol_Border), rounding);
     char label[32];
@@ -501,9 +552,9 @@ ImGuiTouch::SetupEmscripten();  // in a browser: which pointer is a finger, the 
 #endif
 
 // The render loop: nothing to add, the kit runs inside ImGui::NewFrame() and ImGui::Render().
-// - An app that sleeps when idle keeps drawing while ImGuiTouch::IsAnimating().
+// - An app that sleeps when idle keeps drawing while ImGuiKit::IsAnimating().
 // - A widget that a finger drags: ImGuiTouch::SetItemTakesDrags() right after it.
-// - A widget that zooms with the wheel: ImGuiTouch::SetItemTakesPinch() right after it.
+// - A widget that zooms: ImGuiTouch::ItemPinch() right after it (SetItemPinchAsWheel() if it zooms by the wheel).
 // - A widget that reads the wheel claims it: if (ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY)) ...
 // Hello ImGui does the setup itself (RunnerParams::touchConfig).)";
 
@@ -511,7 +562,7 @@ ImGuiTouch::SetupEmscripten();  // in a browser: which pointer is a finger, the 
 // Without the touch layer (an app that shows this demo without ImGuiTouch::Setup()), a note instead of the section
 bool HasTouchLayer()
 {
-    if (ImGuiTouch::FindCurrentContext() != nullptr)
+    if (ImGuiTouch::IsInstalled())
         return true;
     ImGui::TextWrapped("This application did not set up the touch layer: ImGuiTouch::Setup(), once after "
                        "ImGui::CreateContext() (Hello ImGui does it).");
@@ -556,11 +607,18 @@ void DemoTouch()
     ImGuiKit::HelpMarker("Touch: the swipe follows a finger only. Always: the mouse's left button drags the "
                          "content too, while the mouse stays a mouse.");
     ImGuiKit::Label("Pinch");
-    const char* pinch_modes[] = { "Font scale", "Off" };
-    NextLineIfTooWide(ImGuiKit::SegmentedSwitchWidth(pinch_modes, IM_ARRAYSIZE(pinch_modes)));
-    ImGuiKit::SegmentedSwitch("##pinch_mode", &config.PinchMode, pinch_modes, IM_ARRAYSIZE(pinch_modes));
+    ImGui::Checkbox("scales the font", &config.PinchScalesFont);
+    ImGuiKit::Label("Hold");
+    ImGui::SetNextItemWidth(ImGuiKit::EmSize(8.f));
+    ImGui::SliderFloat("##hold", &config.HoldSeconds, 0.f, 1.f, "%.2f s");
+    ImGui::SameLine();
+    ImGuiKit::HelpMarker("A finger still for this long hands its press to the widget under it, which then gets the "
+                         "drag (a slider, a text selection). At zero, the widgets get every press at once.");
     ImGuiKit::Label("Long press");
     ImGui::Checkbox("is a right click", &config.LongPressIsRightClick);
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGuiKit::EmSize(8.f));
+    ImGui::SliderFloat("##long_press", &config.LongPressSeconds, 0.3f, 2.f, "%.2f s");
     ImGuiKit::Label("Scroll bars");
     ImGui::Checkbox("thin", &config.ThinScrollbars);
     ImGuiKit::EndLabelColumn();
@@ -593,8 +651,8 @@ void DemoTouch()
                          "- It claims the wheel while hovered: if (ImGui::SetItemKeyOwner(ImGuiKey_MouseWheelY)). With "
                          "the wheel session, a wheel that scrolls the zone keeps scrolling it when the canvas passes "
                          "under the mouse; a wheel that starts on the canvas zooms it.\n"
-                         "- It calls ImGuiTouch::SetItemTakesPinch(): a pinch on it zooms it, instead of the font, and "
-                         "two fingers moved together pan it.");
+                         "- It reads two fingers' gesture with ImGuiTouch::ItemPinch(): their spread zooms it and "
+                         "their move pans it, both at once, as on a map. The font keeps its size.");
     if (ImGui::BeginPopupContextWindow("##zone_menu"))
     {
         ImGui::TextUnformatted("The zone's context menu: a right click, or a long press");
@@ -602,16 +660,18 @@ void DemoTouch()
     }
 
     // A child that scrolls sideways: a swipe inside scrolls it, not the zone. Its buttons count their taps. Its slider
-    // takes the sideways drags (ImGuiTouch::SetItemTakesDragsAlong): a sideways drag on it moves it at once
+    // takes the sideways drags (ImGuiTouch::SetItemTakesDrags(ImGuiTouchAxis_X)): a sideways drag on it moves it at
+    // once
     ImGui::TextWrapped("A sideways swipe scrolls this row; a tap clicks a button; a sideways drag moves the slider:");
     ImGui::BeginChild("##sideways", ImVec2(0.0f, ImGuiKit::EmSize(5.f)), ImGuiChildFlags_Borders,
                       ImGuiWindowFlags_HorizontalScrollbar);
     static int taps[8] = {};
-    float card_width = ImMax(ImGuiKit::EmSize(6.f), ImGui::GetContentRegionAvail().x * 0.3f);  // 3 per screen: it scrolls
+    // Three per screen: the row scrolls
+    float card_width = ImMax(ImGuiKit::EmSize(6.f), ImGui::GetContentRegionAvail().x * 0.3f);
     static float row_value = 0.5f;
     ImGui::SetNextItemWidth(card_width);
     ImGui::SliderFloat("##row_slider", &row_value, 0.0f, 1.0f);
-    ImGuiTouch::SetItemTakesDragsAlong(ImGuiTouchAxis_X);
+    ImGuiTouch::SetItemTakesDrags(ImGuiTouchAxis_X);
     for (int i = 0; i < IM_ARRAYSIZE(taps); i++)
     {
         ImGui::SameLine();
@@ -624,9 +684,15 @@ void DemoTouch()
     for (int i = 1; i <= 8; i++)
         ImGui::Text("More content, to scroll (%d)", i);
     ImGui::EndChild();
-    // IsAnimating(): an application that sleeps when nothing happens keeps drawing frames meanwhile
-    ImGui::Text("Moving on its own: %s", ImGuiTouch::IsAnimating() ? "yes" : "no");
+    // IsAnimating(): an application that sleeps when nothing happens keeps drawing frames meanwhile.
+    // ImGuiKit::IsAnimating() adds the kit's widgets (a segmented switch that slides) to the touch layer's.
+    ImGui::Text("Moving on its own: touch %s, kit %s", ImGuiTouch::IsAnimating() ? "yes" : "no",
+                ImGuiKit::IsAnimating() ? "yes" : "no");
 }
+
+//-----------------------------------------------------------------------------
+// [SECTION] Touch keyboard
+//-----------------------------------------------------------------------------
 
 // The phone's keyboard, in a browser: the fields of all kinds, one of them in a child that scrolls
 void DemoTouchKeyboard()

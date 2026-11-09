@@ -50,6 +50,12 @@ class _State:
     keyboard_deep = ""
     canvas_zoom = 1.0
     canvas_offset = ImVec2(0.0, 0.0)  # where the canvas's content origin is, from its corner, in pixels
+    # The gesture drawn on the canvas: its opacity (it fades once the fingers lift), one or two fingers, where
+    gesture_alpha = 0.0
+    gesture_two = False
+    gesture_pos = ImVec2(0.0, 0.0)
+    gesture_scale = 1.0
+    gesture_kind = 0  # imgui_kit.TouchPinchKind_
 
 
 state = _State()
@@ -407,25 +413,46 @@ def demo_widgets() -> None:
 # Touch
 # =============================================================================
 def zoomable_canvas(str_id: str, size: ImVec2) -> None:
-    """A canvas that zooms with the wheel and pans with a drag, as a plot or an image viewer does. It claims the wheel
-    while hovered (imgui.set_item_key_owner), takes a finger's drag at once (imgui_kit.touch.set_item_takes_drags),
-    and a pinch (imgui_kit.touch.set_item_takes_pinch: its zoom per notch is 10%, and it uses the wheel's exact value;
-    two fingers pan it, with the left button)."""
+    """A canvas that zooms and pans, as a map or an image viewer does. With a mouse: the wheel zooms (it claims the
+    wheel while hovered: imgui.set_item_key_owner), a drag pans. With fingers: one finger pans at once
+    (imgui_kit.touch.set_item_takes_drags), two fingers zoom and pan at once (imgui_kit.touch.item_pinch: the
+    gesture's data)."""
     io = imgui.get_io()
     p0 = imgui.get_cursor_screen_pos()
     p1 = ImVec2(p0.x + size.x, p0.y + size.y)
+
+    def zoom_around(point: ImVec2, factor: float) -> None:
+        """Zoom by `factor` around a point of the screen: the content under it stays there."""
+        new_zoom = min(max(state.canvas_zoom * factor, 0.25), 8.0)
+        px, py = point.x - p0.x, point.y - p0.y
+        state.canvas_offset = ImVec2(px - (px - state.canvas_offset.x) * new_zoom / state.canvas_zoom,
+                                     py - (py - state.canvas_offset.y) * new_zoom / state.canvas_zoom)
+        state.canvas_zoom = new_zoom
+
     imgui.invisible_button(str_id, size)
     imgui_kit.touch.set_item_takes_drags()
-    imgui_kit.touch.set_item_takes_pinch(0.1, imgui.MouseButton_.left, imgui_kit.TouchPinchDelivery_.wheel_continuous)
-    if imgui.is_item_active():
+    pinch = imgui_kit.touch.item_pinch()
+    if pinch.active:
+        zoom_around(pinch.center, pinch.scale_delta)
+        state.canvas_offset = ImVec2(state.canvas_offset.x + pinch.center_delta.x,
+                                     state.canvas_offset.y + pinch.center_delta.y)
+    elif imgui.is_item_active():
         state.canvas_offset = ImVec2(state.canvas_offset.x + io.mouse_delta.x, state.canvas_offset.y + io.mouse_delta.y)
     if imgui.set_item_key_owner(imgui.Key.mouse_wheel_y) and io.mouse_wheel != 0.0:
-        # Zoom around the mouse: the point under it stays there
-        new_zoom = min(max(state.canvas_zoom * 1.1**io.mouse_wheel, 0.25), 8.0)
-        mx, my = io.mouse_pos.x - p0.x, io.mouse_pos.y - p0.y
-        state.canvas_offset = ImVec2(mx - (mx - state.canvas_offset.x) * new_zoom / state.canvas_zoom,
-                                     my - (my - state.canvas_offset.y) * new_zoom / state.canvas_zoom)
-        state.canvas_zoom = new_zoom
+        zoom_around(io.mouse_pos, 1.1**io.mouse_wheel)
+
+    # The gesture, as the canvas sees it: a dot under one finger (or the mouse); for two fingers, a ring at their
+    # middle that follows their spread, and the layer's decision (pinch or pan). It fades once they lift.
+    if pinch.active:
+        state.gesture_two, state.gesture_pos = True, pinch.center
+        state.gesture_scale, state.gesture_kind = pinch.scale, pinch.kind
+        state.gesture_alpha = 1.0
+    elif imgui.is_item_active():
+        state.gesture_two, state.gesture_pos = False, io.mouse_pos
+        state.gesture_alpha = 1.0
+    elif state.gesture_alpha > 0.0:
+        state.gesture_alpha = max(0.0, state.gesture_alpha - io.delta_time * 3.0)
+        imgui_kit.request_animation()  # an app that idles still draws the fade
 
     draw_list = imgui.get_window_draw_list()
     rounding = imgui.get_style().frame_rounding
@@ -446,6 +473,19 @@ def zoomable_canvas(str_id: str, size: ImVec2) -> None:
     draw_list.add_rect_filled(ImVec2(center.x + 3.0 * step, center.y - step),
                               ImVec2(center.x + 6.0 * step, center.y + step),
                               imgui.get_color_u32(imgui.Col_.button_active))
+    if state.gesture_alpha > 0.0:
+        color = imgui.get_color_u32(imgui.Col_.text, state.gesture_alpha)
+        em = imgui_kit.em_size()
+        pos = state.gesture_pos
+        if not state.gesture_two:
+            draw_list.add_circle_filled(pos, 0.4 * em, color)
+        else:
+            radius = 1.5 * em * state.gesture_scale
+            draw_list.add_circle(pos, radius, color, 0, 2.0)
+            draw_list.add_circle_filled(pos, 0.15 * em, color)
+            kind = ("pinch" if state.gesture_kind == imgui_kit.TouchPinchKind_.pinch
+                    else "pan" if state.gesture_kind == imgui_kit.TouchPinchKind_.pan else "two fingers")
+            draw_list.add_text(ImVec2(pos.x + radius + 0.3 * em, pos.y - 0.5 * em), color, kind)
     draw_list.pop_clip_rect()
     draw_list.add_rect(p0, p1, imgui.get_color_u32(imgui.Col_.border), rounding)
     draw_list.add_text(ImVec2(p0.x + imgui.get_style().frame_padding.x, p1.y - imgui.get_text_line_height_with_spacing()),
@@ -462,9 +502,9 @@ imgui_kit.touch.setup()            # the touch layer: swipe, long press, pinch
 imgui_kit.setup_wheel_session()    # the wheel stays with the window it scrolls
 
 # The render loop: nothing to add, the kit runs inside imgui.new_frame() and imgui.render().
-# - An app that sleeps when idle keeps drawing while imgui_kit.touch.is_animating().
+# - An app that sleeps when idle keeps drawing while imgui_kit.is_animating().
 # - A widget that a finger drags: imgui_kit.touch.set_item_takes_drags() right after it.
-# - A widget that zooms with the wheel: imgui_kit.touch.set_item_takes_pinch() right after it.
+# - A widget that zooms: imgui_kit.touch.item_pinch() right after it (set_item_pinch_as_wheel() if it zooms by the wheel).
 # - A widget that reads the wheel claims it: if imgui.set_item_key_owner(imgui.Key.mouse_wheel_y): ...
 # Hello ImGui does the setup itself (RunnerParams.touch_config)."""
 
@@ -502,9 +542,7 @@ def demo_touch() -> None:
         imgui_kit.help_marker("Touch: the swipe follows a finger only. Always: the mouse's left button drags the "
                               "content too, while the mouse stays a mouse.")
         imgui_kit.label("Pinch")
-        pinch_modes = ["Font scale", "Off"]
-        next_line_if_too_wide(imgui_kit.segmented_switch_width(pinch_modes))
-        _, config.pinch_mode = imgui_kit.segmented_switch("##pinch_mode", config.pinch_mode, pinch_modes)
+        _, config.pinch_scales_font = imgui.checkbox("scales the font", config.pinch_scales_font)
         imgui_kit.label("Long press")
         _, config.long_press_is_right_click = imgui.checkbox("is a right click", config.long_press_is_right_click)
         imgui_kit.label("Scroll bars")
@@ -536,21 +574,21 @@ def demo_touch() -> None:
                           "- It claims the wheel while hovered: if imgui.set_item_key_owner(imgui.Key.mouse_wheel_y). "
                           "With the wheel session, a wheel that scrolls the zone keeps scrolling it when the canvas "
                           "passes under the mouse; a wheel that starts on the canvas zooms it.\n"
-                          "- It calls imgui_kit.touch.set_item_takes_pinch(): a pinch on it zooms it, instead of the "
-                          "font, and two fingers moved together pan it.")
+                          "- It reads two fingers' gesture with imgui_kit.touch.item_pinch(): their spread zooms it and "
+                          "their move pans it, both at once, as on a map. The font keeps its size.")
     if imgui.begin_popup_context_window("##zone_menu"):
         imgui.text_unformatted("The zone's context menu: a right click, or a long press")
         imgui.end_popup()
 
     # A child that scrolls sideways: a swipe inside scrolls it, not the zone. Its buttons count their taps. Its slider
-    # takes the sideways drags (imgui_kit.touch.set_item_takes_drags_along): a sideways drag on it moves it at once
+    # takes the sideways drags (imgui_kit.touch.set_item_takes_drags(imgui_kit.TouchAxis_.x)): a sideways drag on it moves it at once
     imgui.text_wrapped("A sideways swipe scrolls this row; a tap clicks a button; a sideways drag moves the slider:")
     imgui.begin_child("##sideways", ImVec2(0.0, imgui_kit.em_size(5)), imgui.ChildFlags_.borders,
                       imgui.WindowFlags_.horizontal_scrollbar)
     card_width = max(imgui_kit.em_size(6), imgui.get_content_region_avail().x * 0.3)  # 3 per screen: it scrolls
     imgui.set_next_item_width(card_width)
     _, state.row_value = imgui.slider_float("##row_slider", state.row_value, 0.0, 1.0)
-    imgui_kit.touch.set_item_takes_drags_along(imgui_kit.TouchAxis_.x)
+    imgui_kit.touch.set_item_takes_drags(imgui_kit.TouchAxis_.x)
     for i in range(len(state.taps)):
         imgui.same_line()
         if imgui.button(f"Card {i + 1}\n{state.taps[i]} taps###card{i}", ImVec2(card_width, imgui_kit.em_size(3))):
@@ -559,8 +597,11 @@ def demo_touch() -> None:
     for i in range(1, 9):
         imgui.text(f"More content, to scroll ({i})")
     imgui.end_child()
-    # is_animating(): an application that sleeps when nothing happens keeps drawing frames meanwhile
-    imgui.text(f"Moving on its own: {'yes' if imgui_kit.touch.is_animating() else 'no'}")
+    # is_animating(): an application that sleeps when nothing happens keeps drawing frames meanwhile.
+    # imgui_kit.is_animating() adds the kit's widgets (a segmented switch that slides) to the touch layer's.
+    touch_moves = "yes" if imgui_kit.touch.is_animating() else "no"
+    kit_moves = "yes" if imgui_kit.is_animating() else "no"
+    imgui.text(f"Moving on its own: touch {touch_moves}, kit {kit_moves}")
 
 
 def demo_touch_keyboard() -> None:
